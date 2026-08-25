@@ -1,0 +1,231 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #030705;
+  --color-foreground: #e8efe8;
+  --color-card: rgba(255, 255, 255, 0.03);
+  --color-card-border: rgba(255, 255, 255, 0.08);
+  --color-emerald-neon: #00FF9D;
+  --color-emerald-dim: #00CC7D;
+  --color-emerald-glow: rgba(0, 255, 157, 0.15);
+  --color-emerald-surface: #08140E;
+  --color-emerald-deep: #0F291E;
+  --color-cyan-telemetry: #00E5FF;
+  --color-amber-advisory: #E6AF2E;
+  --color-red-critical: #FF4C4C;
+  --color-glass: rgba(255, 255, 255, 0.04);
+  --color-glass-border: rgba(255, 255, 255, 0.08);
+  --color-glass-hover: rgba(255, 255, 255, 0.07);
+}
+
+:root {
+  --background: #030705;
+  --foreground: #e8efe8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  cursor: none;
+  overflow-x: hidden;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  body { cursor: auto; }
+}
+
+/* ─── Selection ─── */
+::selection {
+  background: rgba(0, 255, 157, 0.2);
+  color: #fff;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 157, 0.15);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 157, 0.3);
+}
+
+/* ─── Glass Panels ─── */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 1rem;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(0, 255, 157, 0.15);
+  box-shadow: 0 8px 40px rgba(0, 255, 157, 0.06);
+}
+
+.glass-card-interactive {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.25rem;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card-interactive::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0, 255, 157, 0.06), transparent 40%);
+  opacity: 0;
+  transition: opacity 0.5s;
+  pointer-events: none;
+}
+
+.glass-card-interactive:hover::before {
+  opacity: 1;
+}
+
+/* ─── Telemetry Grid ─── */
+.telemetry-grid {
+  background-image: 
+    linear-gradient(rgba(0, 255, 157, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 157, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ─── Smooth Transition ─── */
+.smooth-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Confidence Bar ─── */
+.confidence-bar {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.confidence-bar .fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.confidence-bar .fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.4));
+  filter: blur(4px);
+}
+
+/* ─── Upload Zone ─── */
+.upload-zone {
+  background: rgba(255, 255, 255, 0.02);
+  border: 2px dashed rgba(0, 255, 157, 0.12);
+  border-radius: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.upload-zone:hover,
+.upload-zone.drag-over {
+  border-color: rgba(0, 255, 157, 0.4);
+  background: rgba(0, 255, 157, 0.04);
+}
+
+/* ─── Animations ─── */
+@keyframes pulse-emerald {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(0, 255, 157, 0); }
+}
+
+@keyframes scan-line {
+  0% { top: -10%; }
+  100% { top: 110%; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes loading-fade {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+@keyframes boot-pulse {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.04); filter: brightness(1.3); }
+}
+
+.animate-pulse-emerald {
+  animation: pulse-emerald 2s ease-in-out infinite;
+}
+
+.scan-line {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 157, 0.25), transparent);
+  animation: scan-line 3.5s linear infinite;
+  pointer-events: none;
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.loading-dot {
+  animation: loading-fade 1.5s ease-in-out infinite;
+}
+.loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ─── Print ─── */
+@media print {
+  .glass-panel, .glass-card {
+    background: white !important;
+    border-color: #ddd !important;
+    color: black !important;
+  }
+}
