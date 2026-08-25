@@ -1,179 +1,281 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/layout/Navbar";
-import { Microscope, Upload, Camera, AlertTriangle, CheckCircle2, RotateCcw } from "lucide-react";
+import { UploadCloud, Microscope, Loader2, Plane, Smartphone, AlertTriangle, Eye, CheckCircle2 } from "lucide-react";
 
-const DISEASE_KNOWLEDGE: Record<string, { displayName: string; severity: string; sevColor: string; chemical: string; cultural: string; preventive: string }> = {
-  "bud rot": { displayName: "Bud Rot (Phytophthora palmivora)", severity: "Critical", sevColor: "#FF4C4C", chemical: "Cut and remove dead crown tissues, apply Bordeaux paste or copper oxychloride paste on cut surfaces.", cultural: "Destroy and burn all removed infected tissues. Avoid damaging the crown.", preventive: "Spray neighboring palms with Mancozeb (4g/L). Ensure good drainage." },
-  "gray leaf spot": { displayName: "Gray Leaf Spot (Pestalotiopsis palmarum)", severity: "Moderate", sevColor: "#E6AF2E", chemical: "Spray 1% Bordeaux mixture or Copper Oxychloride (3g/L) on affected leaves.", cultural: "Prune and burn affected leaves. Improve canopy airflow.", preventive: "Apply balanced potassium fertilizer. Avoid overhead irrigation." },
-  "stem bleeding": { displayName: "Stem Bleeding (Ceratocystis paradoxa)", severity: "Critical", sevColor: "#FF4C4C", chemical: "Chisel out infected trunk tissues. Apply Coal Tar or Bordeaux paste immediately.", cultural: "Avoid wounding the trunk. Remove soil piled against the trunk.", preventive: "Root feeding with Carbendazim (2g in 100ml) every 3 months." },
-  "leaf rot": { displayName: "Leaf Rot (Colletotrichum gloeosporioides)", severity: "High", sevColor: "#FF8C00", chemical: "Apply Mancozeb (2.5g/L) or Carbendazim (1g/L) spray at early symptom stage.", cultural: "Remove infected fronds. Apply boron and zinc to soil.", preventive: "Reduce canopy humidity by proper spacing. Monitor after rains." },
-  "healthy": { displayName: "Healthy Palm", severity: "Healthy", sevColor: "#00FF9D", chemical: "No chemical treatment required.", cultural: "Maintain current practices. Continue monitoring every 2-4 weeks.", preventive: "Maintain optimal NPK schedule per CRI. Ensure good drainage." },
-};
+interface Hotspot {
+  id: string;
+  location: { lat: number; lng: number };
+  severity: "critical" | "high" | "moderate";
+  mean_index_value: number;
+  radius_meters: number;
+  recommended_action: string;
+  status: "pending" | "inspected" | "resolved";
+}
+
+const MOCK_HOTSPOTS: Hotspot[] = [
+  {
+    id: "HS-001", location: { lat: 7.2914, lng: 80.6342 },
+    severity: "critical", mean_index_value: 0.28, radius_meters: 6.4,
+    recommended_action: "Immediate on-site mobile leaf scan required for Bud Rot necrosis.",
+    status: "pending",
+  },
+  {
+    id: "HS-002", location: { lat: 7.2928, lng: 80.6325 },
+    severity: "high", mean_index_value: 0.42, radius_meters: 4.8,
+    recommended_action: "Crown chlorosis detected. Inspect for Potassium deficiency.",
+    status: "pending",
+  },
+  {
+    id: "HS-003", location: { lat: 7.2895, lng: 80.6358 },
+    severity: "moderate", mean_index_value: 0.45, radius_meters: 3.5,
+    recommended_action: "Slight canopy thinning. Monitor during next irrigation cycle.",
+    status: "inspected",
+  },
+];
+
+const sevColors: Record<string, string> = { critical: "#FF4C4C", high: "#FF8C00", moderate: "#E6AF2E" };
+const statusColors: Record<string, string> = { pending: "#FF4C4C", inspected: "#E6AF2E", resolved: "#00FF9D" };
 
 export default function PathologyPage() {
-  const [dragOver, setDragOver] = useState(false);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [tab, setTab] = useState<"aerial" | "mobile">("aerial");
+  const [file, setFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [result, setResult] = useState<{ disease: string; confidence: number; time_ms: number } | null>(null);
+  const [result, setResult] = useState<any>(null);
 
-  const handleFile = useCallback((file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => setPreview(e.target?.result as string);
-    reader.readAsDataURL(file);
-    setResult(null);
-  }, []);
+  const hotspots = MOCK_HOTSPOTS;
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith("image/")) handleFile(file);
-  }, [handleFile]);
-
-  const handleAnalyze = async () => {
-    if (!preview) return;
-    setIsAnalyzing(true);
-    await new Promise(r => setTimeout(r, 2200));
-
-    const diseases = Object.keys(DISEASE_KNOWLEDGE);
-    const randomDisease = diseases[Math.floor(Math.random() * diseases.length)];
-    const confidence = 0.78 + Math.random() * 0.2;
-
-    setResult({ disease: randomDisease, confidence, time_ms: Math.floor(Math.random() * 300) + 150 });
-    setIsAnalyzing(false);
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+      setResult(null);
+    }
   };
 
-  const knowledge = result ? DISEASE_KNOWLEDGE[result.disease] || DISEASE_KNOWLEDGE["healthy"] : null;
+  const runAnalysis = () => {
+    if (!file) return;
+    setIsAnalyzing(true);
+    
+    setTimeout(() => {
+      setResult({
+        disease: "Gray Leaf Spot (Pestalotiopsis palmarum)",
+        confidence: 0.94,
+        severity: "Moderate",
+        chemical: "Spray 1% Bordeaux mixture or Copper Oxychloride (3g/L) on affected leaves.",
+        cultural: "Prune and burn severely affected leaves. Improve canopy airflow.",
+        preventive: "Apply balanced potassium fertilizer to boost palm resistance."
+      });
+      setIsAnalyzing(false);
+    }, 2500);
+  };
 
   return (
     <main className="min-h-screen relative">
       <Navbar />
+      
+      {/* Background Grid */}
       <div className="absolute inset-0 telemetry-grid opacity-10 pointer-events-none" />
 
-      <div className="max-w-5xl mx-auto px-6 pt-24 pb-16 relative z-10">
+      <div className="max-w-6xl mx-auto px-6 pt-24 pb-16 relative z-10">
+        
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 rounded-lg" style={{ background: "rgba(255,76,76,0.1)" }}>
-              <Microscope className="w-5 h-5" style={{ color: "#FF4C4C" }} />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 rounded-lg" style={{ background: "rgba(255, 76, 76, 0.1)" }}>
+                <Microscope className="w-5 h-5 text-red-400" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-light" style={{ fontFamily: "var(--font-outfit)" }}>Pathology Diagnostics Lab</h1>
+                <p className="text-[10px] uppercase tracking-[0.3em] font-mono text-red-400/50">
+                  Multiscale Computer Vision Ecosystem
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-light" style={{ fontFamily: "var(--font-outfit)" }}>Pathology Diagnostics Lab</h1>
-              <p className="text-[10px] uppercase tracking-[0.3em] font-mono" style={{ color: "rgba(255,76,76,0.5)" }}>
-                CNN Vision Classification & CRI Treatment Protocol
-              </p>
-            </div>
+          </div>
+
+          {/* Tab Switch */}
+          <div className="flex gap-1 p-1 rounded-full w-fit bg-white/5 border border-white/10">
+            {[
+              { id: "aerial" as const, label: "System A (UAV)", icon: <Plane className="w-3.5 h-3.5" /> },
+              { id: "mobile" as const, label: "System B (Mobile)", icon: <Smartphone className="w-3.5 h-3.5" /> },
+            ].map(t => (
+              <button key={t.id} onClick={() => setTab(t.id)}
+                className="flex items-center gap-2 px-4 py-2 rounded-full text-xs smooth-transition"
+                style={{
+                  background: tab === t.id ? "rgba(255, 76, 76, 0.15)" : "transparent",
+                  color: tab === t.id ? "#FF6B6B" : "rgba(255,255,255,0.4)",
+                }}
+              >
+                {t.icon} {t.label}
+              </button>
+            ))}
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Upload Zone */}
-          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <div
-              className={`upload-zone p-8 flex flex-col items-center justify-center min-h-[320px] ${dragOver ? "drag-over" : ""}`}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
-            >
-              {preview ? (
-                <div className="relative w-full">
-                  <img src={preview} alt="Scan preview" className="w-full rounded-xl object-cover max-h-72" />
-                  {isAnalyzing && (
-                    <div className="absolute inset-0 rounded-xl overflow-hidden">
-                      <div className="scan-line" />
-                      <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
-                        <RotateCcw className="w-6 h-6 animate-spin" style={{ color: "#00FF9D" }} />
+        <AnimatePresence mode="wait">
+          {tab === "aerial" ? (
+            <motion.div key="aerial" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="space-y-6">
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Heatmap Placeholder */}
+                <div className="md:col-span-2 glass-card p-1 overflow-hidden relative" style={{ minHeight: "400px" }}>
+                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center border border-white/5 rounded-xl m-1">
+                    <Plane className="w-12 h-12 text-red-400/20 mb-4" />
+                    <p className="text-sm font-mono text-white/40 mb-2">UAV Orthomosaic Rendering Engine</p>
+                    <p className="text-xs text-white/20">Waiting for drone flight telemetry sync...</p>
+                  </div>
+                  
+                  {/* Overlay Mock Scanline */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    <motion.div 
+                      className="w-full h-[2px]"
+                      style={{ background: "linear-gradient(90deg, transparent, rgba(255,76,76,0.5), transparent)", boxShadow: "0 0 10px rgba(255,76,76,0.5)" }}
+                      animate={{ y: [0, 400, 0] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    />
+                  </div>
+                </div>
+
+                {/* Hotspots List */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-mono text-white/60 mb-2 px-1 flex justify-between items-center">
+                    <span>Canopy Hotspots (NDVI)</span>
+                    <span className="px-2 py-0.5 rounded text-[10px] bg-red-500/20 text-red-400">Live</span>
+                  </h3>
+                  
+                  {hotspots.map((hs, i) => (
+                    <motion.div key={hs.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.1 }}
+                      className="glass-panel p-4"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="w-3.5 h-3.5" style={{ color: sevColors[hs.severity] }} />
+                          <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded font-mono"
+                            style={{ background: `${sevColors[hs.severity]}15`, color: sevColors[hs.severity] }}
+                          >
+                            {hs.severity}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono flex items-center gap-1.5"
+                          style={{ color: statusColors[hs.status] }}
+                        >
+                          {hs.status === "resolved" ? <CheckCircle2 className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                        </span>
+                      </div>
+                      <p className="text-xs mb-2 leading-relaxed text-white/60">
+                        {hs.recommended_action}
+                      </p>
+                      <div className="flex justify-between text-[9px] font-mono text-white/30">
+                        <span>NDVI: {hs.mean_index_value.toFixed(2)}</span>
+                        <span>{hs.location.lat.toFixed(4)}, {hs.location.lng.toFixed(4)}</span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+            </motion.div>
+          ) : (
+            <motion.div key="mobile" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              
+              {/* Left: Upload Zone */}
+              <div className="glass-card p-6 flex flex-col h-[500px]">
+                <h2 className="text-sm font-mono text-white/60 mb-4">Leaf Level CNN Inference</h2>
+                
+                <label className="flex-1 border-2 border-dashed border-red-500/20 hover:border-red-500/40 rounded-xl bg-black/20 flex flex-col items-center justify-center cursor-pointer smooth-transition group relative overflow-hidden">
+                  <input type="file" className="hidden" accept="image/*" onChange={handleUpload} />
+                  
+                  {file ? (
+                    <div className="absolute inset-0 p-2">
+                      <img src={URL.createObjectURL(file)} alt="Upload preview" className="w-full h-full object-cover rounded-lg opacity-80" />
+                      {isAnalyzing && (
+                        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center">
+                          <Loader2 className="w-8 h-8 text-red-400 animate-spin mb-4" />
+                          <p className="text-xs font-mono text-red-400/80">Running MobileNetV2-INT8...</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4 group-hover:scale-110 smooth-transition">
+                        <UploadCloud className="w-8 h-8 text-red-400/80" />
+                      </div>
+                      <p className="text-sm text-white/60 mb-2">Drag & drop lesion image</p>
+                      <p className="text-[10px] text-white/30 font-mono uppercase tracking-widest">Supports JPG, PNG (Max 10MB)</p>
+                    </>
+                  )}
+                </label>
+
+                <div className="mt-6 flex justify-end">
+                  <button 
+                    onClick={runAnalysis}
+                    disabled={!file || isAnalyzing}
+                    className="px-6 py-3 rounded-lg bg-red-500 hover:bg-red-600 text-white text-xs uppercase tracking-widest font-mono disabled:opacity-50 disabled:cursor-not-allowed smooth-transition"
+                    style={{ boxShadow: file && !isAnalyzing ? "0 0 20px rgba(239, 68, 68, 0.3)" : "none" }}
+                  >
+                    {isAnalyzing ? "Processing..." : "Run Inference"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Right: Diagnosis Results */}
+              <div className="glass-card p-6 h-[500px] flex flex-col">
+                <h2 className="text-sm font-mono text-white/60 mb-6">Diagnostic Dossier</h2>
+                
+                {result ? (
+                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex-1 flex flex-col space-y-6">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-red-400/70 font-mono mb-1">Detected Pathology</p>
+                      <h3 className="text-xl text-white font-light">{result.disease}</h3>
+                      <div className="flex items-center gap-4 mt-3">
+                        <div className="px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 flex items-center gap-2">
+                          <span className="text-[10px] text-white/60 font-mono">CONFIDENCE</span>
+                          <span className="text-xs font-mono text-red-400">{(result.confidence * 100).toFixed(1)}%</span>
+                        </div>
+                        <div className="px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-mono">
+                          SEVERITY: {result.severity.toUpperCase()}
+                        </div>
                       </div>
                     </div>
-                  )}
-                </div>
-              ) : (
-                <>
-                  <Upload className="w-10 h-10 mb-4" style={{ color: "rgba(0,255,157,0.3)" }} />
-                  <p className="text-sm mb-2" style={{ color: "rgba(232,239,232,0.5)" }}>Drop coconut leaf or trunk image</p>
-                  <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.2)" }}>JPEG, PNG — Max 10MB</p>
-                </>
-              )}
-            </div>
 
-            {/* Actions */}
-            <div className="flex gap-3 mt-4">
-              <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs smooth-transition cursor-pointer"
-                style={{ background: "rgba(0,255,157,0.08)", border: "1px solid rgba(0,255,157,0.12)", color: "rgba(0,255,157,0.7)" }}
-              >
-                <Camera className="w-4 h-4" /> Browse Image
-                <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
-              </label>
-              {preview && (
-                <button onClick={handleAnalyze} disabled={isAnalyzing}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-medium smooth-transition"
-                  style={{ background: "rgba(255,76,76,0.12)", border: "1px solid rgba(255,76,76,0.15)", color: "#FF4C4C" }}
-                >
-                  <Microscope className="w-4 h-4" /> {isAnalyzing ? "Classifying..." : "Run Inference"}
-                </button>
-              )}
-            </div>
-          </motion.div>
+                    <div className="h-[1px] w-full bg-gradient-to-r from-white/10 to-transparent" />
 
-          {/* Results Panel */}
-          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            {result && knowledge ? (
-              <div className="glass-card p-6 space-y-5">
-                {/* Diagnosis */}
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    {knowledge.severity === "Healthy" ? (
-                      <CheckCircle2 className="w-5 h-5" style={{ color: "#00FF9D" }} />
-                    ) : (
-                      <AlertTriangle className="w-5 h-5" style={{ color: knowledge.sevColor }} />
-                    )}
-                    <h3 className="text-lg font-light" style={{ fontFamily: "var(--font-outfit)", color: "rgba(232,239,232,0.9)" }}>
-                      {knowledge.displayName}
-                    </h3>
+                    <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1">
+                      <div>
+                        <h4 className="text-xs font-mono text-white/40 mb-2 flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-red-400" /> Chemical Treatment
+                        </h4>
+                        <p className="text-sm text-white/80 leading-relaxed bg-white/5 p-3 rounded-lg border border-white/5">{result.chemical}</p>
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-mono text-white/40 mb-2 flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-orange-400" /> Cultural Action
+                        </h4>
+                        <p className="text-sm text-white/80 leading-relaxed bg-white/5 p-3 rounded-lg border border-white/5">{result.cultural}</p>
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-mono text-white/40 mb-2 flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Preventive Measure
+                        </h4>
+                        <p className="text-sm text-white/80 leading-relaxed bg-white/5 p-3 rounded-lg border border-white/5">{result.preventive}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center opacity-30">
+                    <Microscope className="w-12 h-12 mb-4" />
+                    <p className="text-sm font-mono max-w-[200px]">Upload an image and run inference to see results.</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-mono"
-                      style={{ background: `${knowledge.sevColor}15`, color: knowledge.sevColor }}
-                    >
-                      {knowledge.severity}
-                    </span>
-                    <span className="text-xs font-mono" style={{ color: "rgba(255,255,255,0.3)" }}>
-                      {(result.confidence * 100).toFixed(1)}% confidence
-                    </span>
-                    <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.15)" }}>
-                      {result.time_ms}ms
-                    </span>
-                  </div>
-                </div>
-
-                {/* Confidence Bar */}
-                <div className="confidence-bar">
-                  <div className="fill" style={{ width: `${result.confidence * 100}%`, background: knowledge.sevColor }} />
-                </div>
-
-                {/* Treatment */}
-                {["chemical", "cultural", "preventive"].map(type => (
-                  <div key={type} className="p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.02)" }}>
-                    <p className="text-[10px] uppercase tracking-wider mb-1 font-mono" style={{ color: "rgba(0,255,157,0.4)" }}>
-                      {type} treatment
-                    </p>
-                    <p className="text-xs leading-relaxed" style={{ color: "rgba(232,239,232,0.6)" }}>
-                      {knowledge[type as keyof typeof knowledge]}
-                    </p>
-                  </div>
-                ))}
+                )}
               </div>
-            ) : (
-              <div className="glass-card p-8 flex flex-col items-center justify-center min-h-[320px]">
-                <Microscope className="w-12 h-12 mb-4" style={{ color: "rgba(255,255,255,0.08)" }} />
-                <p className="text-sm" style={{ color: "rgba(255,255,255,0.2)" }}>Upload an image and run inference to see results</p>
-              </div>
-            )}
-          </motion.div>
-        </div>
+
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </div>
     </main>
   );
