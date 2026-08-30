@@ -48,10 +48,11 @@ export default function DiagnosticMapInner({ diagnostics }: { diagnostics: any[]
   return (
     <div className="w-full h-[400px] rounded-xl overflow-hidden border border-white/5 relative z-0">
       <MapContainer center={center} zoom={15} style={{ height: "100%", width: "100%", background: "#0a0a0a" }}>
-        {/* Dark mode CartoDB tile layer for sleek UI */}
+        {/* OpenStreetMap with sleek dark mode filter */}
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          className="map-tiles-dark"
         />
         <ChangeView center={center} />
         
@@ -74,11 +75,12 @@ export default function DiagnosticMapInner({ diagnostics }: { diagnostics: any[]
       
       {/* Map styling override to fit glassmorphism */}
       <style jsx global>{`
-        .leaflet-container { font-family: var(--font-outfit), sans-serif; }
-        .leaflet-popup-content-wrapper { background: rgba(20,20,20,0.9); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); color: white; border-radius: 8px; }
-        .leaflet-popup-tip { background: rgba(20,20,20,0.9); border-top: 1px solid rgba(255,255,255,0.1); border-left: 1px solid rgba(255,255,255,0.1); }
-        .leaflet-bar a { background-color: rgba(20,20,20,0.8) !important; color: white !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
-        .leaflet-bar a:hover { background-color: rgba(40,40,40,0.9) !important; }
+        .leaflet-container { font-family: var(--font-outfit), sans-serif; background: #0b111e !important; }
+        .map-tiles-dark { filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.2) brightness(0.7); }
+        .leaflet-popup-content-wrapper { background: rgba(15,23,42,0.95); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(12px); color: white; border-radius: 12px; }
+        .leaflet-popup-tip { background: rgba(15,23,42,0.95); border-top: 1px solid rgba(255,255,255,0.1); border-left: 1px solid rgba(255,255,255,0.1); }
+        .leaflet-bar a { background-color: rgba(15,23,42,0.8) !important; color: white !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
+        .leaflet-bar a:hover { background-color: rgba(30,41,59,0.9) !important; }
       `}</style>
     </div>
   );
