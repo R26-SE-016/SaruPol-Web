@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Menu, X, Leaf, FlaskConical, BarChart3, MessageCircle, Map, Microscope } from "lucide-react";
+import { Menu, X, FlaskConical, BarChart3, MessageCircle, Map, Microscope } from "lucide-react";
 
 const navLinks = [
   { name: "Dashboard", path: "/", icon: <BarChart3 className="w-4 h-4" /> },
@@ -26,30 +27,49 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 w-full z-50 border-b"
+      <nav
+        className="fixed top-0 left-0 w-full z-50 border-b select-none"
         style={{
-          background: "rgba(3, 7, 5, 0.7)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderColor: "rgba(0, 255, 157, 0.06)",
+          background: "rgba(3, 7, 5, 0.8)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          borderColor: "rgba(212, 175, 55, 0.12)",
         }}
       >
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          {/* Brand */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          {/* Brand Logo & Text Mark */}
+          <Link href="/" className="flex items-center gap-3 group">
+            <div
+              className="relative w-9 h-9 rounded-xl overflow-hidden p-1 flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_20px_rgba(212,175,55,0.3)]"
               style={{
-                background: "linear-gradient(135deg, rgba(0,255,157,0.15), rgba(0,255,157,0.05))",
-                border: "1px solid rgba(0,255,157,0.15)",
+                background: "linear-gradient(135deg, rgba(30,34,30,0.9), rgba(12,16,13,0.95))",
+                border: "1px solid rgba(212,175,55,0.3)",
               }}
             >
-              <Leaf className="w-4 h-4" style={{ color: "#00FF9D" }} />
+              <Image
+                src="/brand/logo-icon.png"
+                alt="SaruPol Icon"
+                width={32}
+                height={32}
+                className="object-contain"
+                priority
+              />
             </div>
-            <span className="text-sm font-medium tracking-[0.15em] uppercase"
-              style={{ color: "rgba(232, 239, 232, 0.9)" }}
-            >
-              SaruPol
-            </span>
+            <div className="flex flex-col justify-center">
+              <div className="relative h-6 sm:h-7 flex items-center">
+                <Image
+                  src="/brand/logo-text.png"
+                  alt="සරුපොල් (SaruPol)"
+                  width={110}
+                  height={28}
+                  className="h-5 sm:h-6 w-auto object-contain drop-shadow-[0_2px_8px_rgba(212,175,55,0.35)]"
+                  priority
+                />
+              </div>
+              <span className="text-[8px] font-mono tracking-[0.25em] text-emerald-400/80 uppercase -mt-0.5">
+                PRECISION SUITE
+              </span>
+            </div>
           </Link>
 
           {/* Desktop nav */}
@@ -60,19 +80,21 @@ export default function Navbar() {
                 href={link.path}
                 className="relative px-3 py-2 rounded-lg text-xs tracking-wide smooth-transition flex items-center gap-2"
                 style={{
-                  color: isActive(link.path) ? "#00FF9D" : "rgba(232,239,232,0.4)",
+                  color: isActive(link.path) ? "#00FF9D" : "rgba(232,239,232,0.6)",
                   background: isActive(link.path) ? "rgba(0,255,157,0.08)" : "transparent",
                 }}
               >
-                <span style={{ color: isActive(link.path) ? "#00FF9D" : "rgba(232,239,232,0.25)" }}>
+                <span style={{ color: isActive(link.path) ? "#00FF9D" : "rgba(232,239,232,0.4)" }}>
                   {link.icon}
                 </span>
                 {link.name}
                 {isActive(link.path) && (
                   <motion.div
                     layoutId="nav-indicator"
-                    className="absolute bottom-0 left-3 right-3 h-[1px]"
-                    style={{ background: "#00FF9D" }}
+                    className="absolute bottom-0 left-3 right-3 h-[1.5px]"
+                    style={{
+                      background: "linear-gradient(90deg, #00FF9D, #D4AF37)",
+                    }}
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
@@ -83,19 +105,25 @@ export default function Navbar() {
           {/* Enterprise Profile / CRI Station Badge */}
           <div className="hidden lg:flex items-center gap-3">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
-              <div className="w-2 h-2 rounded-full bg-emerald-400" />
+              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-xs font-mono text-white/70">CRI Station Kurunegala</span>
             </div>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-white/10 flex items-center justify-center text-xs font-mono font-medium text-emerald-400">
-              SP
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-amber-500/30 p-0.5 bg-black/60 flex items-center justify-center">
+              <Image
+                src="/brand/logo-icon.png"
+                alt="Profile Avatar"
+                width={28}
+                height={28}
+                className="object-contain"
+              />
             </div>
           </div>
 
           {/* Mobile toggle */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden p-2 smooth-transition"
-            style={{ color: "rgba(232,239,232,0.7)" }}
+            className="lg:hidden p-2 smooth-transition rounded-lg hover:bg-white/5"
+            style={{ color: "rgba(232,239,232,0.9)" }}
             aria-label="Toggle menu"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -111,12 +139,35 @@ export default function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-4 lg:hidden"
+            className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-6 lg:hidden"
             style={{
-              background: "rgba(3, 7, 5, 0.97)",
+              background: "rgba(3, 7, 5, 0.98)",
               backdropFilter: "blur(30px)",
             }}
           >
+            {/* Brand in Mobile Drawer */}
+            <div className="flex flex-col items-center gap-2 mb-4">
+              <div className="w-14 h-14 rounded-2xl p-2 border border-amber-500/30 bg-black/60 flex items-center justify-center shadow-xl">
+                <Image
+                  src="/brand/logo-icon.png"
+                  alt="SaruPol Icon"
+                  width={48}
+                  height={48}
+                  className="object-contain"
+                />
+              </div>
+              <Image
+                src="/brand/logo-text.png"
+                alt="සරුපොල් (SaruPol)"
+                width={140}
+                height={38}
+                className="h-8 w-auto object-contain"
+              />
+              <span className="text-[10px] font-mono tracking-widest text-emerald-400/80 uppercase">
+                Coconut Research Intelligence
+              </span>
+            </div>
+
             {navLinks.map((link, i) => (
               <motion.div
                 key={link.name}
@@ -127,10 +178,15 @@ export default function Navbar() {
                 <Link
                   href={link.path}
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 text-lg font-light tracking-widest uppercase smooth-transition"
-                  style={{ color: isActive(link.path) ? "#00FF9D" : "rgba(232,239,232,0.35)" }}
+                  className="flex items-center gap-3 text-lg font-light tracking-widest uppercase smooth-transition px-4 py-2 rounded-xl"
+                  style={{
+                    color: isActive(link.path) ? "#00FF9D" : "rgba(232,239,232,0.6)",
+                    background: isActive(link.path) ? "rgba(0,255,157,0.08)" : "transparent",
+                  }}
                 >
-                  {link.icon}
+                  <span style={{ color: isActive(link.path) ? "#00FF9D" : "#D4AF37" }}>
+                    {link.icon}
+                  </span>
                   {link.name}
                 </Link>
               </motion.div>
