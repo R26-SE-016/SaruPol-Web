@@ -73,6 +73,38 @@ export const pathology = {
       method: 'POST',
       body: { imageBase64, part, system: 'B' },
     }),
+
+  processAerialSpectral: (data: {
+    image: string;
+    nir_image?: string;
+    index_type: 'VARI' | 'NDVI';
+    estate_id: string;
+    gps_bounds?: { lat: number; lng: number; span_lat: number; span_lng: number };
+  }) =>
+    request<any>('/api/pathology/aerial/spectral', {
+      method: 'POST',
+      body: data,
+    }),
+
+  getCanopyHotspots: (estateId: string, status?: string) =>
+    request<any>(
+      `/api/pathology/aerial/hotspots?estate_id=${estateId}${status ? `&status=${status}` : ''}`
+    ),
+
+  updateHotspotStatus: (hotspotId: string, status: 'pending' | 'inspected' | 'resolved', leafDiagnosticId?: string) =>
+    request<any>(`/api/pathology/aerial/hotspots/${hotspotId}`, {
+      method: 'PATCH',
+      body: { status, leaf_diagnostic_id: leafDiagnosticId },
+    }),
+
+  getHistory: (userId: string, estateId?: string) =>
+    request<any>(`/api/pathology/history?user_id=${userId}${estateId ? `&estate_id=${estateId}` : ''}`),
+
+  sync: (diagnostics: any[]) =>
+    request<any>('/api/pathology/sync', {
+      method: 'POST',
+      body: { diagnostics },
+    }),
 };
 
 // ─── Yield Prediction ───

@@ -31,15 +31,20 @@ html {
   scroll-behavior: smooth;
 }
 
+body, a, button, input, select, textarea, [role="button"] {
+  cursor: none;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
-  cursor: none;
   overflow-x: hidden;
 }
 
 @media (hover: none) and (pointer: coarse) {
-  body { cursor: auto; }
+  body, a, button, input, select, textarea, [role="button"] {
+    cursor: auto !important;
+  }
 }
 
 /* ─── Selection ─── */

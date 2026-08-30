@@ -80,17 +80,15 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* System status pill */}
-          <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full"
-            style={{
-              background: "rgba(0,255,157,0.05)",
-              border: "1px solid rgba(0,255,157,0.1)",
-            }}
-          >
-            <div className="w-1.5 h-1.5 rounded-full animate-pulse-emerald" style={{ background: "#00FF9D" }} />
-            <span className="text-[10px] font-mono tracking-wider uppercase" style={{ color: "rgba(0,255,157,0.6)" }}>
-              System Active
-            </span>
+          {/* Enterprise Profile / CRI Station Badge */}
+          <div className="hidden lg:flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+              <div className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="text-xs font-mono text-white/70">CRI Station Kurunegala</span>
+            </div>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-white/10 flex items-center justify-center text-xs font-mono font-medium text-emerald-400">
+              SP
+            </div>
           </div>
 
           {/* Mobile toggle */}
