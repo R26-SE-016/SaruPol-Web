@@ -91,30 +91,29 @@ export default function DashboardPage() {
         transition={{ duration: 1, ease: "easeOut" }}
         className="z-10 text-center max-w-5xl px-4 mt-24 mb-14 flex flex-col items-center select-none"
       >
-        {/* Luxury Gold Icon Mark (Locked to Text Logo) */}
+        {/* Pure Luxury Gold Icon Mark (Enlarged, Radiant Ambient Aura, No Artificial Outer Box) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.75 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="relative -mb-3 sm:-mb-5 md:-mb-7 z-20"
+          className="relative -mb-4 sm:-mb-6 md:-mb-8 z-20 flex items-center justify-center"
         >
+          {/* Radiant Ambient Halo */}
           <div
-            className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-[2rem] p-3 sm:p-3.5 flex items-center justify-center relative overflow-hidden shadow-2xl transition-transform duration-500 hover:scale-105"
+            className="absolute inset-0 rounded-full blur-2xl pointer-events-none"
             style={{
-              background: "linear-gradient(145deg, rgba(26,30,26,0.95), rgba(8,12,9,0.98))",
-              border: "1.5px solid rgba(212,175,55,0.45)",
-              boxShadow: "0 0 60px rgba(212,175,55,0.25), 0 0 100px rgba(0,255,157,0.12)",
+              background: "radial-gradient(circle, rgba(212,175,55,0.45) 0%, rgba(0,255,157,0.18) 50%, transparent 80%)",
+              transform: "scale(1.25)",
             }}
-          >
-            <Image
-              src="/brand/logo-icon.png"
-              alt="SaruPol Palm Icon"
-              width={130}
-              height={130}
-              className="object-contain drop-shadow-[0_8px_20px_rgba(212,175,55,0.5)]"
-              priority
-            />
-          </div>
+          />
+          <Image
+            src="/brand/logo-icon.png"
+            alt="SaruPol Palm Icon"
+            width={180}
+            height={180}
+            className="relative z-10 w-32 h-32 sm:w-40 sm:h-40 md:w-44 md:h-44 object-contain drop-shadow-[0_0_35px_rgba(212,175,55,0.55)] transition-transform duration-500 hover:scale-105"
+            priority
+          />
         </motion.div>
 
         {/* Grand 3D Embossed Text Logo Connected Directly */}
@@ -309,22 +308,20 @@ export default function DashboardPage() {
         className="w-full border-t py-8 px-6 text-center z-10 flex flex-col items-center gap-3 select-none"
         style={{ borderColor: "rgba(212,175,55,0.18)", background: "rgba(3,7,5,0.95)" }}
       >
-        <div className="flex items-center gap-3.5">
-          <div className="w-8 h-8 rounded-xl p-1 bg-black/70 border border-amber-500/40 flex items-center justify-center">
-            <Image
-              src="/brand/logo-icon.png"
-              alt="SaruPol Footer Icon"
-              width={28}
-              height={28}
-              className="object-contain"
-            />
-          </div>
+        <div className="flex items-center gap-3">
+          <Image
+            src="/brand/logo-icon.png"
+            alt="SaruPol Footer Icon"
+            width={36}
+            height={36}
+            className="w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]"
+          />
           <Image
             src="/brand/logo-text.png"
             alt="සරුපොල් (SaruPol)"
-            width={120}
-            height={32}
-            className="h-6 w-auto object-contain"
+            width={130}
+            height={36}
+            className="h-7 w-auto object-contain drop-shadow-[0_2px_10px_rgba(212,175,55,0.45)]"
           />
         </div>
         <p className="text-[10px] tracking-[0.3em] uppercase font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>
