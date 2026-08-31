@@ -107,18 +107,79 @@ export const pathology = {
     }),
 };
 
-// ─── Yield Prediction ───
-export const yield_ = {
-  predict45Day: (data: {
-    soil_moisture: number;
-    temperature: number;
-    humidity: number;
-    palm_age: number;
-    palm_health: number;
-  }) => request('/api/predict/45day', { method: 'POST', body: data }),
+// ─── Yield Prediction Types & API ───
+export interface YieldPredictionInput {
+  estate?: string;
+  district?: string;
+  year?: number;
+  month?: number;
+  trees_count?: number;
+  temperature?: number;
+  humidity?: number;
+  soil_moisture?: number;
+  rainfall?: number;
+  palm_age?: number;
+  palm_health?: number;
+  fertilizer?: number;
+  soil_n?: number;
+  soil_p?: number;
+  soil_k?: number;
+  last_harvest_yield?: number;
+  actual_harvest_logs?: { actual_yield_nuts: number; predicted_yield_nuts: number }[];
+}
 
-  predict: (data: Record<string, number>) =>
-    request('/api/predict', { method: 'POST', body: data }),
+export interface YieldPredictionResponse {
+  success: boolean;
+  district: string;
+  estate: string;
+  mapped_benchmark_estate: string;
+  year: number;
+  month: number;
+  trees_count: number;
+  calibration_applied: boolean;
+  calibration_factor: number;
+  predicted_monthly_yield: number;
+  predicted_next_pick_yield_nuts: number;
+  predicted_annual_yield_nuts: number;
+  confidence_percentage: number;
+  rf_prediction?: number;
+  lstm_prediction?: number;
+  penalty_percent?: number;
+  estimated_leaf_nutrients?: {
+    leaf_n: number;
+    leaf_p: number;
+    leaf_k: number;
+  } | null;
+  recommendations?: string[] | null;
+  error?: string;
+}
+
+export interface CdaRatesResponse {
+  success: boolean;
+  a_grade_price: number;
+  b_grade_price: number;
+  c_grade_price: number;
+  last_updated: string;
+}
+
+export const yield_ = {
+  predict45Day: (data: Partial<YieldPredictionInput>) =>
+    request<YieldPredictionResponse>('/api/predict/45day', {
+      method: 'POST',
+      body: data,
+    }),
+
+  predict: (data: YieldPredictionInput) =>
+    request<YieldPredictionResponse>('/api/predict', {
+      method: 'POST',
+      body: data,
+    }),
+
+  fetchCdaRates: () =>
+    request<CdaRatesResponse>('/api/cda-rates'),
+
+  getHistory: () =>
+    request<{ success: boolean; records: any[] }>('/api/history'),
 };
 
 // ─── Advisory System Types & API ───
