@@ -36,11 +36,11 @@ export default function Navbar() {
           borderColor: "rgba(212, 175, 55, 0.18)",
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-18 py-2 flex items-center justify-between">
-          {/* Pure Brand Logo & Text Mark (Large & Prominent) */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 py-2 flex items-center justify-between">
+          {/* Pure Brand Logo & Text Mark (Large & Balanced) */}
           <Link href="/" className="flex items-center gap-3.5 group">
             <div
-              className="relative w-11 h-11 rounded-xl overflow-hidden p-1 flex items-center justify-center transition-all duration-300 group-hover:scale-105"
+              className="relative w-10 h-10 rounded-xl overflow-hidden p-1 flex items-center justify-center transition-all duration-300 group-hover:scale-105"
               style={{
                 background: "linear-gradient(145deg, rgba(28,32,28,0.95), rgba(10,14,11,0.98))",
                 border: "1px solid rgba(212,175,55,0.4)",
@@ -50,8 +50,8 @@ export default function Navbar() {
               <Image
                 src="/brand/logo-icon.png"
                 alt="SaruPol Icon Logo"
-                width={40}
-                height={40}
+                width={36}
+                height={36}
                 className="object-contain drop-shadow-[0_2px_8px_rgba(212,175,55,0.4)]"
                 priority
               />
@@ -61,9 +61,9 @@ export default function Navbar() {
               <Image
                 src="/brand/logo-text.png"
                 alt="සරුපොල් (SaruPol)"
-                width={160}
-                height={46}
-                className="h-8 sm:h-9 w-auto object-contain drop-shadow-[0_4px_14px_rgba(212,175,55,0.45)] transition-transform duration-300 group-hover:scale-105"
+                width={190}
+                height={54}
+                className="h-10 sm:h-11 md:h-12 w-auto object-contain drop-shadow-[0_4px_16px_rgba(212,175,55,0.5)] transition-transform duration-300 group-hover:scale-105"
                 priority
               />
             </div>

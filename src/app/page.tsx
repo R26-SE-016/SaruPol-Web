@@ -86,17 +86,17 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, ease: "easeOut" }}
-        className="z-10 text-center max-w-5xl px-4 mt-28 mb-14 flex flex-col items-center select-none"
+        className="z-10 text-center max-w-5xl px-4 mt-24 mb-14 flex flex-col items-center select-none"
       >
-        {/* Large Luxury Gold Icon Mark */}
+        {/* Luxury Gold Icon Mark (Locked to Text Logo) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.75 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="relative mb-8"
+          className="relative -mb-3 sm:-mb-5 md:-mb-7 z-20"
         >
           <div
-            className="w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-[2.25rem] p-3.5 sm:p-4 flex items-center justify-center relative overflow-hidden shadow-2xl transition-transform duration-500 hover:scale-105"
+            className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-[2rem] p-3 sm:p-3.5 flex items-center justify-center relative overflow-hidden shadow-2xl transition-transform duration-500 hover:scale-105"
             style={{
               background: "linear-gradient(145deg, rgba(26,30,26,0.95), rgba(8,12,9,0.98))",
               border: "1.5px solid rgba(212,175,55,0.45)",
@@ -106,27 +106,27 @@ export default function DashboardPage() {
             <Image
               src="/brand/logo-icon.png"
               alt="SaruPol Palm Icon"
-              width={140}
-              height={140}
+              width={130}
+              height={130}
               className="object-contain drop-shadow-[0_8px_20px_rgba(212,175,55,0.5)]"
               priority
             />
           </div>
         </motion.div>
 
-        {/* Grand 3D Embossed Text Logo Centered & Prominent */}
+        {/* Grand 3D Embossed Text Logo Connected Directly */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.8 }}
-          className="relative mb-6 w-full max-w-[380px] sm:max-w-[540px] md:max-w-[640px] flex justify-center"
+          className="relative mb-5 w-full max-w-[420px] sm:max-w-[580px] md:max-w-[680px] flex justify-center z-10"
         >
           <Image
             src="/brand/logo-text.png"
             alt="සරුපොල් (SaruPol)"
-            width={640}
-            height={170}
-            className="w-full h-auto object-contain drop-shadow-[0_12px_36px_rgba(212,175,55,0.5)]"
+            width={680}
+            height={180}
+            className="w-full h-auto object-contain drop-shadow-[0_12px_36px_rgba(212,175,55,0.55)]"
             priority
           />
         </motion.div>
