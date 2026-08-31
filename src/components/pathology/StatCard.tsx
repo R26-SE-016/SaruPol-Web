@@ -47,9 +47,9 @@ export default function StatCard({ icon, label, value, subtitle, trend, accentCo
       </div>
 
       <div>
-        <h3 className="text-sm text-white/50 font-mono mb-1">{label}</h3>
-        <div className="text-3xl font-light text-white mb-2">{value}</div>
-        <p className="text-xs text-white/40">{subtitle}</p>
+        <h3 className="text-sm font-mono mb-1" style={{ color: "var(--text-muted)" }}>{label}</h3>
+        <div className="text-3xl font-light mb-2" style={{ color: "var(--text-primary)" }}>{value}</div>
+        <p className="text-xs" style={{ color: "var(--text-secondary)" }}>{subtitle}</p>
       </div>
     </motion.div>
   );

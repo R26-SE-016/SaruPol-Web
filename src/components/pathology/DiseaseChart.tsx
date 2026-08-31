@@ -20,7 +20,7 @@ export default function DiseaseChart({ diagnostics, title }: { diagnostics: any[
 
   return (
     <div className="glass-card p-5 flex flex-col">
-      <h3 className="text-sm text-white/50 font-mono mb-4">{title}</h3>
+      <h3 className="text-sm font-mono mb-4" style={{ color: "var(--text-primary)" }}>{title}</h3>
       <div className="flex-1 min-h-[220px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -39,11 +39,11 @@ export default function DiseaseChart({ diagnostics, title }: { diagnostics: any[
               ))}
             </Pie>
             <Tooltip 
-              contentStyle={{ background: "rgba(10,10,10,0.8)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", backdropFilter: "blur(10px)" }}
-              itemStyle={{ color: "#fff", fontSize: "12px", fontFamily: "var(--font-mono)" }}
+              contentStyle={{ background: "var(--dropdown-bg)", border: "1px solid var(--dropdown-border)", borderRadius: "8px", backdropFilter: "blur(10px)", color: "var(--text-primary)" }}
+              itemStyle={{ color: "var(--text-primary)", fontSize: "12px", fontFamily: "var(--font-mono)" }}
             />
             <Legend 
-              wrapperStyle={{ fontSize: "10px", fontFamily: "var(--font-mono)", opacity: 0.7 }} 
+              wrapperStyle={{ fontSize: "10px", fontFamily: "var(--font-mono)", opacity: 0.9, color: "var(--text-secondary)" }} 
               layout="vertical" verticalAlign="middle" align="right"
             />
           </PieChart>

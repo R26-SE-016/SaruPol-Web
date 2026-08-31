@@ -458,7 +458,7 @@ export default function PathologyPage() {
       <div className="max-w-7xl mx-auto px-6 pt-24 pb-20 relative z-10">
         
         {/* Header Title Area */}
-        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-6">
+        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6" style={{ borderColor: "var(--card-border)" }}>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center border"
               style={{
@@ -470,32 +470,32 @@ export default function PathologyPage() {
             </div>
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-light tracking-tight" style={{ fontFamily: "var(--font-outfit)" }}>
+                <h1 className="text-2xl font-normal tracking-tight" style={{ fontFamily: "var(--font-outfit)", color: "var(--text-primary)" }}>
                   {t.pathology.title}
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase"
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase font-bold"
                   style={{
-                    background: "rgba(0,255,157,0.1)",
-                    border: "1px solid rgba(0,255,157,0.25)",
-                    color: "#00FF9D",
+                    background: "rgba(0,255,157,0.12)",
+                    border: "1px solid rgba(0,255,157,0.3)",
+                    color: theme === "dark" ? "#00FF9D" : "#00875A",
                   }}
                 >
                   CRI Standard
                 </span>
               </div>
-              <p className="text-xs font-mono tracking-wide mt-0.5" style={{ color: "rgba(232, 239, 232, 0.5)" }}>
+              <p className="text-xs font-mono tracking-wide mt-0.5" style={{ color: "var(--text-secondary)" }}>
                 {t.pathology.subtitle}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 font-mono text-xs" style={{ color: "rgba(232, 239, 232, 0.5)" }}>
+          <div className="flex items-center gap-3 font-mono text-xs" style={{ color: "var(--text-muted)" }}>
             <span>Model Engine:</span>
-            <span className="px-2.5 py-1 rounded border font-mono"
+            <span className="px-2.5 py-1 rounded border font-mono font-bold"
               style={{
-                background: "rgba(0,255,157,0.05)",
-                borderColor: "rgba(0,255,157,0.15)",
-                color: "#00FF9D",
+                background: "rgba(0,255,157,0.08)",
+                borderColor: "rgba(0,255,157,0.2)",
+                color: theme === "dark" ? "#00FF9D" : "#00875A",
               }}
             >
               MobileNetV2-INT8
@@ -545,7 +545,7 @@ export default function PathologyPage() {
               style={{
                 background: "rgba(0, 255, 157, 0.08)",
                 border: "1px solid rgba(0, 255, 157, 0.3)",
-                color: "#00FF9D",
+                color: theme === "dark" ? "#00FF9D" : "#00875A",
                 boxShadow: "0 0 20px rgba(0, 255, 157, 0.1)",
               }}
             >
@@ -565,7 +565,7 @@ export default function PathologyPage() {
               
               {/* Quick Launch Gateway Cards */}
               <div>
-                <h2 className="text-xs font-mono uppercase tracking-wider mb-3" style={{ color: "rgba(232, 239, 232, 0.4)" }}>
+                <h2 className="text-xs font-mono uppercase tracking-wider mb-3 font-medium" style={{ color: "var(--text-muted)" }}>
                   {t.pathology.overview.gatewaysTitle}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -578,22 +578,22 @@ export default function PathologyPage() {
                     <div>
                       <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
                         style={{
-                          background: "rgba(0, 229, 255, 0.08)",
-                          border: "1px solid rgba(0, 229, 255, 0.2)",
+                          background: "rgba(0, 229, 255, 0.12)",
+                          border: "1px solid rgba(0, 229, 255, 0.25)",
                         }}
                       >
                         <Plane className="w-6 h-6" style={{ color: "#00E5FF" }} />
                       </div>
-                      <h3 className="text-lg font-medium text-white mb-1.5 flex items-center justify-between">
+                      <h3 className="text-lg font-medium mb-1.5 flex items-center justify-between" style={{ color: "var(--text-primary)" }}>
                         <span>{t.pathology.overview.aerialTitle}</span>
                         <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" style={{ color: "#00E5FF" }} />
                       </h3>
-                      <p className="text-xs font-mono leading-relaxed" style={{ color: "rgba(232, 239, 232, 0.5)" }}>
+                      <p className="text-xs font-mono leading-relaxed" style={{ color: "var(--text-secondary)" }}>
                         {t.pathology.overview.aerialDesc}
                       </p>
                     </div>
-                    <div className="mt-6 pt-4 border-t flex items-center justify-between text-xs font-mono"
-                      style={{ borderColor: "rgba(255, 255, 255, 0.05)", color: "#00E5FF" }}
+                    <div className="mt-6 pt-4 border-t flex items-center justify-between text-xs font-mono font-medium"
+                      style={{ borderColor: "var(--card-border)", color: "#00E5FF" }}
                     >
                       <span>{t.pathology.overview.aerialBtn}</span>
                       <span>→</span>
@@ -608,22 +608,22 @@ export default function PathologyPage() {
                     <div>
                       <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
                         style={{
-                          background: "rgba(255, 76, 76, 0.08)",
-                          border: "1px solid rgba(255, 76, 76, 0.2)",
+                          background: "rgba(255, 76, 76, 0.12)",
+                          border: "1px solid rgba(255, 76, 76, 0.25)",
                         }}
                       >
                         <Smartphone className="w-6 h-6" style={{ color: "#FF4C4C" }} />
                       </div>
-                      <h3 className="text-lg font-medium text-white mb-1.5 flex items-center justify-between">
+                      <h3 className="text-lg font-medium mb-1.5 flex items-center justify-between" style={{ color: "var(--text-primary)" }}>
                         <span>{t.pathology.overview.leafTitle}</span>
                         <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" style={{ color: "#FF4C4C" }} />
                       </h3>
-                      <p className="text-xs font-mono leading-relaxed" style={{ color: "rgba(232, 239, 232, 0.5)" }}>
+                      <p className="text-xs font-mono leading-relaxed" style={{ color: "var(--text-secondary)" }}>
                         {t.pathology.overview.leafDesc}
                       </p>
                     </div>
-                    <div className="mt-6 pt-4 border-t flex items-center justify-between text-xs font-mono"
-                      style={{ borderColor: "rgba(255, 255, 255, 0.05)", color: "#FF4C4C" }}
+                    <div className="mt-6 pt-4 border-t flex items-center justify-between text-xs font-mono font-medium"
+                      style={{ borderColor: "var(--card-border)", color: "#FF4C4C" }}
                     >
                       <span>{t.pathology.overview.leafBtn}</span>
                       <span>→</span>
@@ -638,22 +638,22 @@ export default function PathologyPage() {
                     <div>
                       <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
                         style={{
-                          background: "rgba(0, 255, 157, 0.08)",
-                          border: "1px solid rgba(0, 255, 157, 0.2)",
+                          background: "rgba(0, 255, 157, 0.12)",
+                          border: "1px solid rgba(0, 255, 157, 0.25)",
                         }}
                       >
                         <BookOpen className="w-6 h-6" style={{ color: "#00FF9D" }} />
                       </div>
-                      <h3 className="text-lg font-medium text-white mb-1.5 flex items-center justify-between">
+                      <h3 className="text-lg font-medium mb-1.5 flex items-center justify-between" style={{ color: "var(--text-primary)" }}>
                         <span>{t.pathology.overview.kbTitle}</span>
                         <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" style={{ color: "#00FF9D" }} />
                       </h3>
-                      <p className="text-xs font-mono leading-relaxed" style={{ color: "rgba(232, 239, 232, 0.5)" }}>
+                      <p className="text-xs font-mono leading-relaxed" style={{ color: "var(--text-secondary)" }}>
                         {t.pathology.overview.kbDesc}
                       </p>
                     </div>
-                    <div className="mt-6 pt-4 border-t flex items-center justify-between text-xs font-mono"
-                      style={{ borderColor: "rgba(255, 255, 255, 0.05)", color: "#00FF9D" }}
+                    <div className="mt-6 pt-4 border-t flex items-center justify-between text-xs font-mono font-medium"
+                      style={{ borderColor: "var(--card-border)", color: "#00FF9D" }}
                     >
                       <span>{t.pathology.overview.kbBtn}</span>
                       <span>→</span>
@@ -676,14 +676,14 @@ export default function PathologyPage() {
                 <DiseaseChart diagnostics={DEMO_DIAGNOSTICS} title={t.pathology.overview.pathogenProfile} />
                 
                 <div className="glass-card p-6 flex flex-col rounded-2xl">
-                  <h3 className="text-sm font-mono mb-4" style={{ color: "rgba(232, 239, 232, 0.5)" }}>{t.pathology.overview.weeklyCadence}</h3>
+                  <h3 className="text-sm font-mono mb-4" style={{ color: "var(--text-primary)" }}>{t.pathology.overview.weeklyCadence}</h3>
                   <div className="flex-1 min-h-[220px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={weeklyData}>
-                        <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
-                        <XAxis dataKey="day" stroke="rgba(255,255,255,0.2)" fontSize={11} tickLine={false} axisLine={false} />
-                        <YAxis stroke="rgba(255,255,255,0.2)" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
-                        <RechartsTooltip cursor={{ fill: 'rgba(255,255,255,0.03)' }} contentStyle={{ background: "rgba(3, 7, 0, 0.95)", border: "1px solid rgba(0, 255, 157, 0.15)", borderRadius: "12px", color: "#e8efe8", fontFamily: "var(--font-mono)" }} />
+                        <CartesianGrid stroke="var(--card-border)" vertical={false} />
+                        <XAxis dataKey="day" stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} />
+                        <YAxis stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
+                        <RechartsTooltip cursor={{ fill: 'var(--card-hover-bg)' }} contentStyle={{ background: "var(--dropdown-bg)", border: "1px solid var(--dropdown-border)", borderRadius: "12px", color: "var(--text-primary)", fontFamily: "var(--font-mono)" }} />
                         <Bar dataKey="scans" fill="#00FF9D" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
@@ -701,15 +701,15 @@ export default function PathologyPage() {
             <motion.div key="aerial" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-6">
               
               {/* Sub-navigation: Active Scan vs Flight History */}
-              <div className="flex justify-between items-center border-b border-white/10 pb-4">
+              <div className="flex justify-between items-center border-b pb-4" style={{ borderColor: "var(--card-border)" }}>
                 <div className="flex gap-2">
                   <button 
                     onClick={() => setAerialSubTab("scan")}
                     className="px-4 py-2 rounded-xl text-xs font-mono transition-all flex items-center gap-2"
                     style={{
-                      background: aerialSubTab === "scan" ? "rgba(0, 229, 255, 0.12)" : "rgba(255, 255, 255, 0.03)",
-                      border: aerialSubTab === "scan" ? "1px solid rgba(0, 229, 255, 0.4)" : "1px solid rgba(255, 255, 255, 0.06)",
-                      color: aerialSubTab === "scan" ? "#00E5FF" : "rgba(232, 239, 232, 0.5)",
+                      background: aerialSubTab === "scan" ? "rgba(0, 229, 255, 0.15)" : "var(--card-bg)",
+                      border: aerialSubTab === "scan" ? "1px solid rgba(0, 229, 255, 0.4)" : "1px solid var(--card-border)",
+                      color: aerialSubTab === "scan" ? "#00E5FF" : "var(--text-secondary)",
                     }}
                   >
                     <Plane className="w-3.5 h-3.5" /> {t.pathology.systemA.scanTab}
@@ -718,9 +718,9 @@ export default function PathologyPage() {
                     onClick={() => setAerialSubTab("history")}
                     className="px-4 py-2 rounded-xl text-xs font-mono transition-all flex items-center gap-2"
                     style={{
-                      background: aerialSubTab === "history" ? "rgba(0, 229, 255, 0.12)" : "rgba(255, 255, 255, 0.03)",
-                      border: aerialSubTab === "history" ? "1px solid rgba(0, 229, 255, 0.4)" : "1px solid rgba(255, 255, 255, 0.06)",
-                      color: aerialSubTab === "history" ? "#00E5FF" : "rgba(232, 239, 232, 0.5)",
+                      background: aerialSubTab === "history" ? "rgba(0, 229, 255, 0.15)" : "var(--card-bg)",
+                      border: aerialSubTab === "history" ? "1px solid rgba(0, 229, 255, 0.4)" : "1px solid var(--card-border)",
+                      color: aerialSubTab === "history" ? "#00E5FF" : "var(--text-secondary)",
                     }}
                   >
                     <FileText className="w-3.5 h-3.5" /> Past Aerial Surveys ({HISTORICAL_AERIAL_SURVEYS.length})
@@ -729,14 +729,15 @@ export default function PathologyPage() {
 
                 {aerialSubTab === "scan" && (
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono" style={{ color: "rgba(232, 239, 232, 0.5)" }}>Estate:</span>
+                    <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>Estate:</span>
                     <select 
                       value={estateId}
                       onChange={(e) => setEstateId(e.target.value)}
-                      className="border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none font-mono"
+                      className="border rounded-lg px-3 py-1.5 text-xs focus:outline-none font-mono smooth-transition"
                       style={{
-                        background: "rgba(3, 7, 5, 0.8)",
-                        borderColor: "rgba(255, 255, 255, 0.1)",
+                        background: "var(--input-bg)",
+                        borderColor: "var(--input-border)",
+                        color: "var(--text-primary)"
                       }}
                     >
                       <option value="estate_001">Green Valley Estate (Kurunegala)</option>
@@ -752,7 +753,7 @@ export default function PathologyPage() {
                   {/* Algorithm Selector Bar */}
                   <div className="glass-card p-4 flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-mono uppercase tracking-wider flex items-center gap-1.5" style={{ color: "rgba(232, 239, 232, 0.5)" }}>
+                      <span className="text-xs font-mono uppercase tracking-wider flex items-center gap-1.5 font-medium" style={{ color: "var(--text-muted)" }}>
                         <Sliders className="w-3.5 h-3.5" style={{ color: "#00E5FF" }} /> Spectral Algorithm:
                       </span>
                       <div className="flex gap-2">
@@ -765,9 +766,9 @@ export default function PathologyPage() {
                             onClick={() => { setIndexType(alg.id as any); setUavResult(null); }}
                             className="px-4 py-2 rounded-lg text-xs font-mono transition-all flex items-center gap-2"
                             style={{ 
-                              background: indexType === alg.id ? "rgba(0, 229, 255, 0.12)" : "rgba(255,255,255,0.03)",
-                              color: indexType === alg.id ? "#00E5FF" : "rgba(232,239,232,0.5)",
-                              border: `1px solid ${indexType === alg.id ? "rgba(0, 229, 255, 0.4)" : "rgba(255,255,255,0.06)"}`,
+                              background: indexType === alg.id ? "rgba(0, 229, 255, 0.15)" : "var(--card-bg)",
+                              color: indexType === alg.id ? "#00E5FF" : "var(--text-secondary)",
+                              border: `1px solid ${indexType === alg.id ? "rgba(0, 229, 255, 0.4)" : "var(--card-border)"}`,
                               boxShadow: indexType === alg.id ? "0 0 15px rgba(0, 229, 255, 0.15)" : "none"
                             }}
                           >
@@ -784,18 +785,18 @@ export default function PathologyPage() {
                     {/* Left Column: Drone Inputs */}
                     <div className="lg:col-span-5 glass-card p-6 flex flex-col rounded-2xl">
                       <div className="flex justify-between items-center mb-2">
-                        <h2 className="text-sm font-mono text-white font-medium flex items-center gap-2">
+                        <h2 className="text-sm font-mono font-medium flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
                           <span className="w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-bold"
                             style={{ background: "rgba(0, 229, 255, 0.15)", color: "#00E5FF" }}
                           >1</span>
                           Drone Imagery Input
                         </h2>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background: "rgba(255,255,255,0.04)", color: "rgba(232,239,232,0.4)" }}>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background: "var(--card-bg)", color: "var(--text-muted)", border: "1px solid var(--card-border)" }}>
                           {indexType === "VARI" ? "RGB Orthomosaic" : "4-Band GeoTIFF / Dual RGB+NIR"}
                         </span>
                       </div>
                       
-                      <p className="text-xs mb-4 font-mono" style={{ color: "rgba(232, 239, 232, 0.4)" }}>
+                      <p className="text-xs mb-4 font-mono" style={{ color: "var(--text-secondary)" }}>
                         {indexType === "VARI"
                           ? "Upload high-res standard RGB aerial orthomosaic (.png, .jpg, .tif)."
                           : "Upload 4-band GeoTIFF or RGB image with optional companion NIR band."}
@@ -806,14 +807,14 @@ export default function PathologyPage() {
                         onClick={() => primaryInputRef.current?.click()}
                         className="border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer smooth-transition relative h-48 mb-4 overflow-hidden group"
                         style={{
-                          borderColor: "rgba(0, 229, 255, 0.2)",
-                          background: "rgba(0, 0, 0, 0.3)",
+                          borderColor: "rgba(0, 229, 255, 0.3)",
+                          background: theme === "dark" ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 229, 255, 0.04)",
                         }}
                       >
                         <input ref={primaryInputRef} type="file" className="hidden" accept="image/*,.tif,.tiff" onChange={handlePrimaryUpload} />
                         {primaryPreview ? (
                           <div className="relative w-full h-full">
-                            <img src={primaryPreview} alt="Primary Aerial" className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500" />
+                            <img src={primaryPreview} alt="Primary Aerial" className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-3">
                               <span className="text-[11px] font-mono flex items-center gap-1.5" style={{ color: "#00FF9D" }}>
                                 <CheckCircle2 className="w-3.5 h-3.5" /> {primaryFile?.name || "Sample Drone Orthomosaic"}
@@ -822,9 +823,9 @@ export default function PathologyPage() {
                           </div>
                         ) : (
                           <div className="flex flex-col items-center justify-center text-center p-4">
-                            <Plane className="w-10 h-10 mb-3 group-hover:scale-110 transition-all" style={{ color: "rgba(0, 229, 255, 0.5)" }} />
-                            <span className="text-xs font-mono mb-1" style={{ color: "rgba(232, 239, 232, 0.7)" }}>{t.pathology.systemA.uploadPrompt}</span>
-                            <span className="text-[10px] font-mono" style={{ color: "rgba(232, 239, 232, 0.3)" }}>Supports 4K Ortho, PNG, JPG, GeoTIFF</span>
+                            <Plane className="w-10 h-10 mb-3 group-hover:scale-110 transition-all" style={{ color: "#00E5FF" }} />
+                            <span className="text-xs font-mono mb-1 font-medium" style={{ color: "var(--text-primary)" }}>{t.pathology.systemA.uploadPrompt}</span>
+                            <span className="text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>Supports 4K Ortho, PNG, JPG, GeoTIFF</span>
                           </div>
                         )}
                       </div>
@@ -832,15 +833,15 @@ export default function PathologyPage() {
                       {/* Optional Companion NIR Dropzone */}
                       {indexType === "NDVI" && (
                         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mb-4">
-                          <label className="text-[11px] font-mono mb-1.5 block flex items-center gap-1.5" style={{ color: "#A78BFA" }}>
+                          <label className="text-[11px] font-mono mb-1.5 block flex items-center gap-1.5 font-medium" style={{ color: "#A78BFA" }}>
                             <Layers className="w-3.5 h-3.5" /> Companion NIR Band File (Optional):
                           </label>
                           <div 
                             onClick={() => nirInputRef.current?.click()}
                             className="border border-dashed rounded-lg p-3 flex items-center gap-3 cursor-pointer transition-colors"
                             style={{
-                              borderColor: "rgba(167, 139, 250, 0.3)",
-                              background: "rgba(167, 139, 250, 0.05)",
+                              borderColor: "rgba(167, 139, 250, 0.35)",
+                              background: theme === "dark" ? "rgba(167, 139, 250, 0.05)" : "rgba(167, 139, 250, 0.08)",
                             }}
                           >
                             <input ref={nirInputRef} type="file" className="hidden" accept="image/*,.tif,.tiff" onChange={handleNirUpload} />
@@ -849,9 +850,9 @@ export default function PathologyPage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               {nirFile ? (
-                                <span className="text-xs font-mono truncate block" style={{ color: "#00FF9D" }}>✓ {nirFile.name}</span>
+                                <span className="text-xs font-mono truncate block font-bold" style={{ color: theme === "dark" ? "#00FF9D" : "#00875A" }}>✓ {nirFile.name}</span>
                               ) : (
-                                <span className="text-xs font-mono block" style={{ color: "rgba(232, 239, 232, 0.4)" }}>Upload NIR single-band .tif or grayscale</span>
+                                <span className="text-xs font-mono block" style={{ color: "var(--text-muted)" }}>Upload NIR single-band .tif or grayscale</span>
                               )}
                             </div>
                           </div>
@@ -863,12 +864,11 @@ export default function PathologyPage() {
                         <button 
                           onClick={runUavAnalysis} 
                           disabled={!primaryFile || isProcessingUav}
-                          className="flex-1 py-3 px-4 rounded-xl flex items-center justify-center gap-2 border font-mono text-xs uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="flex-1 py-3 px-4 rounded-xl flex items-center justify-center gap-2 border font-mono text-xs uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-md"
                           style={{
-                            background: "rgba(0, 229, 255, 0.12)",
-                            borderColor: "rgba(0, 229, 255, 0.35)",
-                            color: "#00E5FF",
-                            boxShadow: "0 0 15px rgba(0, 229, 255, 0.1)"
+                            background: "linear-gradient(135deg, rgba(0, 229, 255, 0.2), rgba(0, 255, 157, 0.2))",
+                            borderColor: "rgba(0, 229, 255, 0.4)",
+                            color: "var(--text-primary)",
                           }}
                         >
                           {isProcessingUav ? (
@@ -877,18 +877,18 @@ export default function PathologyPage() {
                             </>
                           ) : (
                             <>
-                              <Sparkles className="w-4 h-4" /> {t.pathology.systemA.runAnalysis}
+                              <Sparkles className="w-4 h-4 text-cyan-400" /> {t.pathology.systemA.runAnalysis}
                             </>
                           )}
                         </button>
                         
                         <button 
                           onClick={handleLoadSample}
-                          className="py-3 px-4 rounded-xl border transition-all text-xs font-mono whitespace-nowrap"
+                          className="py-3 px-4 rounded-xl border transition-all text-xs font-mono whitespace-nowrap smooth-transition"
                           style={{
-                            background: "rgba(255, 255, 255, 0.04)",
-                            borderColor: "rgba(255, 255, 255, 0.08)",
-                            color: "rgba(232, 239, 232, 0.7)",
+                            background: "var(--card-bg)",
+                            borderColor: "var(--card-border)",
+                            color: "var(--text-secondary)",
                           }}
                           title="Load synthetic coconut plantation aerial sample"
                         >
@@ -913,7 +913,7 @@ export default function PathologyPage() {
                     {/* Right Column: Live Colormapped Visualizer */}
                     <div className="lg:col-span-7 glass-card p-6 flex flex-col min-h-[480px] rounded-2xl">
                       <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-sm font-mono text-white font-medium flex items-center gap-2">
+                        <h2 className="text-sm font-mono font-medium flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
                           <span className="w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-bold"
                             style={{ background: "rgba(0, 229, 255, 0.15)", color: "#00E5FF" }}
                           >2</span>
@@ -922,7 +922,7 @@ export default function PathologyPage() {
                         
                         {uavResult && (
                           <div className="flex gap-1.5 p-1 rounded-lg border"
-                            style={{ background: "rgba(0,0,0,0.3)", borderColor: "rgba(255,255,255,0.06)" }}
+                            style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
                           >
                             {["heatmap", "original"].map(m => (
                               <button 
@@ -931,7 +931,7 @@ export default function PathologyPage() {
                                 className="px-3 py-1 rounded text-[10px] font-mono uppercase tracking-wider transition-all"
                                 style={{
                                   background: viewMode === m ? "rgba(0, 229, 255, 0.15)" : "transparent",
-                                  color: viewMode === m ? "#00E5FF" : "rgba(232, 239, 232, 0.4)",
+                                  color: viewMode === m ? "#00E5FF" : "var(--text-muted)",
                                   border: viewMode === m ? "1px solid rgba(0, 229, 255, 0.3)" : "1px solid transparent"
                                 }}
                               >
@@ -944,20 +944,20 @@ export default function PathologyPage() {
 
                       {!uavResult ? (
                         <div className="flex-1 border border-dashed rounded-2xl flex flex-col items-center justify-center p-8 text-center min-h-[300px]"
-                          style={{ borderColor: "rgba(255, 255, 255, 0.08)", background: "rgba(0, 0, 0, 0.2)" }}
+                          style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}
                         >
-                          <div className="p-4 rounded-full mb-4" style={{ background: "rgba(255, 255, 255, 0.03)" }}>
-                            <Map className="w-10 h-10" style={{ color: "rgba(232, 239, 232, 0.2)" }} />
+                          <div className="p-4 rounded-full mb-4" style={{ background: "rgba(0, 229, 255, 0.08)" }}>
+                            <Map className="w-10 h-10" style={{ color: "#00E5FF" }} />
                           </div>
-                          <p className="text-sm font-mono mb-1" style={{ color: "rgba(232, 239, 232, 0.5)" }}>Awaiting Aerial Processing</p>
-                          <p className="text-xs font-mono max-w-sm" style={{ color: "rgba(232, 239, 232, 0.3)" }}>
+                          <p className="text-sm font-mono mb-1 font-medium" style={{ color: "var(--text-primary)" }}>Awaiting Aerial Processing</p>
+                          <p className="text-xs font-mono max-w-sm" style={{ color: "var(--text-muted)" }}>
                             {t.pathology.systemA.desc}
                           </p>
                         </div>
                       ) : (
                         <div className="flex-1 flex flex-col">
                           <div className="relative rounded-2xl overflow-hidden border flex-1 min-h-[320px] flex items-center justify-center"
-                            style={{ borderColor: "rgba(255, 255, 255, 0.08)", background: "rgba(0, 0, 0, 0.6)" }}
+                            style={{ borderColor: "var(--card-border)", background: "rgba(0, 0, 0, 0.7)" }}
                           >
                             <div className="relative inline-block max-w-full leading-none">
                               <img 
@@ -1000,12 +1000,12 @@ export default function PathologyPage() {
 
                           {/* Colormap Legend */}
                           <div className="mt-4 p-3 rounded-xl border"
-                            style={{ background: "rgba(0, 0, 0, 0.3)", borderColor: "rgba(255, 255, 255, 0.05)" }}
+                            style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
                           >
-                            <div className="flex justify-between text-[11px] font-mono mb-1.5" style={{ color: "rgba(232, 239, 232, 0.5)" }}>
-                              <span style={{ color: "#FF4C4C" }}>🔴 {t.pathology.systemA.criticalSeverity}</span>
-                              <span style={{ color: "#E6AF2E" }}>🟡 {t.pathology.systemA.highSeverity}</span>
-                              <span style={{ color: "#00FF9D" }}>🟢 {t.pathology.systemA.crownDetection}</span>
+                            <div className="flex justify-between text-[11px] font-mono mb-1.5" style={{ color: "var(--text-secondary)" }}>
+                              <span style={{ color: "#FF4C4C", fontWeight: "600" }}>🔴 {t.pathology.systemA.criticalSeverity}</span>
+                              <span style={{ color: "#E6AF2E", fontWeight: "600" }}>🟡 {t.pathology.systemA.highSeverity}</span>
+                              <span style={{ color: theme === "dark" ? "#00FF9D" : "#00875A", fontWeight: "600" }}>🟢 {t.pathology.systemA.crownDetection}</span>
                             </div>
                             <div className="h-2 rounded-full bg-gradient-to-r from-red-600 via-amber-400 to-emerald-500" />
                           </div>
@@ -1018,45 +1018,45 @@ export default function PathologyPage() {
                   {uavResult && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                       <div className="glass-card p-4 rounded-xl">
-                        <div className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "rgba(232, 239, 232, 0.4)" }}>MEAN {uavResult.index_type} INDEX</div>
-                        <div className="text-2xl font-light mt-1 font-mono" style={{ color: "#00E5FF" }}>{uavResult.statistics.mean_index?.toFixed(3)}</div>
-                        <div className="text-[10px] font-mono mt-1" style={{ color: "rgba(232, 239, 232, 0.4)" }}>
+                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium" style={{ color: "var(--text-muted)" }}>MEAN {uavResult.index_type} INDEX</div>
+                        <div className="text-2xl font-light mt-1 font-mono text-cyan-500">{uavResult.statistics.mean_index?.toFixed(3)}</div>
+                        <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>
                           Range: {uavResult.statistics.min_index?.toFixed(2)} to {uavResult.statistics.max_index?.toFixed(2)}
                         </div>
                       </div>
 
                       <div className="glass-card p-4 rounded-xl">
-                        <div className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "rgba(232, 239, 232, 0.4)" }}>CANOPY PURITY VIGOR</div>
-                        <div className="text-2xl font-light mt-1 font-mono" style={{ color: "#00FF9D" }}>{uavResult.statistics.healthy_canopy_pct?.toFixed(1)}%</div>
-                        <div className="text-[10px] font-mono mt-1" style={{ color: "rgba(232, 239, 232, 0.4)" }}>ExG Crown Chlorophyll</div>
+                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium" style={{ color: "var(--text-muted)" }}>CANOPY PURITY VIGOR</div>
+                        <div className="text-2xl font-light mt-1 font-mono text-emerald-500">{uavResult.statistics.healthy_canopy_pct?.toFixed(1)}%</div>
+                        <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>ExG Crown Chlorophyll</div>
                       </div>
 
                       <div className="glass-card p-4 rounded-xl">
-                        <div className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "rgba(232, 239, 232, 0.4)" }}>ESTATE GRADE</div>
-                        <div className="text-2xl font-light mt-1 font-mono" style={{ color: "#A78BFA" }}>{uavResult.statistics.estate_health_grade || "B (Good)"}</div>
-                        <div className="text-[10px] font-mono mt-1" style={{ color: "rgba(232, 239, 232, 0.4)" }}>Risk: {uavResult.statistics.pathology_risk_index || "Stable"}</div>
+                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium" style={{ color: "var(--text-muted)" }}>ESTATE GRADE</div>
+                        <div className="text-2xl font-light mt-1 font-mono text-purple-500">{uavResult.statistics.estate_health_grade || "B (Good)"}</div>
+                        <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>Risk: {uavResult.statistics.pathology_risk_index || "Stable"}</div>
                       </div>
 
                       <div className="glass-card p-4 rounded-xl">
-                        <div className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "rgba(232, 239, 232, 0.4)" }}>DETECTED PALMS</div>
-                        <div className="text-2xl font-light mt-1 font-mono" style={{ color: "#00E5FF" }}>{uavResult.statistics.estimated_palms_count} Palms</div>
-                        <div className="text-[10px] font-mono mt-1" style={{ color: "rgba(232, 239, 232, 0.4)" }}>
+                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium" style={{ color: "var(--text-muted)" }}>DETECTED PALMS</div>
+                        <div className="text-2xl font-light mt-1 font-mono text-cyan-500">{uavResult.statistics.estimated_palms_count} Palms</div>
+                        <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>
                           {uavResult.statistics.healthy_palms_count || 224} Healthy / {uavResult.statistics.at_risk_palms_count || 12} At-Risk
                         </div>
                       </div>
 
                       <div className="glass-card p-4 rounded-xl">
-                        <div className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "rgba(232, 239, 232, 0.4)" }}>{t.pathology.systemA.canopyVsGround}</div>
-                        <div className="text-2xl font-light mt-1 font-mono" style={{ color: "#E6AF2E" }}>{uavResult.statistics.canopy_coverage_pct?.toFixed(1)}%</div>
-                        <div className="text-[10px] font-mono mt-1" style={{ color: "rgba(232, 239, 232, 0.4)" }}>
+                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium" style={{ color: "var(--text-muted)" }}>{t.pathology.systemA.canopyVsGround}</div>
+                        <div className="text-2xl font-light mt-1 font-mono text-amber-500">{uavResult.statistics.canopy_coverage_pct?.toFixed(1)}%</div>
+                        <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>
                           {(uavResult.statistics.ground_exposure_pct || (100 - uavResult.statistics.canopy_coverage_pct)).toFixed(1)}% Inter-row Soil
                         </div>
                       </div>
 
                       <div className="glass-card p-4 rounded-xl">
-                        <div className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "rgba(232, 239, 232, 0.4)" }}>{t.pathology.systemA.flaggedAnomalies}</div>
-                        <div className="text-2xl font-light mt-1 font-mono" style={{ color: "#FF4C4C" }}>{uavResult.hotspots?.length || 0} Trees</div>
-                        <div className="text-[10px] font-mono mt-1" style={{ color: "rgba(232, 239, 232, 0.4)" }}>{t.pathology.systemA.zScoreOutliers}</div>
+                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium" style={{ color: "var(--text-muted)" }}>{t.pathology.systemA.flaggedAnomalies}</div>
+                        <div className="text-2xl font-light mt-1 font-mono text-red-500">{uavResult.hotspots?.length || 0} Trees</div>
+                        <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>{t.pathology.systemA.zScoreOutliers}</div>
                       </div>
                     </motion.div>
                   )}
@@ -1066,10 +1066,10 @@ export default function PathologyPage() {
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-6 rounded-2xl">
                       <div className="flex justify-between items-center mb-4">
                         <div>
-                          <h3 className="text-sm font-mono text-white font-medium flex items-center gap-2">
+                          <h3 className="text-sm font-mono font-medium flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
                             🎯 {t.pathology.systemA.hotspotsDetected}
                           </h3>
-                          <p className="text-xs font-mono mt-0.5" style={{ color: "rgba(232, 239, 232, 0.4)" }}>
+                          <p className="text-xs font-mono mt-0.5" style={{ color: "var(--text-secondary)" }}>
                             GPS coordinates of physiological anomalies extracted using <strong>ExG Canopy Segmentation</strong> & <strong>Local Z-Score Outlier Analysis</strong>.
                           </p>
                         </div>
@@ -1079,7 +1079,7 @@ export default function PathologyPage() {
                         <table className="w-full text-left">
                           <thead>
                             <tr className="border-b text-[10px] uppercase font-mono"
-                              style={{ borderColor: "rgba(255, 255, 255, 0.08)", color: "rgba(232, 239, 232, 0.4)", background: "rgba(0,0,0,0.2)" }}
+                              style={{ borderColor: "var(--table-border)", color: "var(--text-muted)", background: "var(--table-header-bg)" }}
                             >
                               <th className="p-3">#</th>
                               <th className="p-3">{t.pathology.systemA.colGps}</th>
@@ -1100,8 +1100,8 @@ export default function PathologyPage() {
                                   onClick={() => setSelectedHotspot(hs)}
                                   className="border-b transition-colors cursor-pointer"
                                   style={{
-                                    borderColor: "rgba(255, 255, 255, 0.04)",
-                                    background: isSelected ? "rgba(0, 229, 255, 0.08)" : "transparent",
+                                    borderColor: "var(--table-border)",
+                                    background: isSelected ? "rgba(0, 229, 255, 0.1)" : "transparent",
                                   }}
                                 >
                                   <td className="p-3">
@@ -1111,11 +1111,11 @@ export default function PathologyPage() {
                                       {index + 1}
                                     </span>
                                   </td>
-                                  <td className="p-3 text-xs font-mono font-medium" style={{ color: "rgba(232, 239, 232, 0.8)" }}>
+                                  <td className="p-3 text-xs font-mono font-medium" style={{ color: "var(--text-primary)" }}>
                                     {hs.location.lat.toFixed(5)}, {hs.location.lng.toFixed(5)}
                                   </td>
                                   <td className="p-3">
-                                    <span className="text-[10px] px-2.5 py-0.5 rounded font-mono uppercase tracking-wider"
+                                    <span className="text-[10px] px-2.5 py-0.5 rounded font-mono uppercase tracking-wider font-bold"
                                       style={{
                                         background: hs.severity === "critical" ? "rgba(255,76,76,0.15)" : hs.severity === "high" ? "rgba(230,175,46,0.15)" : "rgba(0,229,255,0.15)",
                                         color: hs.severity === "critical" ? "#FF4C4C" : hs.severity === "high" ? "#E6AF2E" : "#00E5FF",
@@ -1125,7 +1125,7 @@ export default function PathologyPage() {
                                       {hs.severity}
                                     </span>
                                   </td>
-                                  <td className="p-3 text-xs font-mono" style={{ color: "rgba(232, 239, 232, 0.7)" }}>
+                                  <td className="p-3 text-xs font-mono font-medium" style={{ color: "var(--text-primary)" }}>
                                     {hs.mean_index_value?.toFixed(3)}
                                   </td>
                                   <td className="p-3 text-xs font-mono">
@@ -1134,16 +1134,16 @@ export default function PathologyPage() {
                                         {hs.z_score ? `${hs.z_score}σ` : "—"}
                                       </span>
                                       {hs.relative_drop_pct && (
-                                        <span className="text-[10px]" style={{ color: "rgba(232, 239, 232, 0.4)" }}>
+                                        <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
                                           -{hs.relative_drop_pct.toFixed(0)}% vs peers
                                         </span>
                                       )}
                                     </div>
                                   </td>
-                                  <td className="p-3 text-xs font-mono" style={{ color: "rgba(232, 239, 232, 0.6)" }}>
+                                  <td className="p-3 text-xs font-mono" style={{ color: "var(--text-secondary)" }}>
                                     ~{hs.radius_meters}m
                                   </td>
-                                  <td className="p-3 text-xs max-w-sm" style={{ color: "rgba(232, 239, 232, 0.6)" }}>
+                                  <td className="p-3 text-xs max-w-sm" style={{ color: "var(--text-secondary)" }}>
                                     {hs.recommended_action}
                                   </td>
                                   <td className="p-3 text-right">
@@ -1152,11 +1152,11 @@ export default function PathologyPage() {
                                         e.stopPropagation();
                                         handleDispatchToMobile(hs);
                                       }}
-                                      className="text-[11px] px-3 py-1.5 rounded-lg font-mono transition-all flex items-center gap-1.5 ml-auto"
+                                      className="text-[11px] px-3 py-1.5 rounded-lg font-mono transition-all flex items-center gap-1.5 ml-auto font-medium"
                                       style={{
-                                        background: "rgba(0, 255, 157, 0.12)",
-                                        border: "1px solid rgba(0, 255, 157, 0.3)",
-                                        color: "#00FF9D",
+                                        background: "rgba(0, 255, 157, 0.15)",
+                                        border: "1px solid rgba(0, 255, 157, 0.35)",
+                                        color: theme === "dark" ? "#00FF9D" : "#00875A",
                                       }}
                                     >
                                       <Send className="w-3 h-3" /> {t.pathology.systemA.dispatchFieldOfficer}
@@ -1175,17 +1175,17 @@ export default function PathologyPage() {
                 /* Past Aerial Surveys Table */
                 <div className="glass-card p-6 rounded-2xl space-y-4">
                   <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-mono text-white font-medium flex items-center gap-2">
+                    <h3 className="text-sm font-mono font-medium flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
                       <FileText className="w-4 h-4" style={{ color: "#00E5FF" }} /> {t.pathology.systemA.pastSurveysTitle}
                     </h3>
-                    <span className="text-xs font-mono" style={{ color: "rgba(232, 239, 232, 0.4)" }}>{HISTORICAL_AERIAL_SURVEYS.length} {t.pathology.systemA.pastSurveysLogged}</span>
+                    <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{HISTORICAL_AERIAL_SURVEYS.length} {t.pathology.systemA.pastSurveysLogged}</span>
                   </div>
 
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
                       <thead>
                         <tr className="border-b text-[10px] uppercase font-mono"
-                          style={{ borderColor: "rgba(255, 255, 255, 0.08)", color: "rgba(232, 239, 232, 0.4)", background: "rgba(0,0,0,0.2)" }}
+                          style={{ borderColor: "var(--table-border)", color: "var(--text-muted)", background: "var(--table-header-bg)" }}
                         >
                           <th className="p-3.5">{t.pathology.systemA.colSurveyId}</th>
                           <th className="p-3.5">{t.pathology.systemA.colEstate}</th>
@@ -1199,23 +1199,23 @@ export default function PathologyPage() {
                       </thead>
                       <tbody>
                         {HISTORICAL_AERIAL_SURVEYS.map((survey) => (
-                          <tr key={survey.id} className="border-b hover:bg-white/5 transition-colors font-mono text-xs" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
-                            <td className="p-3.5 font-medium" style={{ color: "rgba(232, 239, 232, 0.8)" }}>
+                          <tr key={survey.id} className="border-b hover:bg-black/5 dark:hover:bg-white/5 transition-colors font-mono text-xs" style={{ borderColor: "var(--table-border)" }}>
+                            <td className="p-3.5 font-medium" style={{ color: "var(--text-primary)" }}>
                               <div>{survey.id}</div>
-                              <div className="text-[10px]" style={{ color: "rgba(232, 239, 232, 0.4)" }}>{new Date(survey.date).toLocaleDateString()}</div>
+                              <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>{new Date(survey.date).toLocaleDateString()}</div>
                             </td>
-                            <td className="p-3.5" style={{ color: "rgba(232, 239, 232, 0.7)" }}>{survey.estate_name}</td>
+                            <td className="p-3.5" style={{ color: "var(--text-secondary)" }}>{survey.estate_name}</td>
                             <td className="p-3.5">
-                              <span className="px-2 py-0.5 rounded text-[10px]" style={{ background: "rgba(0, 229, 255, 0.12)", border: "1px solid rgba(0, 229, 255, 0.25)", color: "#00E5FF" }}>
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold" style={{ background: "rgba(0, 229, 255, 0.12)", border: "1px solid rgba(0, 229, 255, 0.25)", color: "#00E5FF" }}>
                                 {survey.index_type}
                               </span>
                             </td>
                             <td className="p-3.5 font-bold" style={{ color: "#00E5FF" }}>{survey.mean_index.toFixed(3)}</td>
-                            <td className="p-3.5" style={{ color: "#00FF9D" }}>{survey.healthy_canopy_pct.toFixed(1)}%</td>
-                            <td className="p-3.5" style={{ color: "#00E5FF" }}>{survey.detected_palms} Palms</td>
+                            <td className="p-3.5 font-bold" style={{ color: theme === "dark" ? "#00FF9D" : "#00875A" }}>{survey.healthy_canopy_pct.toFixed(1)}%</td>
+                            <td className="p-3.5" style={{ color: "var(--text-primary)" }}>{survey.detected_palms} Palms</td>
                             <td className="p-3.5 font-bold" style={{ color: "#FF4C4C" }}>{survey.anomalies_count} Trees</td>
                             <td className="p-3.5 text-right">
-                              <span className="text-[10px] px-2.5 py-1 rounded" style={{ background: "rgba(0, 255, 157, 0.1)", color: "#00FF9D", border: "1px solid rgba(0, 255, 157, 0.2)" }}>
+                              <span className="text-[10px] px-2.5 py-1 rounded font-bold" style={{ background: "rgba(0, 255, 157, 0.12)", color: theme === "dark" ? "#00FF9D" : "#00875A", border: "1px solid rgba(0, 255, 157, 0.25)" }}>
                                 {survey.status}
                               </span>
                             </td>
@@ -1237,15 +1237,15 @@ export default function PathologyPage() {
             <motion.div key="mobile" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-6">
               
               {/* Sub-navigation: Active Scan vs Scan History */}
-              <div className="flex justify-between items-center border-b border-white/10 pb-4">
+              <div className="flex justify-between items-center border-b pb-4" style={{ borderColor: "var(--card-border)" }}>
                 <div className="flex gap-2">
                   <button 
                     onClick={() => setMobileSubTab("scan")}
                     className="px-4 py-2 rounded-xl text-xs font-mono transition-all flex items-center gap-2"
                     style={{
-                      background: mobileSubTab === "scan" ? "rgba(255, 76, 76, 0.12)" : "rgba(255, 255, 255, 0.03)",
-                      border: mobileSubTab === "scan" ? "1px solid rgba(255, 76, 76, 0.4)" : "1px solid rgba(255, 255, 255, 0.06)",
-                      color: mobileSubTab === "scan" ? "#FF4C4C" : "rgba(232, 239, 232, 0.5)",
+                      background: mobileSubTab === "scan" ? "rgba(255, 76, 76, 0.15)" : "var(--card-bg)",
+                      border: mobileSubTab === "scan" ? "1px solid rgba(255, 76, 76, 0.4)" : "1px solid var(--card-border)",
+                      color: mobileSubTab === "scan" ? "#FF4C4C" : "var(--text-secondary)",
                     }}
                   >
                     <Microscope className="w-3.5 h-3.5" /> {t.pathology.systemB.leafInferenceTab}
@@ -1254,9 +1254,9 @@ export default function PathologyPage() {
                     onClick={() => setMobileSubTab("history")}
                     className="px-4 py-2 rounded-xl text-xs font-mono transition-all flex items-center gap-2"
                     style={{
-                      background: mobileSubTab === "history" ? "rgba(255, 76, 76, 0.12)" : "rgba(255, 255, 255, 0.03)",
-                      border: mobileSubTab === "history" ? "1px solid rgba(255, 76, 76, 0.4)" : "1px solid rgba(255, 255, 255, 0.06)",
-                      color: mobileSubTab === "history" ? "#FF4C4C" : "rgba(232, 239, 232, 0.5)",
+                      background: mobileSubTab === "history" ? "rgba(255, 76, 76, 0.15)" : "var(--card-bg)",
+                      border: mobileSubTab === "history" ? "1px solid rgba(255, 76, 76, 0.4)" : "1px solid var(--card-border)",
+                      color: mobileSubTab === "history" ? "#FF4C4C" : "var(--text-secondary)",
                     }}
                   >
                     <FileText className="w-3.5 h-3.5" /> {t.pathology.systemB.recentScansTab} ({DEMO_DIAGNOSTICS.length})
@@ -1265,11 +1265,11 @@ export default function PathologyPage() {
 
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono px-2 py-1 rounded" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(232,239,232,0.5)" }}>
+                    <span className="text-[10px] font-mono px-2 py-1 rounded" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)", color: "var(--text-muted)" }}>
                       {t.pathology.systemB.oodGatingBadge}
                     </span>
                     {syncStatus === "synced" && (
-                      <span className="text-[10px] font-mono px-2 py-1 rounded flex items-center gap-1" style={{ background: "rgba(0,255,157,0.1)", color: "#00FF9D", border: "1px solid rgba(0,255,157,0.25)" }}>
+                      <span className="text-[10px] font-mono px-2 py-1 rounded flex items-center gap-1 font-bold" style={{ background: "rgba(0,255,157,0.12)", color: theme === "dark" ? "#00FF9D" : "#00875A", border: "1px solid rgba(0,255,157,0.3)" }}>
                         <CheckCircle2 className="w-3 h-3" /> {t.pathology.systemB.syncedBadge}
                       </span>
                     )}
@@ -1282,15 +1282,15 @@ export default function PathologyPage() {
                   
                   {/* Left: Input Dropzone */}
                   <div className="lg:col-span-5 glass-card p-6 flex flex-col min-h-[480px] rounded-2xl">
-                    <h2 className="text-sm font-mono text-white font-medium mb-1">{t.pathology.systemB.closeupTitle}</h2>
-                    <p className="text-xs mb-4 font-mono leading-relaxed" style={{ color: "rgba(232, 239, 232, 0.5)" }}>
+                    <h2 className="text-sm font-mono font-medium mb-1" style={{ color: "var(--text-primary)" }}>{t.pathology.systemB.closeupTitle}</h2>
+                    <p className="text-xs mb-4 font-mono leading-relaxed" style={{ color: "var(--text-secondary)" }}>
                       {t.pathology.systemB.closeupDesc}
                     </p>
 
                     <label className="flex-1 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer smooth-transition relative overflow-hidden group min-h-[220px]"
                       style={{
-                        borderColor: "rgba(255, 76, 76, 0.25)",
-                        background: "rgba(0, 0, 0, 0.3)",
+                        borderColor: "rgba(255, 76, 76, 0.3)",
+                        background: theme === "dark" ? "rgba(0, 0, 0, 0.3)" : "rgba(255, 76, 76, 0.04)",
                       }}
                     >
                       <input type="file" className="hidden" accept="image/*" onChange={handleMobileUpload} />
@@ -1307,12 +1307,12 @@ export default function PathologyPage() {
                       ) : (
                         <div className="flex flex-col items-center justify-center p-6 text-center">
                           <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"
-                            style={{ background: "rgba(255, 76, 76, 0.1)" }}
+                            style={{ background: "rgba(255, 76, 76, 0.12)" }}
                           >
                             <UploadCloud className="w-7 h-7" style={{ color: "#FF4C4C" }} />
                           </div>
-                          <span className="text-xs font-mono mb-1" style={{ color: "rgba(232, 239, 232, 0.8)" }}>{t.pathology.systemB.browsePhotos}</span>
-                          <span className="text-[10px] font-mono" style={{ color: "rgba(232, 239, 232, 0.4)" }}>{t.pathology.systemB.dropzoneSub}</span>
+                          <span className="text-xs font-mono mb-1 font-medium" style={{ color: "var(--text-primary)" }}>{t.pathology.systemB.browsePhotos}</span>
+                          <span className="text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>{t.pathology.systemB.dropzoneSub}</span>
                         </div>
                       )}
                     </label>
@@ -1321,25 +1321,24 @@ export default function PathologyPage() {
                       <button 
                         onClick={runMobileAnalysis} 
                         disabled={!mobileFile || isAnalyzingMobile}
-                        className="w-full py-3 rounded-xl border text-xs font-mono uppercase tracking-wider transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+                        className="w-full py-3 rounded-xl border text-xs font-mono uppercase tracking-wider transition-all disabled:opacity-40 flex items-center justify-center gap-2 shadow-md"
                         style={{
-                          background: "rgba(255, 76, 76, 0.12)",
-                          borderColor: "rgba(255, 76, 76, 0.35)",
-                          color: "#FF4C4C",
-                          boxShadow: "0 0 15px rgba(255, 76, 76, 0.1)"
+                          background: "linear-gradient(135deg, rgba(255, 76, 76, 0.2), rgba(230, 175, 46, 0.2))",
+                          borderColor: "rgba(255, 76, 76, 0.4)",
+                          color: "var(--text-primary)",
                         }}
                       >
-                        <Sparkles className="w-4 h-4" /> {t.pathology.systemB.runInferenceBtn}
+                        <Sparkles className="w-4 h-4 text-red-400" /> {t.pathology.systemB.runInferenceBtn}
                       </button>
                     </div>
                   </div>
 
                   {/* Right: Diagnostic Dossier */}
                   <div className="lg:col-span-7 glass-card p-6 min-h-[480px] flex flex-col rounded-2xl">
-                    <h2 className="text-sm font-mono text-white font-medium mb-4 flex items-center justify-between">
+                    <h2 className="text-sm font-mono font-medium mb-4 flex items-center justify-between" style={{ color: "var(--text-primary)" }}>
                       <span>{t.pathology.systemB.dossierTitle}</span>
                       {mobileResult && !mobileResult.error && (
-                        <span className="text-[10px] font-mono" style={{ color: "rgba(232, 239, 232, 0.4)" }}>
+                        <span className="text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>
                           {t.pathology.systemB.latency}: {mobileResult.inference_time_ms?.toFixed(0)}ms
                         </span>
                       )}
@@ -1348,20 +1347,20 @@ export default function PathologyPage() {
                     {mobileResult ? (
                       mobileResult.error ? (
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex flex-col items-center justify-center text-center p-6 rounded-2xl border"
-                          style={{ background: "rgba(230, 175, 46, 0.05)", borderColor: "rgba(230, 175, 46, 0.2)" }}
+                          style={{ background: "rgba(230, 175, 46, 0.08)", borderColor: "rgba(230, 175, 46, 0.25)" }}
                         >
                           <AlertTriangle className="w-12 h-12 mb-3" style={{ color: "#E6AF2E" }} />
                           <h3 className="text-sm font-mono font-bold mb-1" style={{ color: "#E6AF2E" }}>{mobileResult.error}</h3>
-                          <p className="text-xs font-mono max-w-md" style={{ color: "rgba(232, 239, 232, 0.6)" }}>{mobileResult.message}</p>
+                          <p className="text-xs font-mono max-w-md" style={{ color: "var(--text-secondary)" }}>{mobileResult.message}</p>
                         </motion.div>
                       ) : (
                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5 flex-1">
                           
                           {/* Primary Badge & Confidence */}
-                          <div className="p-4 rounded-xl border" style={{ background: "rgba(0, 0, 0, 0.3)", borderColor: "rgba(255, 255, 255, 0.08)" }}>
+                          <div className="p-4 rounded-xl border" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
                             <div className="flex justify-between items-start mb-3">
                               <DiseaseBadge disease={mobileResult.disease} />
-                              <span className="text-xs font-mono font-bold" style={{ color: "#00FF9D" }}>
+                              <span className="text-xs font-mono font-bold" style={{ color: theme === "dark" ? "#00FF9D" : "#00875A" }}>
                                 {(mobileResult.confidence * 100).toFixed(1)}% {t.pathology.systemB.match}
                               </span>
                             </div>
@@ -1370,22 +1369,22 @@ export default function PathologyPage() {
 
                           {/* All Class Probabilities Bar Chart */}
                           {mobileResult.all_predictions && (
-                            <div className="p-4 rounded-xl border" style={{ background: "rgba(0, 0, 0, 0.3)", borderColor: "rgba(255, 255, 255, 0.08)" }}>
-                              <h4 className="text-[11px] font-mono uppercase mb-3" style={{ color: "rgba(232, 239, 232, 0.4)" }}>{t.pathology.systemB.classDistribution}</h4>
+                            <div className="p-4 rounded-xl border" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
+                              <h4 className="text-[11px] font-mono uppercase mb-3 font-medium" style={{ color: "var(--text-muted)" }}>{t.pathology.systemB.classDistribution}</h4>
                               <div className="space-y-2">
                                 {mobileResult.all_predictions.map((p: any) => {
                                   const colorConfig = DISEASE_COLORS[p.class?.toLowerCase()] || { label: p.class, label_si: p.class, label_ta: p.class };
                                   const localizedClassName = language === "si" ? colorConfig.label_si : language === "ta" ? colorConfig.label_ta : colorConfig.label;
                                   return (
                                     <div key={p.class} className="flex items-center gap-3 text-xs font-mono">
-                                      <span className="w-36 truncate capitalize" style={{ color: "rgba(232, 239, 232, 0.7)" }}>{localizedClassName}</span>
-                                      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "rgba(255, 255, 255, 0.05)" }}>
+                                      <span className="w-36 truncate capitalize" style={{ color: "var(--text-primary)" }}>{localizedClassName}</span>
+                                      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "var(--card-border)" }}>
                                         <div 
                                           className="h-full rounded-full bg-gradient-to-r from-[#FF4C4C] to-[#00FF9D]" 
                                           style={{ width: `${Math.max(2, p.confidence * 100)}%` }} 
                                         />
                                       </div>
-                                      <span className="w-12 text-right text-[10px]" style={{ color: "rgba(232, 239, 232, 0.4)" }}>{(p.confidence * 100).toFixed(0)}%</span>
+                                      <span className="w-12 text-right text-[10px]" style={{ color: "var(--text-muted)" }}>{(p.confidence * 100).toFixed(0)}%</span>
                                     </div>
                                   );
                                 })}
@@ -1396,17 +1395,17 @@ export default function PathologyPage() {
                           {/* Immediate Treatment Protocols */}
                           {mobileResult.knowledge && (
                             <div className="space-y-3">
-                              <h4 className="text-[11px] font-mono uppercase" style={{ color: "rgba(232, 239, 232, 0.4)" }}>{t.pathology.systemB.treatmentProtocols}</h4>
+                              <h4 className="text-[11px] font-mono uppercase font-medium" style={{ color: "var(--text-muted)" }}>{t.pathology.systemB.treatmentProtocols}</h4>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div className="p-3 rounded-xl border" style={{ background: "rgba(255, 76, 76, 0.05)", borderColor: "rgba(255, 76, 76, 0.2)" }}>
+                                <div className="p-3 rounded-xl border" style={{ background: "var(--card-bg)", borderColor: "rgba(255, 76, 76, 0.25)" }}>
                                   <span className="text-[10px] font-mono font-bold block mb-1" style={{ color: "#FF4C4C" }}>{t.pathology.systemB.chemicalAction}</span>
-                                  <p className="text-xs font-mono" style={{ color: "rgba(232, 239, 232, 0.7)" }}>
+                                  <p className="text-xs font-mono" style={{ color: "var(--text-primary)" }}>
                                     {language === "si" ? mobileResult.knowledge.treatment_protocols.chemical_si[0] : language === "ta" ? mobileResult.knowledge.treatment_protocols.chemical_ta[0] : mobileResult.knowledge.treatment_protocols.chemical[0]}
                                   </p>
                                 </div>
-                                <div className="p-3 rounded-xl border" style={{ background: "rgba(0, 255, 157, 0.05)", borderColor: "rgba(0, 255, 157, 0.2)" }}>
-                                  <span className="text-[10px] font-mono font-bold block mb-1" style={{ color: "#00FF9D" }}>{t.pathology.systemB.culturalMeasure}</span>
-                                  <p className="text-xs font-mono" style={{ color: "rgba(232, 239, 232, 0.7)" }}>
+                                <div className="p-3 rounded-xl border" style={{ background: "var(--card-bg)", borderColor: "rgba(0, 255, 157, 0.25)" }}>
+                                  <span className="text-[10px] font-mono font-bold block mb-1" style={{ color: theme === "dark" ? "#00FF9D" : "#00875A" }}>{t.pathology.systemB.culturalMeasure}</span>
+                                  <p className="text-xs font-mono" style={{ color: "var(--text-primary)" }}>
                                     {language === "si" ? mobileResult.knowledge.treatment_protocols.cultural_si[0] : language === "ta" ? mobileResult.knowledge.treatment_protocols.cultural_ta[0] : mobileResult.knowledge.treatment_protocols.cultural[0]}
                                   </p>
                                 </div>
@@ -1418,14 +1417,14 @@ export default function PathologyPage() {
                           <div className="pt-2">
                             <button
                               onClick={() => jumpToKnowledgeBase(mobileResult.matchingKbId)}
-                              className="w-full py-2.5 px-4 rounded-xl border transition-all text-xs font-mono flex items-center justify-center gap-2"
+                              className="w-full py-2.5 px-4 rounded-xl border transition-all text-xs font-mono flex items-center justify-center gap-2 font-medium"
                               style={{
-                                background: "rgba(0, 255, 157, 0.08)",
-                                borderColor: "rgba(0, 255, 157, 0.25)",
-                                color: "#00FF9D",
+                                background: "rgba(0, 255, 157, 0.12)",
+                                borderColor: "rgba(0, 255, 157, 0.3)",
+                                color: theme === "dark" ? "#00FF9D" : "#00875A",
                               }}
                             >
-                              <BookOpen className="w-4 h-4" style={{ color: "#00FF9D" }} />
+                              <BookOpen className="w-4 h-4" />
                               <span>{t.pathology.systemB.viewFullKbGuide} →</span>
                             </button>
                           </div>
@@ -1434,9 +1433,9 @@ export default function PathologyPage() {
                       )
                     ) : (
                       <div className="flex-1 flex flex-col items-center justify-center border border-dashed rounded-2xl"
-                        style={{ borderColor: "rgba(255, 255, 255, 0.08)", color: "rgba(232, 239, 232, 0.3)" }}
+                        style={{ borderColor: "var(--card-border)", color: "var(--text-muted)" }}
                       >
-                        <Microscope className="w-12 h-12 mb-3 opacity-40" />
+                        <Microscope className="w-12 h-12 mb-3 opacity-40 text-red-400" />
                         <p className="text-xs font-mono">{t.pathology.systemB.uploadPrompt}</p>
                       </div>
                     )}
@@ -1447,17 +1446,17 @@ export default function PathologyPage() {
                 /* Recent Leaf Scans Table */
                 <div className="glass-card p-6 rounded-2xl space-y-4">
                   <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-mono text-white font-medium flex items-center gap-2">
+                    <h3 className="text-sm font-mono font-medium flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
                       <Smartphone className="w-4 h-4" style={{ color: "#FF4C4C" }} /> {t.pathology.systemB.recentScansTitle}
                     </h3>
-                    <span className="text-xs font-mono" style={{ color: "rgba(232, 239, 232, 0.4)" }}>{DEMO_DIAGNOSTICS.length} Scans Logged</span>
+                    <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{DEMO_DIAGNOSTICS.length} Scans Logged</span>
                   </div>
 
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
                       <thead>
                         <tr className="border-b text-[10px] uppercase font-mono"
-                          style={{ borderColor: "rgba(255, 255, 255, 0.08)", color: "rgba(232, 239, 232, 0.4)", background: "rgba(0,0,0,0.2)" }}
+                          style={{ borderColor: "var(--table-border)", color: "var(--text-muted)", background: "var(--table-header-bg)" }}
                         >
                           <th className="p-3.5">{t.pathology.systemB.colDiagId}</th>
                           <th className="p-3.5">{t.pathology.systemB.colPathogenClass}</th>
@@ -1468,10 +1467,10 @@ export default function PathologyPage() {
                       </thead>
                       <tbody>
                         {DEMO_DIAGNOSTICS.map((diag) => (
-                          <tr key={diag.id} className="border-b hover:bg-white/5 transition-colors font-mono text-xs" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
-                            <td className="p-3.5 font-medium" style={{ color: "rgba(232, 239, 232, 0.8)" }}>
+                          <tr key={diag.id} className="border-b hover:bg-black/5 dark:hover:bg-white/5 transition-colors font-mono text-xs" style={{ borderColor: "var(--table-border)" }}>
+                            <td className="p-3.5 font-medium" style={{ color: "var(--text-primary)" }}>
                               <div>{diag.id}</div>
-                              <div className="text-[10px]" style={{ color: "rgba(232, 239, 232, 0.4)" }}>{new Date(diag.captured_at).toLocaleString()}</div>
+                              <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>{new Date(diag.captured_at).toLocaleString()}</div>
                             </td>
                             <td className="p-3.5">
                               <DiseaseBadge disease={diag.disease_class} size="sm" />
@@ -1479,7 +1478,7 @@ export default function PathologyPage() {
                             <td className="p-3.5 w-44">
                               <ConfidenceBar value={diag.confidence} />
                             </td>
-                            <td className="p-3.5" style={{ color: "rgba(232, 239, 232, 0.5)" }}>
+                            <td className="p-3.5" style={{ color: "var(--text-secondary)" }}>
                               {diag.location.lat.toFixed(4)}, {diag.location.lng.toFixed(4)}
                             </td>
                             <td className="p-3.5 text-right">
@@ -1488,11 +1487,11 @@ export default function PathologyPage() {
                                   const match = DEMO_KNOWLEDGE.find(k => k.common_name.toLowerCase().includes(diag.disease_class.toLowerCase()) || diag.disease_class.toLowerCase().includes(k.common_name.toLowerCase()));
                                   jumpToKnowledgeBase(match?.id || null);
                                 }}
-                                className="text-[10px] px-2.5 py-1 rounded border transition-all inline-flex items-center gap-1"
+                                className="text-[10px] px-2.5 py-1 rounded border transition-all inline-flex items-center gap-1 font-medium"
                                 style={{
-                                  background: "rgba(0, 255, 157, 0.08)",
-                                  borderColor: "rgba(0, 255, 157, 0.2)",
-                                  color: "#00FF9D",
+                                  background: "rgba(0, 255, 157, 0.12)",
+                                  borderColor: "rgba(0, 255, 157, 0.25)",
+                                  color: theme === "dark" ? "#00FF9D" : "#00875A",
                                 }}
                               >
                                 <span>{t.pathology.systemB.viewGuideBtn}</span>
@@ -1519,20 +1518,21 @@ export default function PathologyPage() {
               {/* Search Bar */}
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="relative max-w-md flex-1">
-                  <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "rgba(232, 239, 232, 0.4)" }} />
+                  <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "var(--text-muted)" }} />
                   <input 
                     type="text"
                     placeholder={t.pathology.knowledge.searchPlaceholder}
                     value={kbSearch}
                     onChange={(e) => setKbSearch(e.target.value)}
-                    className="w-full border rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-white/40 focus:outline-none font-mono"
+                    className="w-full border rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none font-mono smooth-transition"
                     style={{
-                      background: "rgba(3, 7, 5, 0.8)",
-                      borderColor: "rgba(255, 255, 255, 0.1)",
+                      background: "var(--input-bg)",
+                      borderColor: "var(--input-border)",
+                      color: "var(--text-primary)"
                     }}
                   />
                 </div>
-                <div className="text-xs font-mono" style={{ color: "rgba(232, 239, 232, 0.5)" }}>
+                <div className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
                   {filteredKnowledge.length} {t.pathology.knowledge.showingProtocols}
                 </div>
               </div>
@@ -1555,41 +1555,41 @@ export default function PathologyPage() {
                       onClick={() => setExpandedKb(isExpanded ? null : item.id)}
                       className="glass-card p-6 border transition-all cursor-pointer rounded-2xl"
                       style={{
-                        borderColor: isExpanded ? "rgba(0, 255, 157, 0.4)" : "rgba(255, 255, 255, 0.08)",
+                        borderColor: isExpanded ? "rgba(0, 255, 157, 0.4)" : "var(--card-border)",
                         boxShadow: isExpanded ? "0 0 25px rgba(0, 255, 157, 0.08)" : "none",
                       }}
                     >
                       <div className="flex justify-between items-start">
                         <div>
                           <div className="flex items-center gap-3">
-                            <h3 className="text-base font-medium text-white">{localizedTitle}</h3>
-                            <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full uppercase"
+                            <h3 className="text-base font-medium" style={{ color: "var(--text-primary)" }}>{localizedTitle}</h3>
+                            <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full uppercase font-bold"
                               style={{
                                 background: item.severity_level === "critical" ? "rgba(255,76,76,0.15)" : item.severity_level === "high" ? "rgba(230,175,46,0.15)" : "rgba(0,255,157,0.15)",
-                                color: item.severity_level === "critical" ? "#FF4C4C" : item.severity_level === "high" ? "#E6AF2E" : "#00FF9D",
+                                color: item.severity_level === "critical" ? "#FF4C4C" : item.severity_level === "high" ? "#E6AF2E" : (theme === "dark" ? "#00FF9D" : "#00875A"),
                                 border: `1px solid ${item.severity_level === "critical" ? "rgba(255,76,76,0.3)" : item.severity_level === "high" ? "rgba(230,175,46,0.3)" : "rgba(0,255,157,0.3)"}`,
                               }}
                             >
                               {item.severity_level}
                             </span>
                           </div>
-                          <p className="text-xs font-mono italic mt-0.5" style={{ color: "rgba(232, 239, 232, 0.4)" }}>{item.scientific_name}</p>
+                          <p className="text-xs font-mono italic mt-0.5" style={{ color: "var(--text-secondary)" }}>{item.scientific_name}</p>
                         </div>
-                        <ChevronRight className={`w-5 h-5 transition-transform ${isExpanded ? "rotate-90" : ""}`} style={{ color: isExpanded ? "#00FF9D" : "rgba(232, 239, 232, 0.4)" }} />
+                        <ChevronRight className={`w-5 h-5 transition-transform ${isExpanded ? "rotate-90" : ""}`} style={{ color: isExpanded ? "#00FF9D" : "var(--text-muted)" }} />
                       </div>
 
                       {isExpanded && (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-6 pt-6 border-t space-y-6" style={{ borderColor: "rgba(255, 255, 255, 0.08)" }}>
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-6 pt-6 border-t space-y-6" style={{ borderColor: "var(--card-border)" }}>
                           
                           {/* Symptoms */}
                           <div>
-                            <h4 className="text-xs font-mono uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: "#00E5FF" }}>
+                            <h4 className="text-xs font-mono uppercase tracking-wider mb-2 flex items-center gap-1.5 font-bold" style={{ color: "#00E5FF" }}>
                               <AlertTriangle className="w-3.5 h-3.5" /> {t.pathology.knowledge.diagnosticSymptoms}
                             </h4>
                             <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
                               {localizedSymptoms.map((s, i) => (
                                 <li key={i} className="text-xs font-mono flex items-start gap-2 p-2.5 rounded-lg border"
-                                  style={{ background: "rgba(0, 0, 0, 0.2)", borderColor: "rgba(255, 255, 255, 0.05)", color: "rgba(232, 239, 232, 0.8)" }}
+                                  style={{ background: "var(--card-bg)", borderColor: "var(--card-border)", color: "var(--text-primary)" }}
                                 >
                                   <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: "#00E5FF" }} />
                                   <span>{s}</span>
@@ -1600,25 +1600,25 @@ export default function PathologyPage() {
 
                           {/* 3-Way Treatment Protocol */}
                           <div>
-                            <h4 className="text-xs font-mono uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: "#00FF9D" }}>
+                            <h4 className="text-xs font-mono uppercase tracking-wider mb-2 flex items-center gap-1.5 font-bold" style={{ color: theme === "dark" ? "#00FF9D" : "#00875A" }}>
                               <ShieldCheck className="w-3.5 h-3.5" /> {t.pathology.knowledge.integratedProtocols}
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                              <div className="p-3.5 rounded-xl border" style={{ background: "rgba(255, 76, 76, 0.05)", borderColor: "rgba(255, 76, 76, 0.2)" }}>
+                              <div className="p-3.5 rounded-xl border" style={{ background: "var(--card-bg)", borderColor: "rgba(255, 76, 76, 0.25)" }}>
                                 <span className="text-[10px] font-mono font-bold block mb-1.5" style={{ color: "#FF4C4C" }}>{t.pathology.knowledge.chemicalBadge}</span>
-                                <ul className="text-xs font-mono space-y-1" style={{ color: "rgba(232, 239, 232, 0.8)" }}>
+                                <ul className="text-xs font-mono space-y-1" style={{ color: "var(--text-primary)" }}>
                                   {localizedChemical.map((c, i) => <li key={i}>• {c}</li>)}
                                 </ul>
                               </div>
-                              <div className="p-3.5 rounded-xl border" style={{ background: "rgba(0, 255, 157, 0.05)", borderColor: "rgba(0, 255, 157, 0.2)" }}>
-                                <span className="text-[10px] font-mono font-bold block mb-1.5" style={{ color: "#00FF9D" }}>{t.pathology.knowledge.culturalBadge}</span>
-                                <ul className="text-xs font-mono space-y-1" style={{ color: "rgba(232, 239, 232, 0.8)" }}>
+                              <div className="p-3.5 rounded-xl border" style={{ background: "var(--card-bg)", borderColor: "rgba(0, 255, 157, 0.25)" }}>
+                                <span className="text-[10px] font-mono font-bold block mb-1.5" style={{ color: theme === "dark" ? "#00FF9D" : "#00875A" }}>{t.pathology.knowledge.culturalBadge}</span>
+                                <ul className="text-xs font-mono space-y-1" style={{ color: "var(--text-primary)" }}>
                                   {localizedCultural.map((c, i) => <li key={i}>• {c}</li>)}
                                 </ul>
                               </div>
-                              <div className="p-3.5 rounded-xl border" style={{ background: "rgba(167, 139, 250, 0.05)", borderColor: "rgba(167, 139, 250, 0.2)" }}>
+                              <div className="p-3.5 rounded-xl border" style={{ background: "var(--card-bg)", borderColor: "rgba(167, 139, 250, 0.25)" }}>
                                 <span className="text-[10px] font-mono font-bold block mb-1.5" style={{ color: "#A78BFA" }}>{t.pathology.knowledge.biologicalBadge}</span>
-                                <ul className="text-xs font-mono space-y-1" style={{ color: "rgba(232, 239, 232, 0.8)" }}>
+                                <ul className="text-xs font-mono space-y-1" style={{ color: "var(--text-primary)" }}>
                                   {localizedBiological.map((b, i) => <li key={i}>• {b}</li>)}
                                 </ul>
                               </div>
@@ -1628,13 +1628,13 @@ export default function PathologyPage() {
                           {/* Vernacular Advice */}
                           <div className="p-3.5 rounded-xl border text-xs font-mono flex items-center gap-2"
                             style={{
-                              background: "rgba(230, 175, 46, 0.08)",
-                              borderColor: "rgba(230, 175, 46, 0.25)",
-                              color: "#E6AF2E",
+                              background: "rgba(230, 175, 46, 0.12)",
+                              borderColor: "rgba(230, 175, 46, 0.3)",
+                              color: "var(--text-primary)",
                             }}
                           >
-                            <Info className="w-4 h-4 flex-shrink-0" />
-                            <span><strong>{t.pathology.knowledge.criFieldNote}</strong> {localizedAdvice}</span>
+                            <Info className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                            <span><strong className="text-amber-500">{t.pathology.knowledge.criFieldNote}</strong> {localizedAdvice}</span>
                           </div>
 
                         </motion.div>
@@ -1655,14 +1655,15 @@ export default function PathologyPage() {
               
               <div className="flex justify-between items-center mb-2">
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-mono uppercase" style={{ color: "rgba(232, 239, 232, 0.5)" }}>{t.pathology.history.filterLabel}</span>
+                  <span className="text-xs font-mono uppercase font-medium" style={{ color: "var(--text-muted)" }}>{t.pathology.history.filterLabel}</span>
                   <select 
                     value={filterDisease} 
                     onChange={e => setFilterDisease(e.target.value)} 
-                    className="border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none font-mono"
+                    className="border rounded-lg px-3 py-1.5 text-xs focus:outline-none font-mono smooth-transition"
                     style={{
-                      background: "rgba(3, 7, 5, 0.8)",
-                      borderColor: "rgba(255, 255, 255, 0.1)",
+                      background: "var(--input-bg)",
+                      borderColor: "var(--input-border)",
+                      color: "var(--text-primary)"
                     }}
                   >
                     <option value="all">{t.pathology.history.allPathogens}</option>
@@ -1672,33 +1673,33 @@ export default function PathologyPage() {
                       return <option key={d} value={d}>{label || d}</option>;
                     })}
                   </select>
-                  <span className="px-2.5 py-1 text-[10px] rounded-lg font-mono border"
+                  <span className="px-2.5 py-1 text-[10px] rounded-lg font-mono border font-bold"
                     style={{
-                      background: "rgba(0, 255, 157, 0.1)",
-                      color: "#00FF9D",
-                      borderColor: "rgba(0, 255, 157, 0.25)",
+                      background: "rgba(0, 255, 157, 0.12)",
+                      color: theme === "dark" ? "#00FF9D" : "#00875A",
+                      borderColor: "rgba(0, 255, 157, 0.3)",
                     }}
                   >
                     {filteredHistory.length} Records
                   </span>
                 </div>
                 <div className="flex gap-2 p-1 rounded-lg border"
-                  style={{ background: "rgba(0, 0, 0, 0.3)", borderColor: "rgba(255, 255, 255, 0.08)" }}
+                  style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
                 >
                   <button 
                     onClick={() => setHistoryView("table")} 
-                    className="px-4 py-1.5 rounded-md text-xs font-mono transition-all"
+                    className="px-4 py-1.5 rounded-md text-xs font-mono transition-all font-medium"
                     style={{
                       background: historyView === "table" ? "rgba(0, 255, 157, 0.15)" : "transparent",
-                      color: historyView === "table" ? "#00FF9D" : "rgba(232, 239, 232, 0.4)"
+                      color: historyView === "table" ? (theme === "dark" ? "#00FF9D" : "#00875A") : "var(--text-muted)"
                     }}
                   >{t.pathology.history.tabularView}</button>
                   <button 
                     onClick={() => setHistoryView("map")} 
-                    className="px-4 py-1.5 rounded-md text-xs font-mono transition-all"
+                    className="px-4 py-1.5 rounded-md text-xs font-mono transition-all font-medium"
                     style={{
                       background: historyView === "map" ? "rgba(0, 255, 157, 0.15)" : "transparent",
-                      color: historyView === "map" ? "#00FF9D" : "rgba(232, 239, 232, 0.4)"
+                      color: historyView === "map" ? (theme === "dark" ? "#00FF9D" : "#00875A") : "var(--text-muted)"
                     }}
                   >{t.pathology.history.spatialGisView}</button>
                 </div>
@@ -1709,7 +1710,7 @@ export default function PathologyPage() {
                   <table className="w-full text-left">
                     <thead>
                       <tr className="border-b text-[10px] uppercase font-mono"
-                        style={{ borderColor: "rgba(255, 255, 255, 0.08)", color: "rgba(232, 239, 232, 0.4)", background: "rgba(0,0,0,0.2)" }}
+                        style={{ borderColor: "var(--table-border)", color: "var(--text-muted)", background: "var(--table-header-bg)" }}
                       >
                         <th className="p-4">{t.pathology.history.colDate}</th>
                         <th className="p-4">{t.pathology.history.colLesion}</th>
@@ -1719,11 +1720,11 @@ export default function PathologyPage() {
                     </thead>
                     <tbody>
                       {filteredHistory.map(d => (
-                        <tr key={d.id} className="border-b hover:bg-white/5 transition-colors font-mono" style={{ borderColor: "rgba(255, 255, 255, 0.04)" }}>
-                          <td className="p-4 text-xs" style={{ color: "rgba(232, 239, 232, 0.7)" }}>{new Date(d.captured_at).toLocaleString()}</td>
+                        <tr key={d.id} className="border-b hover:bg-black/5 dark:hover:bg-white/5 transition-colors font-mono" style={{ borderColor: "var(--table-border)" }}>
+                          <td className="p-4 text-xs font-medium" style={{ color: "var(--text-primary)" }}>{new Date(d.captured_at).toLocaleString()}</td>
                           <td className="p-4"><DiseaseBadge disease={d.disease_class} size="sm" /></td>
                           <td className="p-4 w-44"><ConfidenceBar value={d.confidence} /></td>
-                          <td className="p-4 text-xs" style={{ color: "rgba(232, 239, 232, 0.5)" }}>{d.location.lat.toFixed(4)}, {d.location.lng.toFixed(4)}</td>
+                          <td className="p-4 text-xs font-mono" style={{ color: "var(--text-secondary)" }}>{d.location.lat.toFixed(4)}, {d.location.lng.toFixed(4)}</td>
                         </tr>
                       ))}
                     </tbody>
