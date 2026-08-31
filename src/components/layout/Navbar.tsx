@@ -41,22 +41,22 @@ export default function Navbar() {
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 py-2 flex items-center justify-between">
-          {/* Pure Brand Logo & Text Mark (Large & Balanced) */}
+          {/* Pure Brand Logo & Text Mark (Direct Emblem & Large Text, No Outer Artificial Box) */}
           <Link href="/" className="flex items-center gap-3.5 group flex-shrink-0">
-            <div
-              className="relative w-10 h-10 rounded-xl overflow-hidden p-1 flex items-center justify-center transition-all duration-300 group-hover:scale-105"
-              style={{
-                background: "linear-gradient(145deg, rgba(28,32,28,0.95), rgba(10,14,11,0.98))",
-                border: "1px solid rgba(212,175,55,0.4)",
-                boxShadow: "0 0 20px rgba(212,175,55,0.2)",
-              }}
-            >
+            <div className="relative flex items-center justify-center">
+              {/* Radiant Ambient Aura */}
+              <div
+                className="absolute inset-0 rounded-full blur-md opacity-70 group-hover:opacity-100 transition-opacity"
+                style={{
+                  background: "radial-gradient(circle, rgba(212,175,55,0.6) 0%, transparent 70%)",
+                }}
+              />
               <Image
                 src="/brand/logo-icon.png"
                 alt="SaruPol Icon Logo"
-                width={36}
-                height={36}
-                className="object-contain drop-shadow-[0_2px_8px_rgba(212,175,55,0.4)]"
+                width={48}
+                height={48}
+                className="relative z-10 w-11 h-11 sm:w-12 sm:h-12 object-contain drop-shadow-[0_0_15px_rgba(212,175,55,0.5)] transition-transform duration-300 group-hover:scale-105"
                 priority
               />
             </div>
@@ -65,9 +65,9 @@ export default function Navbar() {
               <Image
                 src="/brand/logo-text.png"
                 alt="සරුපොල් (SaruPol)"
-                width={190}
-                height={54}
-                className="h-10 sm:h-11 md:h-12 w-auto object-contain drop-shadow-[0_4px_16px_rgba(212,175,55,0.5)] transition-transform duration-300 group-hover:scale-105"
+                width={200}
+                height={56}
+                className="h-11 sm:h-12 md:h-13 w-auto object-contain drop-shadow-[0_4px_18px_rgba(212,175,55,0.55)] transition-transform duration-300 group-hover:scale-105"
                 priority
               />
             </div>
@@ -192,30 +192,29 @@ export default function Navbar() {
               backdropFilter: "blur(30px)",
             }}
           >
-            {/* Brand in Mobile Drawer */}
-            <div className="flex flex-col items-center gap-2 mb-2">
-              <div
-                className="w-16 h-16 rounded-2xl p-2 flex items-center justify-center shadow-2xl"
-                style={{
-                  background: "linear-gradient(145deg, rgba(28,32,28,0.95), rgba(10,14,11,0.98))",
-                  border: "1px solid rgba(212,175,55,0.4)",
-                  boxShadow: "0 0 30px rgba(212,175,55,0.25)",
-                }}
-              >
+            {/* Brand in Mobile Drawer (Pure Emblem & Glow) */}
+            <div className="flex flex-col items-center gap-3 mb-2">
+              <div className="relative flex items-center justify-center">
+                <div
+                  className="absolute inset-0 rounded-full blur-xl opacity-80 pointer-events-none"
+                  style={{
+                    background: "radial-gradient(circle, rgba(212,175,55,0.55) 0%, transparent 70%)",
+                  }}
+                />
                 <Image
                   src="/brand/logo-icon.png"
                   alt="SaruPol Icon"
-                  width={56}
-                  height={56}
-                  className="object-contain"
+                  width={80}
+                  height={80}
+                  className="relative z-10 w-20 h-20 object-contain drop-shadow-[0_0_25px_rgba(212,175,55,0.5)]"
                 />
               </div>
               <Image
                 src="/brand/logo-text.png"
                 alt="සරුපොල් (SaruPol)"
-                width={180}
-                height={50}
-                className="h-10 w-auto object-contain drop-shadow-[0_4px_16px_rgba(212,175,55,0.4)]"
+                width={220}
+                height={60}
+                className="h-12 w-auto object-contain drop-shadow-[0_4px_20px_rgba(212,175,55,0.55)]"
               />
             </div>
 

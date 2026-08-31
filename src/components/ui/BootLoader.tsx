@@ -69,46 +69,45 @@ export default function BootLoader() {
           {/* Telemetry grid background */}
           <div className="absolute inset-0 telemetry-grid opacity-30" />
 
-          {/* Brand Icon Mark with Breathing Halo (Substantially Enlarged & Radiant) */}
+          {/* Pure Brand Icon Mark with Magnificent Ambient Glow (No Outer Box/Border) */}
           <motion.div
             initial={{ opacity: 0, scale: 0.75, y: -15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="relative mb-3.5"
+            className="relative mb-2 flex items-center justify-center"
           >
+            {/* Ambient Back Glow Halo */}
             <div
-              className="relative w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-3xl p-3 sm:p-4 flex items-center justify-center overflow-hidden shadow-2xl"
+              className="absolute inset-0 rounded-full blur-2xl pointer-events-none"
               style={{
-                background: "linear-gradient(145deg, rgba(28,34,28,0.95), rgba(8,12,9,0.98))",
-                border: "1.5px solid rgba(212,175,55,0.45)",
-                boxShadow: "0 0 60px rgba(212,175,55,0.35), 0 0 100px rgba(0,255,157,0.18)",
+                background: "radial-gradient(circle, rgba(212,175,55,0.45) 0%, rgba(0,255,157,0.2) 50%, transparent 80%)",
+                transform: "scale(1.25)",
               }}
-            >
-              <Image
-                src="/brand/logo-icon.png"
-                alt="SaruPol Brand Icon"
-                width={150}
-                height={150}
-                className="w-full h-full object-contain drop-shadow-[0_8px_20px_rgba(212,175,55,0.5)]"
-                priority
-              />
-            </div>
+            />
+            <Image
+              src="/brand/logo-icon.png"
+              alt="SaruPol Brand Icon"
+              width={200}
+              height={200}
+              className="relative z-10 w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 object-contain drop-shadow-[0_0_35px_rgba(212,175,55,0.55)]"
+              priority
+            />
           </motion.div>
 
-          {/* 3D Embossed Text Logo Brand Reveal (Significantly Enlarged & Prominent) */}
+          {/* 3D Embossed Text Logo Brand Reveal (Enlarged & Perfectly Balanced) */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25, duration: 0.7 }}
-            className="flex flex-col items-center text-center mb-6 px-4"
+            className="flex flex-col items-center text-center mb-7 px-4"
           >
-            <div className="relative max-w-[360px] sm:max-w-[480px] md:max-w-[540px]">
+            <div className="relative max-w-[400px] sm:max-w-[520px] md:max-w-[600px]">
               <Image
                 src="/brand/logo-text.png"
                 alt="සරුපොල් (SaruPol)"
-                width={540}
-                height={150}
-                className="w-auto h-20 sm:h-24 md:h-28 object-contain drop-shadow-[0_10px_32px_rgba(212,175,55,0.55)]"
+                width={600}
+                height={165}
+                className="w-auto h-24 sm:h-28 md:h-32 object-contain drop-shadow-[0_12px_36px_rgba(212,175,55,0.6)]"
                 priority
               />
             </div>
