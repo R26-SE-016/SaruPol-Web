@@ -11,10 +11,21 @@ interface FetchOptions {
 
 async function request<T>(path: string, options: FetchOptions = {}): Promise<T> {
   const url = `${GATEWAY_URL}${path}`;
+
+  // Automatically attach auth token if present in localStorage
+  let authHeader: Record<string, string> = {};
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("sarupol_auth_token");
+    if (token) {
+      authHeader = { Authorization: `Bearer ${token}` };
+    }
+  }
+
   const config: RequestInit = {
     method: options.method || 'GET',
     headers: {
       'Content-Type': 'application/json',
+      ...authHeader,
       ...options.headers,
     },
   };
@@ -35,18 +46,32 @@ async function request<T>(path: string, options: FetchOptions = {}): Promise<T> 
   }
 }
 
-// ─── Auth ───
+// ─── Auth API ───
+export interface AuthUserResponse {
+  id: string | number;
+  name: string;
+  email: string;
+  role?: string;
+  estate_id?: string;
+  phone?: string;
+  created_at?: string;
+}
+
 export const auth = {
   login: (email: string, password: string) =>
-    request<{ token: string; user: { id: number; name: string; email: string } }>('/api/auth/login', {
+    request<{ message: string; token: string; user: AuthUserResponse }>('/api/auth/login', {
       method: 'POST',
       body: { email, password },
     }),
-  register: (name: string, email: string, password: string) =>
-    request('/api/auth/register', {
+
+  register: (data: { name: string; email: string; password: string; role?: string; estate_id?: string; phone?: string; district?: string }) =>
+    request<{ message: string; token: string; user: AuthUserResponse }>('/api/auth/register', {
       method: 'POST',
-      body: { name, email, password },
+      body: data,
     }),
+
+  getProfile: () =>
+    request<{ user: AuthUserResponse }>('/api/auth/profile'),
 };
 
 // ─── Soil Intelligence ───

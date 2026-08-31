@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/layout/Navbar";
+import AuthGuard from "@/components/auth/AuthGuard";
 import { FlaskConical, Beaker, Droplets, Leaf, ArrowRight, RotateCcw } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
 
@@ -91,11 +92,12 @@ export default function SoilPage() {
   );
 
   return (
-    <main className="min-h-screen relative">
-      <Navbar />
-      <div className="absolute inset-0 telemetry-grid opacity-10 pointer-events-none" />
+    <AuthGuard>
+      <main className="min-h-screen relative">
+        <Navbar />
+        <div className="absolute inset-0 telemetry-grid opacity-10 pointer-events-none" />
 
-      <div className="max-w-6xl mx-auto px-6 pt-24 pb-16 relative z-10">
+        <div className="max-w-6xl mx-auto px-6 pt-24 pb-16 relative z-10">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
           <div className="flex items-center gap-3 mb-3">
@@ -226,7 +228,8 @@ export default function SoilPage() {
             </div>
           </motion.div>
         )}
-      </div>
-    </main>
+        </div>
+      </main>
+    </AuthGuard>
   );
 }

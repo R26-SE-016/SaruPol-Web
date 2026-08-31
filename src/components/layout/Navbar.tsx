@@ -5,16 +5,35 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Menu, X, FlaskConical, BarChart3, MessageCircle, Map, Microscope, Globe, User, Sun, Moon } from "lucide-react";
+import {
+  Menu,
+  X,
+  FlaskConical,
+  BarChart3,
+  MessageCircle,
+  Map,
+  Microscope,
+  Globe,
+  User,
+  Sun,
+  Moon,
+  LogIn,
+  LogOut,
+  UserCheck,
+  Settings
+} from "lucide-react";
 import { useTranslation, SUPPORTED_LANGUAGES } from "@/lib/i18n/LanguageContext";
 import { Language } from "@/lib/i18n/types";
 import { useTheme } from "@/lib/theme/ThemeContext";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const { t, language, setLanguage } = useTranslation();
   const { theme, toggleTheme } = useTheme();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const navLinks = [
     { name: t.nav.dashboard, path: "/", icon: <BarChart3 className="w-4 h-4" /> },
@@ -186,28 +205,116 @@ export default function Navbar() {
               </AnimatePresence>
             </button>
 
-            {/* Circular Profile Avatar Section */}
-            <div 
-              className="relative group cursor-pointer"
-              title="User Profile & Settings"
-            >
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_20px_rgba(212,175,55,0.35)] shadow-md border"
-                style={{
-                  background: "var(--card-bg)",
-                  borderColor: "var(--card-border)",
-                }}
-              >
-                <User className="w-4 h-4 transition-colors group-hover:text-[#00FF9D]" style={{ color: "#D4AF37" }} />
-              </div>
-              <div
-                className="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border-2"
-                style={{
-                  backgroundColor: "#00FF9D",
-                  borderColor: "var(--background)",
-                  boxShadow: "0 0 6px #00FF9D",
-                }}
-              />
+            {/* Circular Profile Avatar & Dropdown Section */}
+            <div className="relative">
+              {isAuthenticated && user ? (
+                <div>
+                  <button
+                    onClick={() => setProfileOpen(!profileOpen)}
+                    className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(212,175,55,0.35)] shadow-md border relative cursor-pointer"
+                    style={{
+                      background: "var(--card-bg)",
+                      borderColor: profileOpen ? "#00FF9D" : "var(--card-border)",
+                    }}
+                    title={`${user.name} (${user.email})`}
+                    aria-label="User Profile Menu"
+                  >
+                    <User className="w-4 h-4 transition-colors" style={{ color: "#D4AF37" }} />
+                    <div
+                      className="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border-2"
+                      style={{
+                        backgroundColor: "#00FF9D",
+                        borderColor: "var(--background)",
+                        boxShadow: "0 0 6px #00FF9D",
+                      }}
+                    />
+                  </button>
+
+                  {/* Profile Dropdown Menu */}
+                  <AnimatePresence>
+                    {profileOpen && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-40"
+                          onClick={() => setProfileOpen(false)}
+                        />
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                          className="absolute right-0 mt-3 w-64 p-3 rounded-2xl border backdrop-blur-2xl shadow-2xl z-50 space-y-2.5"
+                          style={{
+                            background: theme === "dark" ? "rgba(10, 20, 14, 0.96)" : "rgba(255, 255, 255, 0.98)",
+                            borderColor: "var(--card-border)",
+                          }}
+                        >
+                          {/* User Header */}
+                          <div className="p-2.5 rounded-xl border flex items-center gap-3" style={{ background: "rgba(0,0,0,0.03)", borderColor: "var(--card-border)" }}>
+                            <div
+                              className="w-10 h-10 rounded-xl flex items-center justify-center border font-mono font-bold text-xs"
+                              style={{ background: "rgba(212,175,55,0.15)", borderColor: "rgba(212,175,55,0.3)", color: "#D4AF37" }}
+                            >
+                              {user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+                            </div>
+                            <div className="overflow-hidden flex-1">
+                              <p className="text-xs font-bold truncate" style={{ color: "var(--text-primary)" }}>
+                                {user.name}
+                              </p>
+                              <p className="text-[10px] font-mono text-muted truncate">
+                                {user.email}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Role Pill */}
+                          <div className="px-2.5 py-1 rounded-lg border text-[10px] font-mono flex items-center justify-between" style={{ borderColor: "var(--card-border)" }}>
+                            <span className="text-muted">Estate Role:</span>
+                            <span className="font-bold text-amber-500 uppercase">{user.role}</span>
+                          </div>
+
+                          {/* Navigation Links */}
+                          <div className="space-y-1 pt-1 border-t" style={{ borderColor: "var(--card-border)" }}>
+                            <Link
+                              href="/profile"
+                              onClick={() => setProfileOpen(false)}
+                              className="flex items-center gap-2.5 p-2 rounded-xl text-xs font-mono smooth-transition hover:bg-black/5 dark:hover:bg-white/5"
+                              style={{ color: "var(--text-primary)" }}
+                            >
+                              <User className="w-4 h-4 text-emerald-400" />
+                              <span>{t.profile.title}</span>
+                            </Link>
+
+                            <button
+                              onClick={() => {
+                                setProfileOpen(false);
+                                logout();
+                              }}
+                              className="w-full flex items-center gap-2.5 p-2 rounded-xl text-xs font-mono text-red-400 hover:bg-red-500/10 smooth-transition cursor-pointer"
+                            >
+                              <LogOut className="w-4 h-4" />
+                              <span>{t.auth.signOut}</span>
+                            </button>
+                          </div>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/login"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono font-bold uppercase tracking-wider smooth-transition hover:opacity-80 shadow-sm"
+                    style={{
+                      background: "linear-gradient(135deg, #00FF9D, #D4AF37)",
+                      color: "#030705",
+                    }}
+                  >
+                    <LogIn className="w-3.5 h-3.5" />
+                    <span>{t.auth.loginBtn}</span>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
 
@@ -216,7 +323,7 @@ export default function Navbar() {
             {/* Mobile Theme Toggle Button */}
             <button
               onClick={toggleTheme}
-              className="w-9 h-9 rounded-lg flex items-center justify-center border"
+              className="w-9 h-9 rounded-lg flex items-center justify-center border cursor-pointer"
               style={{
                 background: "var(--card-bg)",
                 borderColor: "var(--card-border)",
@@ -232,7 +339,7 @@ export default function Navbar() {
 
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-2 smooth-transition rounded-lg hover:bg-white/5"
+              className="p-2 smooth-transition rounded-lg hover:bg-white/5 cursor-pointer"
               style={{ color: "var(--text-primary)" }}
               aria-label="Toggle menu"
             >
@@ -342,6 +449,51 @@ export default function Navbar() {
                   </Link>
                 </motion.div>
               ))}
+
+              {/* Mobile Profile / Auth Links */}
+              <div className="pt-2 border-t mt-2" style={{ borderColor: "var(--card-border)" }}>
+                {isAuthenticated && user ? (
+                  <div className="space-y-2">
+                    <Link
+                      href="/profile"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center justify-between p-3 rounded-xl border text-sm font-mono"
+                      style={{ background: "var(--card-bg)", borderColor: "var(--card-border)", color: "var(--text-primary)" }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-emerald-400" />
+                        <span className="font-bold">{user.name}</span>
+                      </div>
+                      <span className="text-[10px] text-amber-500 font-bold uppercase">{user.role}</span>
+                    </Link>
+
+                    <button
+                      onClick={() => {
+                        setMobileOpen(false);
+                        logout();
+                      }}
+                      className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-mono text-red-400 hover:bg-red-500/10 cursor-pointer"
+                      style={{ borderColor: "rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.06)" }}
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>{t.auth.signOut}</span>
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-mono font-bold uppercase tracking-wider shadow-lg"
+                    style={{
+                      background: "linear-gradient(135deg, #00FF9D, #D4AF37)",
+                      color: "#030705",
+                    }}
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span>{t.auth.loginBtn}</span>
+                  </Link>
+                )}
+              </div>
             </div>
           </motion.div>
         )}

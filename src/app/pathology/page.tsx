@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 import Script from "next/script";
 import Navbar from "@/components/layout/Navbar";
+import AuthGuard from "@/components/auth/AuthGuard";
 import { 
   UploadCloud, Microscope, Loader2, Plane, Smartphone, 
   AlertTriangle, CheckCircle2, LayoutDashboard, History,
@@ -444,11 +445,12 @@ export default function PathologyPage() {
   ];
 
   return (
-    <main className="min-h-screen relative overflow-hidden" style={{ background: "var(--background)" }}>
-      <Script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js" strategy="afterInteractive" />
-      <Script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-tflite@0.0.1-alpha.9/dist/tf-tflite.min.js" strategy="afterInteractive" />
-      
-      <Navbar />
+    <AuthGuard>
+      <main className="min-h-screen relative overflow-hidden" style={{ background: "var(--background)" }}>
+        <Script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js" strategy="afterInteractive" />
+        <Script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-tflite@0.0.1-alpha.9/dist/tf-tflite.min.js" strategy="afterInteractive" />
+        
+        <Navbar />
       
       {/* Unified SaruPol Background Ambience */}
       <div className="absolute inset-0 telemetry-grid pointer-events-none opacity-20" />
@@ -1742,5 +1744,6 @@ export default function PathologyPage() {
         </AnimatePresence>
       </div>
     </main>
+    </AuthGuard>
   );
 }

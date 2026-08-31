@@ -6,6 +6,7 @@ import BootLoader from "@/components/ui/BootLoader";
 import CommandPalette from "@/components/ui/CommandPalette";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { ThemeProvider } from "@/lib/theme/ThemeContext";
+import { AuthProvider } from "@/lib/auth/AuthContext";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -66,10 +67,12 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <LanguageProvider>
-            <CustomCursor />
-            <BootLoader />
-            <CommandPalette />
-            {children}
+            <AuthProvider>
+              <CustomCursor />
+              <BootLoader />
+              <CommandPalette />
+              {children}
+            </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

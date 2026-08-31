@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/layout/Navbar";
+import AuthGuard from "@/components/auth/AuthGuard";
 import {
   MessageCircle, Send, Mic, MicOff, Volume2, Globe, Bot, User,
   Sparkles, History, Cpu, ShieldCheck, Compass, Sun, Copy, Check,
@@ -418,8 +419,9 @@ export default function AdvisoryPage() {
   };
 
   return (
-    <main className="h-screen overflow-hidden flex flex-col relative" style={{ background: "var(--background)", color: "var(--text-primary)" }}>
-      <Navbar />
+    <AuthGuard>
+      <main className="h-screen overflow-hidden flex flex-col relative" style={{ background: "var(--background)", color: "var(--text-primary)" }}>
+        <Navbar />
       
       {/* Unified SaruPol Background Ambience matching Pathology */}
       <div className="absolute inset-0 telemetry-grid pointer-events-none opacity-20" />
@@ -880,6 +882,7 @@ export default function AdvisoryPage() {
         onClearAll={handleClearAllHistory}
       />
     </main>
+    </AuthGuard>
   );
 }
 

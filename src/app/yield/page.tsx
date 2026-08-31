@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/layout/Navbar";
+import AuthGuard from "@/components/auth/AuthGuard";
 import {
   TrendingUp,
   BarChart3,
@@ -265,8 +266,9 @@ export default function YieldPage() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <main className="min-h-screen relative" style={{ background: "var(--background)", color: "var(--text-primary)" }}>
-      <Navbar />
+    <AuthGuard>
+      <main className="min-h-screen relative" style={{ background: "var(--background)", color: "var(--text-primary)" }}>
+        <Navbar />
 
       {/* Background Ambience */}
       <div className="absolute inset-0 telemetry-grid opacity-15 pointer-events-none" />
@@ -470,5 +472,6 @@ export default function YieldPage() {
 
       </div>
     </main>
+    </AuthGuard>
   );
 }

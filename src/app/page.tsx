@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
+import AuthGuard from "@/components/auth/AuthGuard";
 import {
   FlaskConical, Microscope, BarChart3, MessageCircle, Map,
   ArrowRight, Activity, Cpu, Database, Wifi, TrendingUp
@@ -71,8 +72,9 @@ export default function DashboardPage() {
   ];
 
   return (
-    <main className="min-h-screen flex flex-col items-center relative overflow-hidden">
-      <Navbar />
+    <AuthGuard>
+      <main className="min-h-screen flex flex-col items-center relative overflow-hidden">
+        <Navbar />
 
       {/* Background luxury gold & emerald glow */}
       <div
@@ -345,5 +347,6 @@ export default function DashboardPage() {
         </p>
       </footer>
     </main>
+    </AuthGuard>
   );
 }

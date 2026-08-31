@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Navbar from "@/components/layout/Navbar";
+import AuthGuard from "@/components/auth/AuthGuard";
 import { TreePine, Map, Layers, Radio } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
 
@@ -17,8 +18,9 @@ export default function OperationsPage() {
   const { t } = useTranslation();
 
   return (
-    <main className="min-h-screen relative">
-      <Navbar />
+    <AuthGuard>
+      <main className="min-h-screen relative">
+        <Navbar />
       <div className="absolute inset-0 telemetry-grid opacity-10 pointer-events-none" />
 
       <div className="max-w-6xl mx-auto px-6 pt-24 pb-16 relative z-10">
@@ -108,5 +110,6 @@ export default function OperationsPage() {
         </motion.div>
       </div>
     </main>
+    </AuthGuard>
   );
 }
