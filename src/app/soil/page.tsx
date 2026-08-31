@@ -55,20 +55,21 @@ export default function SoilPage() {
 
   const InputField = ({ label, value, onChange, unit }: { label: string; value: string; onChange: (v: string) => void; unit: string }) => (
     <div>
-      <label className="text-[10px] uppercase tracking-wider block mb-1 font-mono" style={{ color: "rgba(255,255,255,0.4)" }}>{label}</label>
+      <label className="text-[10px] uppercase tracking-wider block mb-1 font-mono" style={{ color: "var(--text-muted)" }}>{label}</label>
       <div className="flex items-center gap-1">
         <input
           type="number"
           step="0.001"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-transparent px-2 py-1.5 rounded-lg text-sm font-mono outline-none"
+          className="w-full px-2.5 py-1.5 rounded-lg text-sm font-mono outline-none smooth-transition"
           style={{
-            border: "1px solid rgba(0,255,157,0.15)",
-            color: "#e8efe8",
+            background: "var(--input-bg)",
+            border: "1px solid var(--input-border)",
+            color: "var(--text-primary)",
           }}
         />
-        <span className="text-[10px] font-mono" style={{ color: "rgba(0,255,157,0.4)" }}>{unit}</span>
+        <span className="text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>{unit}</span>
       </div>
     </div>
   );
@@ -77,8 +78,8 @@ export default function SoilPage() {
     <div className="glass-card p-5">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-3 h-3 rounded-full" style={{ background: color }} />
-        <h3 className="text-sm font-medium" style={{ color: "rgba(232,239,232,0.8)" }}>{title}</h3>
-        <span className="text-[9px] font-mono ml-auto" style={{ color: "rgba(255,255,255,0.3)" }}>{t.soil.manureCircle}</span>
+        <h3 className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{title}</h3>
+        <span className="text-[9px] font-mono ml-auto" style={{ color: "var(--text-muted)" }}>{t.soil.manureCircle}</span>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <InputField label={t.soil.nitrogen} value={point.N} onChange={(v) => updatePoint(setter, "N", v)} unit="%" />
@@ -98,17 +99,17 @@ export default function SoilPage() {
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 rounded-lg" style={{ background: "rgba(0,255,157,0.1)" }}>
+            <div className="p-2 rounded-lg" style={{ background: "rgba(0,255,157,0.12)" }}>
               <FlaskConical className="w-5 h-5" style={{ color: "#00FF9D" }} />
             </div>
             <div>
-              <h1 className="text-2xl font-light" style={{ fontFamily: "var(--font-outfit)" }}>{t.soil.title}</h1>
-              <p className="text-[10px] uppercase tracking-[0.3em] font-mono" style={{ color: "rgba(0,255,157,0.5)" }}>
+              <h1 className="text-2xl font-normal" style={{ fontFamily: "var(--font-outfit)", color: "var(--text-primary)" }}>{t.soil.title}</h1>
+              <p className="text-[10px] uppercase tracking-[0.3em] font-mono" style={{ color: "#00FF9D" }}>
                 {t.soil.subtitle}
               </p>
             </div>
           </div>
-          <p className="text-sm max-w-2xl leading-relaxed" style={{ color: "rgba(232,239,232,0.6)" }}>
+          <p className="text-sm max-w-2xl leading-relaxed" style={{ color: "var(--text-secondary)" }}>
             {t.soil.description}
           </p>
         </motion.div>
@@ -118,17 +119,17 @@ export default function SoilPage() {
           className="glass-panel p-5 mb-6 flex flex-wrap gap-6"
         >
           <div>
-            <label className="text-[10px] uppercase tracking-wider block mb-1 font-mono" style={{ color: "rgba(255,255,255,0.4)" }}>{t.soil.treeNo}</label>
+            <label className="text-[10px] uppercase tracking-wider block mb-1 font-mono" style={{ color: "var(--text-muted)" }}>{t.soil.treeNo}</label>
             <input type="number" value={treeNo} onChange={(e) => setTreeNo(e.target.value)}
-              className="bg-transparent px-3 py-1.5 rounded-lg text-sm font-mono outline-none w-24"
-              style={{ border: "1px solid rgba(0,255,157,0.15)", color: "#e8efe8" }}
+              className="px-3 py-1.5 rounded-lg text-sm font-mono outline-none w-24 smooth-transition"
+              style={{ background: "var(--input-bg)", border: "1px solid var(--input-border)", color: "var(--text-primary)" }}
             />
           </div>
           <div>
-            <label className="text-[10px] uppercase tracking-wider block mb-1 font-mono" style={{ color: "rgba(255,255,255,0.4)" }}>{t.soil.zoneId}</label>
+            <label className="text-[10px] uppercase tracking-wider block mb-1 font-mono" style={{ color: "var(--text-muted)" }}>{t.soil.zoneId}</label>
             <input type="text" value={zoneId} onChange={(e) => setZoneId(e.target.value)}
-              className="bg-transparent px-3 py-1.5 rounded-lg text-sm font-mono outline-none w-40"
-              style={{ border: "1px solid rgba(0,255,157,0.15)", color: "#e8efe8" }}
+              className="px-3 py-1.5 rounded-lg text-sm font-mono outline-none w-40 smooth-transition"
+              style={{ background: "var(--input-bg)", border: "1px solid var(--input-border)", color: "var(--text-primary)" }}
             />
           </div>
         </motion.div>
@@ -151,11 +152,11 @@ export default function SoilPage() {
           <button
             onClick={handleAnalyze}
             disabled={isAnalyzing}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl text-xs uppercase tracking-widest font-mono font-medium smooth-transition"
+            className="flex items-center gap-2 px-6 py-3 rounded-xl text-xs uppercase tracking-widest font-mono font-medium smooth-transition shadow-lg"
             style={{
-              background: "linear-gradient(135deg, rgba(0,255,157,0.2), rgba(0,229,255,0.2))",
-              color: "#00FF9D",
-              border: "1px solid rgba(0,255,157,0.3)",
+              background: "linear-gradient(135deg, rgba(0,255,157,0.25), rgba(0,229,255,0.25))",
+              color: "var(--text-primary)",
+              border: "1px solid rgba(0,255,157,0.4)",
             }}
           >
             {isAnalyzing ? (
@@ -177,49 +178,49 @@ export default function SoilPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             {/* Leaf NPK */}
             <div className="glass-card p-6">
-              <h2 className="text-sm font-medium mb-4" style={{ color: "rgba(232,239,232,0.8)" }}>
+              <h2 className="text-sm font-medium mb-4" style={{ color: "var(--text-primary)" }}>
                 {t.soil.leafEst}
               </h2>
               <div className="grid grid-cols-3 gap-4">
-                <div className="p-4 rounded-lg bg-black/40 text-center">
-                  <p className="text-2xl font-mono font-light text-emerald-400">{result.leafN.toFixed(2)}%</p>
-                  <p className="text-[10px] uppercase tracking-wider mt-1 font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>{t.soil.leafN}</p>
-                  <span className="text-[9px] font-mono text-emerald-400/80">{t.soil.optimalN}</span>
+                <div className="p-4 rounded-xl border text-center smooth-transition" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
+                  <p className="text-2xl font-mono font-light text-emerald-500">{result.leafN.toFixed(2)}%</p>
+                  <p className="text-[10px] uppercase tracking-wider mt-1 font-mono" style={{ color: "var(--text-muted)" }}>{t.soil.leafN}</p>
+                  <span className="text-[9px] font-mono text-emerald-500/80">{t.soil.optimalN}</span>
                 </div>
-                <div className="p-4 rounded-lg bg-black/40 text-center">
-                  <p className="text-2xl font-mono font-light text-cyan-400">{result.leafP.toFixed(3)}%</p>
-                  <p className="text-[10px] uppercase tracking-wider mt-1 font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>{t.soil.leafP}</p>
-                  <span className="text-[9px] font-mono text-cyan-400/80">{t.soil.optimalP}</span>
+                <div className="p-4 rounded-xl border text-center smooth-transition" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
+                  <p className="text-2xl font-mono font-light text-cyan-500">{result.leafP.toFixed(3)}%</p>
+                  <p className="text-[10px] uppercase tracking-wider mt-1 font-mono" style={{ color: "var(--text-muted)" }}>{t.soil.leafP}</p>
+                  <span className="text-[9px] font-mono text-cyan-500/80">{t.soil.optimalP}</span>
                 </div>
-                <div className="p-4 rounded-lg bg-black/40 text-center">
-                  <p className="text-2xl font-mono font-light text-amber-400">{result.leafK.toFixed(2)}%</p>
-                  <p className="text-[10px] uppercase tracking-wider mt-1 font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>{t.soil.leafK}</p>
-                  <span className="text-[9px] font-mono text-amber-400/80">{t.soil.optimalK}</span>
+                <div className="p-4 rounded-xl border text-center smooth-transition" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
+                  <p className="text-2xl font-mono font-light text-amber-500">{result.leafK.toFixed(2)}%</p>
+                  <p className="text-[10px] uppercase tracking-wider mt-1 font-mono" style={{ color: "var(--text-muted)" }}>{t.soil.leafK}</p>
+                  <span className="text-[9px] font-mono text-amber-500/80">{t.soil.optimalK}</span>
                 </div>
               </div>
             </div>
 
             {/* DFR Dosage */}
             <div className="glass-card p-6">
-              <h2 className="text-sm font-medium mb-4" style={{ color: "rgba(232,239,232,0.8)" }}>
+              <h2 className="text-sm font-medium mb-4" style={{ color: "var(--text-primary)" }}>
                 {t.soil.dosingPlan}
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 rounded-lg bg-black/40">
-                  <p className="text-[10px] uppercase tracking-wider mb-1 font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>{t.soil.urea}</p>
-                  <p className="text-xl font-mono text-emerald-400">{result.urea} <span className="text-xs">g</span></p>
+                <div className="p-4 rounded-xl border smooth-transition" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
+                  <p className="text-[10px] uppercase tracking-wider mb-1 font-mono" style={{ color: "var(--text-muted)" }}>{t.soil.urea}</p>
+                  <p className="text-xl font-mono text-emerald-500">{result.urea} <span className="text-xs">g</span></p>
                 </div>
-                <div className="p-4 rounded-lg bg-black/40">
-                  <p className="text-[10px] uppercase tracking-wider mb-1 font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>{t.soil.erp}</p>
-                  <p className="text-xl font-mono text-cyan-400">{result.erp} <span className="text-xs">g</span></p>
+                <div className="p-4 rounded-xl border smooth-transition" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
+                  <p className="text-[10px] uppercase tracking-wider mb-1 font-mono" style={{ color: "var(--text-muted)" }}>{t.soil.erp}</p>
+                  <p className="text-xl font-mono text-cyan-500">{result.erp} <span className="text-xs">g</span></p>
                 </div>
-                <div className="p-4 rounded-lg bg-black/40">
-                  <p className="text-[10px] uppercase tracking-wider mb-1 font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>{t.soil.mop}</p>
-                  <p className="text-xl font-mono text-amber-400">{result.mop} <span className="text-xs">g</span></p>
+                <div className="p-4 rounded-xl border smooth-transition" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
+                  <p className="text-[10px] uppercase tracking-wider mb-1 font-mono" style={{ color: "var(--text-muted)" }}>{t.soil.mop}</p>
+                  <p className="text-xl font-mono text-amber-500">{result.mop} <span className="text-xs">g</span></p>
                 </div>
-                <div className="p-4 rounded-lg bg-black/40">
-                  <p className="text-[10px] uppercase tracking-wider mb-1 font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>{t.soil.dolomite}</p>
-                  <p className="text-xl font-mono text-purple-400">{result.dolomite} <span className="text-xs">g</span></p>
+                <div className="p-4 rounded-xl border smooth-transition" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
+                  <p className="text-[10px] uppercase tracking-wider mb-1 font-mono" style={{ color: "var(--text-muted)" }}>{t.soil.dolomite}</p>
+                  <p className="text-xl font-mono text-purple-500">{result.dolomite} <span className="text-xs">g</span></p>
                 </div>
               </div>
             </div>

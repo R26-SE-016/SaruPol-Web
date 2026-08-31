@@ -5,6 +5,7 @@ import CustomCursor from "@/components/ui/CustomCursor";
 import BootLoader from "@/components/ui/BootLoader";
 import CommandPalette from "@/components/ui/CommandPalette";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
+import { ThemeProvider } from "@/lib/theme/ThemeContext";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -54,21 +55,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${outfit.variable} ${jakarta.variable} ${jetbrains.variable} antialiased min-h-screen selection:bg-emerald-neon/20`}
+        className={`${outfit.variable} ${jakarta.variable} ${jetbrains.variable} antialiased min-h-screen selection:bg-emerald-neon/20 smooth-transition`}
         style={{
           fontFamily: "var(--font-jakarta), sans-serif",
-          backgroundColor: "#030705",
-          color: "#e8efe8",
+          backgroundColor: "var(--background)",
+          color: "var(--foreground)",
         }}
       >
-        <LanguageProvider>
-          <CustomCursor />
-          <BootLoader />
-          <CommandPalette />
-          {children}
-        </LanguageProvider>
+        <ThemeProvider>
+          <LanguageProvider>
+            <CustomCursor />
+            <BootLoader />
+            <CommandPalette />
+            {children}
+          </LanguageProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

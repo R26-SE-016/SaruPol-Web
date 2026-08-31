@@ -95,26 +95,26 @@ export default function AdvisoryPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg" style={{ background: "rgba(230,175,46,0.1)" }}>
+              <div className="p-2 rounded-lg" style={{ background: "rgba(230,175,46,0.15)" }}>
                 <MessageCircle className="w-5 h-5" style={{ color: "#E6AF2E" }} />
               </div>
               <div>
-                <h1 className="text-2xl font-light" style={{ fontFamily: "var(--font-outfit)" }}>{t.advisory.title}</h1>
-                <p className="text-[10px] uppercase tracking-[0.3em] font-mono" style={{ color: "rgba(230,175,46,0.5)" }}>
+                <h1 className="text-2xl font-normal" style={{ fontFamily: "var(--font-outfit)", color: "var(--text-primary)" }}>{t.advisory.title}</h1>
+                <p className="text-[10px] uppercase tracking-[0.3em] font-mono" style={{ color: "#E6AF2E" }}>
                   {t.advisory.subtitle}
                 </p>
               </div>
             </div>
             {/* Language Toggle */}
-            <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+            <div className="flex items-center gap-1 p-1 rounded-xl border smooth-transition" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
               {SUPPORTED_LANGUAGES.map(lang => (
                 <button
                   key={lang.code}
                   onClick={() => setLanguage(lang.code as Language)}
                   className="px-3 py-1 rounded-lg text-xs font-mono smooth-transition"
                   style={{
-                    background: language === lang.code ? "rgba(230,175,46,0.2)" : "transparent",
-                    color: language === lang.code ? "#E6AF2E" : "rgba(255,255,255,0.4)",
+                    background: language === lang.code ? "rgba(230,175,46,0.25)" : "transparent",
+                    color: language === lang.code ? "#E6AF2E" : "var(--text-secondary)",
                     fontWeight: language === lang.code ? "700" : "400",
                   }}
                 >
@@ -129,8 +129,8 @@ export default function AdvisoryPage() {
         <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2" style={{ maxHeight: "calc(100vh - 280px)" }}>
           {messages.length === 0 && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-16">
-              <Sparkles className="w-10 h-10 mb-4" style={{ color: "rgba(230,175,46,0.3)" }} />
-              <p className="text-sm mb-6 font-light" style={{ color: "rgba(255,255,255,0.4)" }}>
+              <Sparkles className="w-10 h-10 mb-4" style={{ color: "rgba(230,175,46,0.6)" }} />
+              <p className="text-sm mb-6 font-medium" style={{ color: "var(--text-secondary)" }}>
                 {t.advisory.title}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl w-full">
@@ -138,11 +138,9 @@ export default function AdvisoryPage() {
                   <button
                     key={i}
                     onClick={() => sendMessage(prompt)}
-                    className="text-left px-4 py-3 rounded-xl text-xs font-mono smooth-transition hover:border-amber-500/40"
+                    className="text-left px-4 py-3 rounded-xl text-xs font-mono smooth-transition hover:border-amber-500/50 glass-card"
                     style={{
-                      background: "rgba(255,255,255,0.03)",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      color: "rgba(232,239,232,0.7)"
+                      color: "var(--text-secondary)"
                     }}
                   >
                     {prompt}
@@ -158,27 +156,27 @@ export default function AdvisoryPage() {
             >
               {msg.role === "assistant" && (
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-1"
-                  style={{ background: "rgba(230,175,46,0.1)" }}
+                  style={{ background: "rgba(230,175,46,0.15)" }}
                 >
                   <Bot className="w-3.5 h-3.5" style={{ color: "#E6AF2E" }} />
                 </div>
               )}
               <div className={`max-w-[80%] p-4 rounded-2xl ${msg.role === "user" ? "rounded-br-md" : "rounded-bl-md"}`}
                 style={{
-                  background: msg.role === "user" ? "rgba(0,255,157,0.08)" : "rgba(255,255,255,0.04)",
-                  border: `1px solid ${msg.role === "user" ? "rgba(0,255,157,0.12)" : "rgba(255,255,255,0.06)"}`,
+                  background: msg.role === "user" ? "rgba(0,255,157,0.12)" : "var(--card-bg)",
+                  border: `1px solid ${msg.role === "user" ? "rgba(0,255,157,0.25)" : "var(--card-border)"}`,
                 }}
               >
-                <p className="text-sm leading-relaxed whitespace-pre-wrap font-light" style={{ color: "rgba(232,239,232,0.85)" }}>
+                <p className="text-sm leading-relaxed whitespace-pre-wrap font-normal" style={{ color: "var(--text-primary)" }}>
                   {msg.content}
                 </p>
                 {msg.sources && (
-                  <div className="mt-3 pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                    <p className="text-[9px] uppercase tracking-wider font-mono mb-1" style={{ color: "rgba(230,175,46,0.5)" }}>
+                  <div className="mt-3 pt-2 border-t" style={{ borderColor: "var(--card-border)" }}>
+                    <p className="text-[9px] uppercase tracking-wider font-mono mb-1" style={{ color: "#E6AF2E" }}>
                       {t.advisory.consensusVerified}
                     </p>
                     {msg.sources.map((s, i) => (
-                      <span key={i} className="text-[10px] font-mono mr-2" style={{ color: "rgba(255,255,255,0.35)" }}>
+                      <span key={i} className="text-[10px] font-mono mr-2" style={{ color: "var(--text-muted)" }}>
                         [{i + 1}] {s}
                       </span>
                     ))}
@@ -187,7 +185,7 @@ export default function AdvisoryPage() {
               </div>
               {msg.role === "user" && (
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-1"
-                  style={{ background: "rgba(0,255,157,0.08)" }}
+                  style={{ background: "rgba(0,255,157,0.15)" }}
                 >
                   <User className="w-3.5 h-3.5" style={{ color: "#00FF9D" }} />
                 </div>
@@ -197,14 +195,14 @@ export default function AdvisoryPage() {
 
           {isLoading && (
             <div className="flex gap-3">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(230,175,46,0.1)" }}>
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(230,175,46,0.15)" }}>
                 <Bot className="w-3.5 h-3.5" style={{ color: "#E6AF2E" }} />
               </div>
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center gap-2">
+              <div className="p-4 rounded-2xl border flex items-center gap-2" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
                 <div className="w-2 h-2 rounded-full bg-amber-400 animate-bounce" />
                 <div className="w-2 h-2 rounded-full bg-amber-400 animate-bounce [animation-delay:0.2s]" />
                 <div className="w-2 h-2 rounded-full bg-amber-400 animate-bounce [animation-delay:0.4s]" />
-                <span className="text-xs font-mono text-white/40 ml-2">Consulting CRI Multi-LLM RAG...</span>
+                <span className="text-xs font-mono ml-2" style={{ color: "var(--text-muted)" }}>Consulting CRI Multi-LLM RAG...</span>
               </div>
             </div>
           )}
@@ -216,7 +214,8 @@ export default function AdvisoryPage() {
         <div className="glass-panel p-3 flex items-center gap-3">
           <button
             onClick={toggleVoice}
-            className={`p-2.5 rounded-xl smooth-transition ${isListening ? "bg-red-500/20 text-red-400" : "bg-white/5 text-white/50 hover:text-white"}`}
+            className={`p-2.5 rounded-xl smooth-transition ${isListening ? "bg-red-500/20 text-red-500" : "hover:bg-black/5"}`}
+            style={{ color: isListening ? "#FF4C4C" : "var(--text-secondary)" }}
           >
             {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
           </button>
@@ -227,15 +226,15 @@ export default function AdvisoryPage() {
             onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
             placeholder={isListening ? t.advisory.listening : t.advisory.chatPlaceholder}
             className="flex-1 bg-transparent text-sm outline-none px-2 font-mono"
-            style={{ color: "#e8efe8" }}
+            style={{ color: "var(--text-primary)" }}
           />
           <button
             onClick={() => sendMessage(input)}
             disabled={!input.trim() || isLoading}
             className="p-2.5 rounded-xl smooth-transition"
             style={{
-              background: input.trim() ? "linear-gradient(135deg, #E6AF2E, #00FF9D)" : "rgba(255,255,255,0.05)",
-              color: input.trim() ? "#030705" : "rgba(255,255,255,0.2)",
+              background: input.trim() ? "linear-gradient(135deg, #E6AF2E, #00FF9D)" : "var(--card-bg)",
+              color: input.trim() ? "#030705" : "var(--text-muted)",
             }}
           >
             <Send className="w-4 h-4" />

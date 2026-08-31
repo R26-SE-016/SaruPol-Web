@@ -99,7 +99,7 @@ export default function YieldPage() {
               <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center gap-2">
                   <span style={{ color: s.color }}>{s.icon}</span>
-                  <span className="text-xs uppercase tracking-wider font-mono font-medium" style={{ color: "rgba(232,239,232,0.85)" }}>
+                  <span className="text-xs uppercase tracking-wider font-mono font-medium" style={{ color: "var(--text-primary)" }}>
                     {s.label}
                   </span>
                 </div>
@@ -116,7 +116,7 @@ export default function YieldPage() {
                 onChange={(e) => update(s.key, parseFloat(e.target.value))}
                 className="w-full h-1.5 rounded-lg appearance-none cursor-pointer"
                 style={{
-                  background: `linear-gradient(90deg, ${s.color} ${(params[s.key] - s.min) / (s.max - s.min) * 100}%, rgba(255,255,255,0.05) 0%)`,
+                  background: `linear-gradient(90deg, ${s.color} ${(params[s.key] - s.min) / (s.max - s.min) * 100}%, var(--card-border) 0%)`,
                 }}
               />
             </motion.div>
@@ -128,11 +128,11 @@ export default function YieldPage() {
           <button
             onClick={handlePredict}
             disabled={isLoading}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl text-xs uppercase tracking-widest font-mono font-medium smooth-transition"
+            className="flex items-center gap-2 px-6 py-3 rounded-xl text-xs uppercase tracking-widest font-mono font-medium smooth-transition shadow-lg"
             style={{
-              background: "linear-gradient(135deg, rgba(0,229,255,0.2), rgba(0,255,157,0.2))",
-              color: "#00E5FF",
-              border: "1px solid rgba(0,229,255,0.3)",
+              background: "linear-gradient(135deg, rgba(0,229,255,0.25), rgba(0,255,157,0.25))",
+              color: "var(--text-primary)",
+              border: "1px solid rgba(0,229,255,0.4)",
             }}
           >
             {isLoading ? (
@@ -154,37 +154,37 @@ export default function YieldPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div className="glass-card p-6 text-center">
-                <p className="text-3xl font-mono font-light text-cyan-400">{result.hybrid}</p>
-                <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>
+                <p className="text-3xl font-mono font-light text-cyan-500">{result.hybrid}</p>
+                <p className="text-[10px] uppercase tracking-wider mt-1 font-mono" style={{ color: "var(--text-muted)" }}>
                   {t.yield.cycleForecast} (Nuts / Palm)
                 </p>
-                <span className="text-[9px] font-mono text-cyan-400/80">{result.status}</span>
+                <span className="text-[9px] font-mono text-cyan-500">{result.status}</span>
               </div>
               <div className="glass-card p-6 text-center">
-                <p className="text-3xl font-mono font-light text-emerald-400">{Math.round(result.hybrid * 8.1)}</p>
-                <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>
+                <p className="text-3xl font-mono font-light text-emerald-500">{Math.round(result.hybrid * 8.1)}</p>
+                <p className="text-[10px] uppercase tracking-wider mt-1 font-mono" style={{ color: "var(--text-muted)" }}>
                   {t.yield.annualYield}
                 </p>
-                <span className="text-[9px] font-mono text-emerald-400/80">{t.yield.nutsPerPalm}</span>
+                <span className="text-[9px] font-mono text-emerald-500">{t.yield.nutsPerPalm}</span>
               </div>
               <div className="glass-card p-6 text-center">
-                <p className="text-3xl font-mono font-light text-amber-400">{result.confidence}</p>
-                <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>
+                <p className="text-3xl font-mono font-light text-amber-500">{result.confidence}</p>
+                <p className="text-[10px] uppercase tracking-wider mt-1 font-mono" style={{ color: "var(--text-muted)" }}>
                   {t.yield.ensembleConfidence}
                 </p>
-                <span className="text-[9px] font-mono text-amber-400/80">RF: {result.rf} · LSTM: {result.lstm}</span>
+                <span className="text-[9px] font-mono text-amber-500">RF: {result.rf} · LSTM: {result.lstm}</span>
               </div>
             </div>
 
             {/* Recommendations */}
             <div className="glass-card p-6">
-              <h2 className="text-sm font-medium mb-3" style={{ color: "rgba(232,239,232,0.8)" }}>
+              <h2 className="text-sm font-medium mb-3" style={{ color: "var(--text-primary)" }}>
                 {t.yield.directivesTitle}
               </h2>
               <ul className="space-y-2">
                 {result.recommendations.map((rec, i) => (
-                  <li key={i} className="text-xs font-mono flex items-center gap-2" style={{ color: "rgba(232,239,232,0.6)" }}>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <li key={i} className="text-xs font-mono flex items-center gap-2" style={{ color: "var(--text-secondary)" }}>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                     {rec}
                   </li>
                 ))}

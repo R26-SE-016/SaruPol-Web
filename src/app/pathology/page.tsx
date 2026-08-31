@@ -22,6 +22,7 @@ import { DEMO_DIAGNOSTICS, DISEASE_COLORS, DEMO_KNOWLEDGE, KnowledgeItem } from 
 import { pathology as pathologyApi } from "@/lib/api";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip as RechartsTooltip, CartesianGrid } from "recharts";
 import { useTranslation, useLanguage } from "@/lib/i18n/LanguageContext";
+import { useTheme } from "@/lib/theme/ThemeContext";
 
 // Lazy load Leaflet Map for Diagnostic History
 const DiagnosticMapInner = dynamic(() => import("@/components/pathology/DiagnosticMap"), { ssr: false });
@@ -67,6 +68,7 @@ const HISTORICAL_AERIAL_SURVEYS = [
 
 export default function PathologyPage() {
   const { t } = useTranslation();
+  const { theme } = useTheme();
   const { language } = useLanguage();
   // Default to Overview / Gateway Dashboard
   const [tab, setTab] = useState<TabType>("overview");
@@ -502,10 +504,10 @@ export default function PathologyPage() {
         </div>
 
         {/* Full-Width Segmented Tab Navigation */}
-        <div className="mb-8 p-1.5 rounded-2xl border backdrop-blur-xl grid grid-cols-2 md:grid-cols-5 gap-1.5 shadow-xl"
+        <div className="mb-8 p-1.5 rounded-2xl border backdrop-blur-xl grid grid-cols-2 md:grid-cols-5 gap-1.5 shadow-xl smooth-transition"
           style={{
-            background: "rgba(255, 255, 255, 0.02)",
-            borderColor: "rgba(255, 255, 255, 0.07)",
+            background: "var(--card-bg)",
+            borderColor: "var(--card-border)",
           }}
         >
           {[
@@ -520,10 +522,10 @@ export default function PathologyPage() {
               onClick={() => setTab(tabItem.id)}
               className="flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl text-xs font-mono transition-all text-center"
               style={{
-                background: tab === tabItem.id ? "rgba(0, 255, 157, 0.08)" : "transparent",
-                color: tab === tabItem.id ? "#00FF9D" : "rgba(232, 239, 232, 0.5)",
-                border: tab === tabItem.id ? "1px solid rgba(0, 255, 157, 0.3)" : "1px solid transparent",
-                boxShadow: tab === tabItem.id ? "0 0 20px rgba(0, 255, 157, 0.08)" : "none"
+                background: tab === tabItem.id ? (theme === "dark" ? "rgba(0, 255, 157, 0.08)" : "rgba(0, 168, 107, 0.12)") : "transparent",
+                color: tab === tabItem.id ? (theme === "dark" ? "#00FF9D" : "#00875A") : "var(--text-secondary)",
+                border: tab === tabItem.id ? "1px solid var(--card-hover-border)" : "1px solid transparent",
+                boxShadow: tab === tabItem.id ? "var(--card-shadow)" : "none"
               }}
             >
               <tabItem.icon className="w-4 h-4 flex-shrink-0" style={{ color: tab === tabItem.id ? tabItem.color : "inherit" }} /> 

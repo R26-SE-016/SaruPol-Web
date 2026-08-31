@@ -5,15 +5,16 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Menu, X, FlaskConical, BarChart3, MessageCircle, Map, Microscope, Globe, User } from "lucide-react";
+import { Menu, X, FlaskConical, BarChart3, MessageCircle, Map, Microscope, Globe, User, Sun, Moon } from "lucide-react";
 import { useTranslation, SUPPORTED_LANGUAGES } from "@/lib/i18n/LanguageContext";
 import { Language } from "@/lib/i18n/types";
+import { useTheme } from "@/lib/theme/ThemeContext";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [langMenuOpen, setLangMenuOpen] = useState(false);
   const { t, language, setLanguage } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
 
   const navLinks = [
     { name: t.nav.dashboard, path: "/", icon: <BarChart3 className="w-4 h-4" /> },
@@ -29,15 +30,17 @@ export default function Navbar() {
     return pathname.startsWith(path);
   };
 
+  const activeColor = theme === "dark" ? "#00FF9D" : "#00875A";
+
   return (
     <>
       <nav
-        className="fixed top-0 left-0 w-full z-50 border-b select-none"
+        className="fixed top-0 left-0 w-full z-50 border-b select-none smooth-transition"
         style={{
-          background: "rgba(3, 7, 5, 0.9)",
+          background: "var(--nav-bg)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
-          borderColor: "rgba(212, 175, 55, 0.18)",
+          borderColor: "var(--nav-border)",
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 py-2 flex items-center justify-between">
@@ -81,11 +84,11 @@ export default function Navbar() {
                 href={link.path}
                 className="relative px-3.5 py-2 rounded-lg text-xs font-medium tracking-wide smooth-transition flex items-center gap-2 whitespace-nowrap"
                 style={{
-                  color: isActive(link.path) ? "#00FF9D" : "rgba(232,239,232,0.7)",
-                  background: isActive(link.path) ? "rgba(0,255,157,0.08)" : "transparent",
+                  color: isActive(link.path) ? activeColor : "var(--text-secondary)",
+                  background: isActive(link.path) ? (theme === "dark" ? "rgba(0,255,157,0.08)" : "rgba(0,135,90,0.08)") : "transparent",
                 }}
               >
-                <span style={{ color: isActive(link.path) ? "#00FF9D" : "rgba(232,239,232,0.4)" }}>
+                <span style={{ color: isActive(link.path) ? activeColor : "var(--text-muted)" }}>
                   {link.icon}
                 </span>
                 <span>{link.name}</span>
@@ -103,14 +106,14 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Tri-Language Switcher & Profile Section */}
-          <div className="hidden lg:flex items-center gap-4 flex-shrink-0">
+          {/* Tri-Language Switcher, Theme Toggle & Profile Section */}
+          <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
             {/* Tri-Language Switcher (Segmented Glass Pill) */}
             <div
-              className="flex items-center p-1 rounded-xl border relative"
+              className="flex items-center p-1 rounded-xl border relative smooth-transition"
               style={{
-                background: "rgba(10, 15, 12, 0.8)",
-                borderColor: "rgba(212,175,55,0.25)",
+                background: "var(--card-bg)",
+                borderColor: "var(--card-border)",
               }}
             >
               {SUPPORTED_LANGUAGES.map((lang) => {
@@ -121,7 +124,7 @@ export default function Navbar() {
                     onClick={() => setLanguage(lang.code as Language)}
                     className="relative px-2.5 py-1 text-xs font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap"
                     style={{
-                      color: isSelected ? "#030705" : "rgba(232,239,232,0.6)",
+                      color: isSelected ? "#030705" : "var(--text-secondary)",
                       fontWeight: isSelected ? "700" : "500",
                     }}
                   >
@@ -141,16 +144,53 @@ export default function Navbar() {
               })}
             </div>
 
+            {/* Theme Toggle Button (Sun / Moon) */}
+            <button
+              onClick={toggleTheme}
+              className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 relative group overflow-hidden border"
+              style={{
+                background: "var(--card-bg)",
+                borderColor: "var(--card-border)",
+                boxShadow: "var(--card-shadow)",
+              }}
+              title={theme === "dark" ? "Switch to Light Theme" : "Switch to Dark Theme"}
+              aria-label="Toggle Theme"
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {theme === "dark" ? (
+                  <motion.div
+                    key="dark-sun"
+                    initial={{ rotate: -90, scale: 0, opacity: 0 }}
+                    animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                    exit={{ rotate: 90, scale: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Sun className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="light-moon"
+                    initial={{ rotate: -90, scale: 0, opacity: 0 }}
+                    animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                    exit={{ rotate: 90, scale: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Moon className="w-4 h-4 text-emerald-800 group-hover:scale-110 transition-transform" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </button>
+
             {/* Circular Profile Avatar Section */}
             <div 
               className="relative group cursor-pointer"
               title="User Profile & Settings"
             >
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_20px_rgba(212,175,55,0.35)] shadow-md"
+                className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_20px_rgba(212,175,55,0.35)] shadow-md border"
                 style={{
-                  background: "linear-gradient(145deg, rgba(28,34,28,0.95), rgba(12,16,13,0.98))",
-                  border: "1.5px solid rgba(212,175,55,0.45)",
+                  background: "var(--card-bg)",
+                  borderColor: "var(--card-border)",
                 }}
               >
                 <User className="w-4 h-4 transition-colors group-hover:text-[#00FF9D]" style={{ color: "#D4AF37" }} />
@@ -159,7 +199,7 @@ export default function Navbar() {
                 className="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border-2"
                 style={{
                   backgroundColor: "#00FF9D",
-                  borderColor: "#030705",
+                  borderColor: "var(--background)",
                   boxShadow: "0 0 6px #00FF9D",
                 }}
               />
@@ -167,14 +207,33 @@ export default function Navbar() {
           </div>
 
           {/* Mobile toggle */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden p-2 smooth-transition rounded-lg hover:bg-white/5"
-            style={{ color: "rgba(232,239,232,0.9)" }}
-            aria-label="Toggle menu"
-          >
-            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          <div className="flex items-center gap-2 lg:hidden">
+            {/* Mobile Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="w-9 h-9 rounded-lg flex items-center justify-center border"
+              style={{
+                background: "var(--card-bg)",
+                borderColor: "var(--card-border)",
+              }}
+              aria-label="Toggle Theme"
+            >
+              {theme === "dark" ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-emerald-800" />
+              )}
+            </button>
+
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="p-2 smooth-transition rounded-lg hover:bg-white/5"
+              style={{ color: "var(--text-primary)" }}
+              aria-label="Toggle menu"
+            >
+              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -188,7 +247,7 @@ export default function Navbar() {
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-5 lg:hidden px-4"
             style={{
-              background: "rgba(3, 7, 5, 0.98)",
+              background: "var(--nav-bg)",
               backdropFilter: "blur(30px)",
             }}
           >
@@ -222,8 +281,8 @@ export default function Navbar() {
             <div
               className="flex items-center p-1 rounded-xl border gap-1 mb-3"
               style={{
-                background: "rgba(15, 20, 16, 0.9)",
-                borderColor: "rgba(212,175,55,0.3)",
+                background: "var(--card-bg)",
+                borderColor: "var(--card-border)",
               }}
             >
               {SUPPORTED_LANGUAGES.map((lang) => {
@@ -237,7 +296,7 @@ export default function Navbar() {
                       background: isSelected
                         ? "linear-gradient(135deg, #00FF9D, #D4AF37)"
                         : "transparent",
-                      color: isSelected ? "#030705" : "rgba(232,239,232,0.7)",
+                      color: isSelected ? "#030705" : "var(--text-secondary)",
                       fontWeight: isSelected ? "700" : "500",
                     }}
                   >
@@ -261,12 +320,12 @@ export default function Navbar() {
                     onClick={() => setMobileOpen(false)}
                     className="flex items-center gap-3 text-base font-light tracking-wide smooth-transition px-4 py-2.5 rounded-xl w-full"
                     style={{
-                      color: isActive(link.path) ? "#00FF9D" : "rgba(232,239,232,0.75)",
-                      background: isActive(link.path) ? "rgba(0,255,157,0.1)" : "rgba(255,255,255,0.03)",
-                      border: isActive(link.path) ? "1px solid rgba(0,255,157,0.3)" : "1px solid transparent",
+                      color: isActive(link.path) ? activeColor : "var(--text-secondary)",
+                      background: isActive(link.path) ? (theme === "dark" ? "rgba(0,255,157,0.1)" : "rgba(0,135,90,0.1)") : "var(--card-bg)",
+                      border: isActive(link.path) ? `1px solid ${activeColor}` : "1px solid var(--card-border)",
                     }}
                   >
-                    <span style={{ color: isActive(link.path) ? "#00FF9D" : "#D4AF37" }}>
+                    <span style={{ color: isActive(link.path) ? activeColor : "#D4AF37" }}>
                       {link.icon}
                     </span>
                     {link.name}

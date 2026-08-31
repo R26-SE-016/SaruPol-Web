@@ -1,10 +1,6 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #030705;
-  --color-foreground: #e8efe8;
-  --color-card: rgba(255, 255, 255, 0.03);
-  --color-card-border: rgba(255, 255, 255, 0.08);
   --color-emerald-neon: #00FF9D;
   --color-emerald-dim: #00CC7D;
   --color-emerald-glow: rgba(0, 255, 157, 0.15);
@@ -13,14 +9,89 @@
   --color-cyan-telemetry: #00E5FF;
   --color-amber-advisory: #E6AF2E;
   --color-red-critical: #FF4C4C;
-  --color-glass: rgba(255, 255, 255, 0.04);
-  --color-glass-border: rgba(255, 255, 255, 0.08);
-  --color-glass-hover: rgba(255, 255, 255, 0.07);
 }
 
-:root {
+/* ─── Core Theme Variables (Dark Mode Default) ─── */
+:root,
+[data-theme="dark"],
+.dark {
   --background: #030705;
   --foreground: #e8efe8;
+  
+  --card-bg: rgba(255, 255, 255, 0.035);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --card-hover-bg: rgba(255, 255, 255, 0.065);
+  --card-hover-border: rgba(0, 255, 157, 0.2);
+  --card-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+  
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.07);
+  
+  --nav-bg: rgba(3, 7, 5, 0.9);
+  --nav-border: rgba(212, 175, 55, 0.18);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(232, 239, 232, 0.75);
+  --text-muted: rgba(232, 239, 232, 0.45);
+  
+  --input-bg: rgba(8, 14, 10, 0.85);
+  --input-border: rgba(255, 255, 255, 0.12);
+  --input-focus-border: #00FF9D;
+  
+  --telemetry-grid-line: rgba(0, 255, 157, 0.03);
+  --ambient-gold: rgba(212, 175, 55, 0.1);
+  --ambient-emerald: rgba(0, 255, 157, 0.05);
+  
+  --dropdown-bg: rgba(8, 14, 10, 0.96);
+  --dropdown-border: rgba(212, 175, 55, 0.25);
+  
+  --table-header-bg: rgba(255, 255, 255, 0.03);
+  --table-row-hover: rgba(255, 255, 255, 0.04);
+  --table-border: rgba(255, 255, 255, 0.07);
+
+  --scrollbar-thumb: rgba(0, 255, 157, 0.15);
+  --scrollbar-thumb-hover: rgba(0, 255, 157, 0.3);
+}
+
+/* ─── Light Mode Theme Variables (Lush Plantation Daylight) ─── */
+[data-theme="light"],
+.light {
+  --background: #F2F6F3;
+  --foreground: #101F15;
+  
+  --card-bg: rgba(255, 255, 255, 0.88);
+  --card-border: rgba(16, 40, 24, 0.1);
+  --card-hover-bg: #FFFFFF;
+  --card-hover-border: rgba(0, 168, 107, 0.35);
+  --card-shadow: 0 4px 20px rgba(10, 30, 18, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(16, 40, 24, 0.08);
+  
+  --nav-bg: rgba(242, 246, 243, 0.94);
+  --nav-border: rgba(212, 175, 55, 0.35);
+  
+  --text-primary: #0A1B10;
+  --text-secondary: #243B2B;
+  --text-muted: #546E5C;
+  
+  --input-bg: rgba(255, 255, 255, 0.95);
+  --input-border: rgba(16, 40, 24, 0.18);
+  --input-focus-border: #00A86B;
+  
+  --telemetry-grid-line: rgba(0, 168, 107, 0.045);
+  --ambient-gold: rgba(212, 175, 55, 0.16);
+  --ambient-emerald: rgba(0, 204, 125, 0.09);
+  
+  --dropdown-bg: rgba(255, 255, 255, 0.98);
+  --dropdown-border: rgba(212, 175, 55, 0.35);
+  
+  --table-header-bg: rgba(0, 168, 107, 0.07);
+  --table-row-hover: rgba(0, 168, 107, 0.04);
+  --table-border: rgba(16, 40, 24, 0.1);
+
+  --scrollbar-thumb: rgba(0, 168, 107, 0.25);
+  --scrollbar-thumb-hover: rgba(0, 168, 107, 0.45);
 }
 
 * {
@@ -39,6 +110,7 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @media (hover: none) and (pointer: coarse) {
@@ -49,8 +121,8 @@ body {
 
 /* ─── Selection ─── */
 ::selection {
-  background: rgba(0, 255, 157, 0.2);
-  color: #fff;
+  background: rgba(0, 255, 157, 0.25);
+  color: inherit;
 }
 
 /* ─── Scrollbar ─── */
@@ -61,68 +133,60 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 255, 157, 0.15);
+  background: var(--scrollbar-thumb);
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 255, 157, 0.3);
+  background: var(--scrollbar-thumb-hover);
 }
 
-/* ─── Glass Panels ─── */
+/* ─── Glass Panels & Cards (Theme Aware) ─── */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
   border-radius: 1rem;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--card-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--card-border);
   border-radius: 1.25rem;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--card-shadow);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(0, 255, 157, 0.15);
-  box-shadow: 0 8px 40px rgba(0, 255, 157, 0.06);
+  background: var(--card-hover-bg);
+  border-color: var(--card-hover-border);
 }
 
 .glass-card-interactive {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--card-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--card-border);
   border-radius: 1.25rem;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--card-shadow);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
 
-.glass-card-interactive::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0, 255, 157, 0.06), transparent 40%);
-  opacity: 0;
-  transition: opacity 0.5s;
-  pointer-events: none;
+.glass-card-interactive:hover {
+  background: var(--card-hover-bg);
+  border-color: var(--card-hover-border);
 }
 
-.glass-card-interactive:hover::before {
-  opacity: 1;
-}
-
-/* ─── Telemetry Grid ─── */
+/* ─── Telemetry Grid (Theme Aware) ─── */
 .telemetry-grid {
   background-image: 
-    linear-gradient(rgba(0, 255, 157, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 255, 157, 0.03) 1px, transparent 1px);
+    linear-gradient(var(--telemetry-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--telemetry-grid-line) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
@@ -134,7 +198,7 @@ body {
 /* ─── Confidence Bar ─── */
 .confidence-bar {
   height: 3px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--card-border);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -159,16 +223,16 @@ body {
 
 /* ─── Upload Zone ─── */
 .upload-zone {
-  background: rgba(255, 255, 255, 0.02);
-  border: 2px dashed rgba(0, 255, 157, 0.12);
+  background: var(--card-bg);
+  border: 2px dashed var(--card-border);
   border-radius: 1.25rem;
   transition: all 0.3s ease;
 }
 
 .upload-zone:hover,
 .upload-zone.drag-over {
-  border-color: rgba(0, 255, 157, 0.4);
-  background: rgba(0, 255, 157, 0.04);
+  border-color: rgba(0, 255, 157, 0.5);
+  background: rgba(0, 255, 157, 0.05);
 }
 
 /* ─── Animations ─── */
