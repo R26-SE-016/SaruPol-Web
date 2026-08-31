@@ -3,10 +3,10 @@ import { TranslationSchema } from "../types";
 export const en: TranslationSchema = {
   nav: {
     dashboard: "Dashboard",
-    soil: "Soil Intelligence",
-    pathology: "Pathology Lab",
-    yield: "Yield Forecast",
-    advisory: "Advisory AI",
+    soil: "Soil",
+    pathology: "Pathology",
+    yield: "Yield",
+    advisory: "Advisory",
     operations: "Operations",
     stationBadge: "CRI Station Kurunegala",
     quickCommand: "⌘ + K",

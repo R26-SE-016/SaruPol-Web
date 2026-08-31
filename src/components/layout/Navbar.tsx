@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Menu, X, FlaskConical, BarChart3, MessageCircle, Map, Microscope, Globe } from "lucide-react";
+import { Menu, X, FlaskConical, BarChart3, MessageCircle, Map, Microscope, Globe, User } from "lucide-react";
 import { useTranslation, SUPPORTED_LANGUAGES } from "@/lib/i18n/LanguageContext";
 import { Language } from "@/lib/i18n/types";
 
@@ -34,7 +34,7 @@ export default function Navbar() {
       <nav
         className="fixed top-0 left-0 w-full z-50 border-b select-none"
         style={{
-          background: "rgba(3, 7, 5, 0.88)",
+          background: "rgba(3, 7, 5, 0.9)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           borderColor: "rgba(212, 175, 55, 0.18)",
@@ -42,7 +42,7 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 py-2 flex items-center justify-between">
           {/* Pure Brand Logo & Text Mark (Large & Balanced) */}
-          <Link href="/" className="flex items-center gap-3.5 group">
+          <Link href="/" className="flex items-center gap-3.5 group flex-shrink-0">
             <div
               className="relative w-10 h-10 rounded-xl overflow-hidden p-1 flex items-center justify-center transition-all duration-300 group-hover:scale-105"
               style={{
@@ -74,12 +74,12 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop nav */}
-          <div className="hidden lg:flex gap-1 items-center">
+          <div className="hidden lg:flex gap-1.5 items-center">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 href={link.path}
-                className="relative px-3.5 py-2 rounded-lg text-xs font-medium tracking-wide smooth-transition flex items-center gap-2"
+                className="relative px-3.5 py-2 rounded-lg text-xs font-medium tracking-wide smooth-transition flex items-center gap-2 whitespace-nowrap"
                 style={{
                   color: isActive(link.path) ? "#00FF9D" : "rgba(232,239,232,0.7)",
                   background: isActive(link.path) ? "rgba(0,255,157,0.08)" : "transparent",
@@ -88,7 +88,7 @@ export default function Navbar() {
                 <span style={{ color: isActive(link.path) ? "#00FF9D" : "rgba(232,239,232,0.4)" }}>
                   {link.icon}
                 </span>
-                {link.name}
+                <span>{link.name}</span>
                 {isActive(link.path) && (
                   <motion.div
                     layoutId="nav-indicator"
@@ -103,8 +103,8 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Enterprise Station Badge, Tri-Language Switcher & Profile Icon */}
-          <div className="hidden lg:flex items-center gap-3">
+          {/* Tri-Language Switcher & Profile Section */}
+          <div className="hidden lg:flex items-center gap-4 flex-shrink-0">
             {/* Tri-Language Switcher (Segmented Glass Pill) */}
             <div
               className="flex items-center p-1 rounded-xl border relative"
@@ -119,7 +119,7 @@ export default function Navbar() {
                   <button
                     key={lang.code}
                     onClick={() => setLanguage(lang.code as Language)}
-                    className="relative px-2.5 py-1 text-xs font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5"
+                    className="relative px-2.5 py-1 text-xs font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap"
                     style={{
                       color: isSelected ? "#030705" : "rgba(232,239,232,0.6)",
                       fontWeight: isSelected ? "700" : "500",
@@ -141,25 +141,27 @@ export default function Navbar() {
               })}
             </div>
 
-            {/* CRI Station Kurunegala Badge */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-xs font-mono text-white/80">{t.nav.stationBadge}</span>
-            </div>
-
-            <div
-              className="w-9 h-9 rounded-xl overflow-hidden p-1 flex items-center justify-center"
-              style={{
-                background: "linear-gradient(145deg, rgba(28,32,28,0.9), rgba(10,14,11,0.95))",
-                border: "1px solid rgba(212,175,55,0.35)",
-              }}
+            {/* Circular Profile Avatar Section */}
+            <div 
+              className="relative group cursor-pointer"
+              title="User Profile & Settings"
             >
-              <Image
-                src="/brand/logo-icon.png"
-                alt="Profile Avatar"
-                width={32}
-                height={32}
-                className="object-contain"
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_20px_rgba(212,175,55,0.35)] shadow-md"
+                style={{
+                  background: "linear-gradient(145deg, rgba(28,34,28,0.95), rgba(12,16,13,0.98))",
+                  border: "1.5px solid rgba(212,175,55,0.45)",
+                }}
+              >
+                <User className="w-4 h-4 transition-colors group-hover:text-[#00FF9D]" style={{ color: "#D4AF37" }} />
+              </div>
+              <div
+                className="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border-2"
+                style={{
+                  backgroundColor: "#00FF9D",
+                  borderColor: "#030705",
+                  boxShadow: "0 0 6px #00FF9D",
+                }}
               />
             </div>
           </div>

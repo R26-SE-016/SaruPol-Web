@@ -2,14 +2,14 @@ import { TranslationSchema } from "../types";
 
 export const ta: TranslationSchema = {
   nav: {
-    dashboard: "முகப்பு பலகை",
-    soil: "மண் நுண்ணறிவு",
-    pathology: "நோய் ஆய்வகம்",
-    yield: "விளைச்சல் கணிப்பு",
-    advisory: "AI ஆலோசகர்",
-    operations: "கள செயல்பாடுகள்",
-    stationBadge: "CRI நிலையம் குருநாகல்",
-    quickCommand: "⌘ + K குறுக்குவழி",
+    dashboard: "முகப்பு",
+    soil: "மண்",
+    pathology: "நோய்கள்",
+    yield: "விளைச்சல்",
+    advisory: "ஆலோசனை",
+    operations: "செயல்பாடுகள்",
+    stationBadge: "CRI நிலையம்",
+    quickCommand: "⌘ + K",
   },
   home: {
     subtitle: "இலங்கை தேங்காய் தோட்டங்களுக்கான AI மற்றும் IoT அடிப்படையிலான முடிவெடுக்கும் ஆதரவு அமைப்பு. துல்லியமான மண் முக்கோணமாக்கல், நோய் கண்டறிதல், விளைச்சல் கணிப்பு மற்றும் வேளாண் ஆலோசனை.",

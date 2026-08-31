@@ -2,14 +2,14 @@ import { TranslationSchema } from "../types";
 
 export const si: TranslationSchema = {
   nav: {
-    dashboard: "මුල් පුවරුව",
-    soil: "පාංශු බුද්ධිය",
-    pathology: "රෝග විනිශ්චය",
-    yield: "අස්වනු පුරෝකථනය",
-    advisory: "AI උපදේශක",
-    operations: "ක්ෂේත්‍ර මෙහෙයුම්",
-    stationBadge: "පොල් පර්යේෂණ මධ්‍යස්ථානය - කුරුණෑගල",
-    quickCommand: "⌘ + K කෙටිමං",
+    dashboard: "පුවරුව",
+    soil: "පස",
+    pathology: "රෝග",
+    yield: "අස්වැන්න",
+    advisory: "උපදෙස්",
+    operations: "මෙහෙයුම්",
+    stationBadge: "CRI මධ්‍යස්ථානය",
+    quickCommand: "⌘ + K",
   },
   home: {
     subtitle: "ශ්‍රී ලාංකික පොල් වගාවන් සඳහා AI හා IoT පාදක තීරණ ගැනීමේ සහායක පද්ධතිය. නිරවද්‍ය පාංශු ත්‍රිකෝණකරණය, රෝග විනිශ්චය, අස්වැන්න පුරෝකථනය සහ කෘෂි උපදේශනය.",
