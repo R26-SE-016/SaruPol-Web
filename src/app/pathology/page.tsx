@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import Script from "next/script";
 import Navbar from "@/components/layout/Navbar";
@@ -11,7 +12,8 @@ import {
   AlertTriangle, CheckCircle2, LayoutDashboard, History,
   ClipboardList, ShieldCheck, Camera, Sparkles, Map, RefreshCw,
   BookOpen, Search, Layers, Radio, Send, ChevronRight,
-  Sliders, Info, Compass, ArrowRight, FileText, CheckCircle
+  Sliders, Info, Compass, ArrowRight, FileText, CheckCircle,
+  Lock, ShieldAlert
 } from "lucide-react";
 import StatCard from "@/components/pathology/StatCard";
 import DiseaseChart from "@/components/pathology/DiseaseChart";
@@ -24,6 +26,7 @@ import { pathology as pathologyApi } from "@/lib/api";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip as RechartsTooltip, CartesianGrid } from "recharts";
 import { useTranslation, useLanguage } from "@/lib/i18n/LanguageContext";
 import { useTheme } from "@/lib/theme/ThemeContext";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 // Lazy load Leaflet Map for Diagnostic History
 const DiagnosticMapInner = dynamic(() => import("@/components/pathology/DiagnosticMap"), { ssr: false });
@@ -68,6 +71,8 @@ const HISTORICAL_AERIAL_SURVEYS = [
 ];
 
 export default function PathologyPage() {
+  const { user } = useAuth();
+  const isPlanter = user?.role === "planter";
   const { t } = useTranslation();
   const { theme } = useTheme();
   const { language } = useLanguage();
@@ -513,16 +518,16 @@ export default function PathologyPage() {
           }}
         >
           {[
-            { id: "overview" as const, label: t.pathology.tabs.overview, icon: LayoutDashboard, color: "#00FF9D" },
-            { id: "aerial" as const, label: t.pathology.tabs.systemA, icon: Plane, color: "#00E5FF" },
-            { id: "mobile" as const, label: t.pathology.tabs.systemB, icon: Smartphone, color: "#FF4C4C" },
-            { id: "knowledge" as const, label: t.pathology.tabs.protocols, icon: BookOpen, color: "#00FF9D" },
-            { id: "history" as const, label: t.pathology.tabs.history, icon: Map, color: "#A78BFA" },
+            { id: "overview" as const, label: t.pathology.tabs.overview, icon: LayoutDashboard, color: "#00FF9D", locked: false },
+            { id: "aerial" as const, label: t.pathology.tabs.systemA, icon: Plane, color: "#00E5FF", locked: isPlanter },
+            { id: "mobile" as const, label: t.pathology.tabs.systemB, icon: Smartphone, color: "#FF4C4C", locked: false },
+            { id: "knowledge" as const, label: t.pathology.tabs.protocols, icon: BookOpen, color: "#00FF9D", locked: false },
+            { id: "history" as const, label: t.pathology.tabs.history, icon: Map, color: "#A78BFA", locked: false },
           ].map(tabItem => (
             <button 
               key={tabItem.id} 
               onClick={() => setTab(tabItem.id)}
-              className="flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl text-xs font-mono transition-all text-center"
+              className="flex items-center justify-center gap-2 py-3 px-3 rounded-xl text-xs font-mono transition-all text-center relative"
               style={{
                 background: tab === tabItem.id ? (theme === "dark" ? "rgba(0, 255, 157, 0.08)" : "rgba(0, 168, 107, 0.12)") : "transparent",
                 color: tab === tabItem.id ? (theme === "dark" ? "#00FF9D" : "#00875A") : "var(--text-secondary)",
@@ -532,6 +537,11 @@ export default function PathologyPage() {
             >
               <tabItem.icon className="w-4 h-4 flex-shrink-0" style={{ color: tab === tabItem.id ? tabItem.color : "inherit" }} /> 
               <span className="font-medium truncate">{tabItem.label}</span>
+              {tabItem.locked && (
+                <span className="text-[10px] text-amber-500 opacity-80 flex items-center" title="Exclusive to Managers & CRI Officers">
+                  <Lock className="w-3 h-3 ml-0.5" />
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -575,8 +585,13 @@ export default function PathologyPage() {
                   {/* Gateway 1: Aerial */}
                   <div 
                     onClick={() => setTab("aerial")}
-                    className="glass-card p-6 rounded-2xl transition-all cursor-pointer group flex flex-col justify-between"
+                    className="glass-card p-6 rounded-2xl transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden"
                   >
+                    {isPlanter && (
+                      <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[9px] font-mono bg-amber-500/15 text-amber-500 border border-amber-500/30 flex items-center gap-1 font-bold">
+                        <Lock className="w-2.5 h-2.5" /> Enterprise
+                      </div>
+                    )}
                     <div>
                       <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
                         style={{
@@ -597,7 +612,7 @@ export default function PathologyPage() {
                     <div className="mt-6 pt-4 border-t flex items-center justify-between text-xs font-mono font-medium"
                       style={{ borderColor: "var(--card-border)", color: "#00E5FF" }}
                     >
-                      <span>{t.pathology.overview.aerialBtn}</span>
+                      <span>{isPlanter ? "Upgrade to Access →" : t.pathology.overview.aerialBtn}</span>
                       <span>→</span>
                     </div>
                   </div>
@@ -697,37 +712,123 @@ export default function PathologyPage() {
           )}
 
           {/* ═══════════════════════════════════════════════════════════════
+          {/* ═══════════════════════════════════════════════════════════════
               TAB: AERIAL SURVEILLANCE (UAV)
              ═══════════════════════════════════════════════════════════════ */}
           {tab === "aerial" && (
-            <motion.div key="aerial" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-6">
-              
-              {/* Sub-navigation: Active Scan vs Flight History */}
-              <div className="flex justify-between items-center border-b pb-4" style={{ borderColor: "var(--card-border)" }}>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => setAerialSubTab("scan")}
-                    className="px-4 py-2 rounded-xl text-xs font-mono transition-all flex items-center gap-2"
-                    style={{
-                      background: aerialSubTab === "scan" ? "rgba(0, 229, 255, 0.15)" : "var(--card-bg)",
-                      border: aerialSubTab === "scan" ? "1px solid rgba(0, 229, 255, 0.4)" : "1px solid var(--card-border)",
-                      color: aerialSubTab === "scan" ? "#00E5FF" : "var(--text-secondary)",
-                    }}
-                  >
-                    <Plane className="w-3.5 h-3.5" /> {t.pathology.systemA.scanTab}
-                  </button>
-                  <button 
-                    onClick={() => setAerialSubTab("history")}
-                    className="px-4 py-2 rounded-xl text-xs font-mono transition-all flex items-center gap-2"
-                    style={{
-                      background: aerialSubTab === "history" ? "rgba(0, 229, 255, 0.15)" : "var(--card-bg)",
-                      border: aerialSubTab === "history" ? "1px solid rgba(0, 229, 255, 0.4)" : "1px solid var(--card-border)",
-                      color: aerialSubTab === "history" ? "#00E5FF" : "var(--text-secondary)",
-                    }}
-                  >
-                    <FileText className="w-3.5 h-3.5" /> Past Aerial Surveys ({HISTORICAL_AERIAL_SURVEYS.length})
-                  </button>
+            isPlanter ? (
+              <motion.div
+                key="aerial-restricted"
+                initial={{ opacity: 0, scale: 0.97, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.97, y: -15 }}
+                className="glass-card p-8 sm:p-12 rounded-3xl text-center space-y-6 max-w-3xl mx-auto border relative overflow-hidden my-4"
+              >
+                {/* Ambient background glow */}
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(0, 229, 255, 0.1)" }} />
+
+                <div
+                  className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center border shadow-xl relative z-10"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(0,229,255,0.2), rgba(0,255,157,0.1))",
+                    borderColor: "rgba(0,229,255,0.4)",
+                  }}
+                >
+                  <Plane className="w-10 h-10 text-cyan-400" />
                 </div>
+
+                <div className="space-y-3 relative z-10">
+                  <div
+                    className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[11px] font-mono uppercase font-bold border"
+                    style={{
+                      background: "rgba(230,175,46,0.12)",
+                      borderColor: "rgba(230,175,46,0.3)",
+                      color: theme === "dark" ? "#E6AF2E" : "#B45309",
+                    }}
+                  >
+                    <Lock className="w-3.5 h-3.5" /> Exclusive to Estate Superintendents & CRI Officers
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-normal tracking-tight" style={{ fontFamily: "var(--font-outfit)", color: "var(--text-primary)" }}>
+                    {t.pathology.systemA.planterRestrictedTitle}
+                  </h2>
+                  <p className="text-xs font-mono leading-relaxed max-w-xl mx-auto" style={{ color: "var(--text-secondary)" }}>
+                    {t.pathology.systemA.planterRestrictedDesc}
+                  </p>
+                </div>
+
+                {/* Feature capabilities locked list */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-left pt-2 relative z-10">
+                  <div className="p-4 rounded-2xl border bg-black/5 dark:bg-black/20" style={{ borderColor: "var(--card-border)" }}>
+                    <p className="text-xs font-mono font-bold text-cyan-400 mb-1">🛰️ 4-Band GeoTIFF</p>
+                    <p className="text-[11px] font-mono text-muted">NDVI & VARI spectral reflectance processing</p>
+                  </div>
+                  <div className="p-4 rounded-2xl border bg-black/5 dark:bg-black/20" style={{ borderColor: "var(--card-border)" }}>
+                    <p className="text-xs font-mono font-bold text-emerald-400 mb-1">🗺️ Canopy Stress Zoning</p>
+                    <p className="text-[11px] font-mono text-muted">Automated chlorosis clusters & Z-Score outliers</p>
+                  </div>
+                  <div className="p-4 rounded-2xl border bg-black/5 dark:bg-black/20" style={{ borderColor: "var(--card-border)" }}>
+                    <p className="text-xs font-mono font-bold text-amber-500 mb-1">📋 Field Dispatches</p>
+                    <p className="text-[11px] font-mono text-muted">GIS Digital Twin ground scout workflows</p>
+                  </div>
+                </div>
+
+                <div className="pt-4 flex flex-col sm:flex-row gap-3.5 justify-center relative z-10">
+                  <button
+                    type="button"
+                    onClick={() => setTab("mobile")}
+                    className="flex items-center justify-center gap-2 py-3 px-6 rounded-xl text-xs font-mono font-bold uppercase tracking-wider smooth-transition shadow-lg cursor-pointer"
+                    style={{
+                      background: "linear-gradient(135deg, #00FF9D, #D4AF37)",
+                      color: "#030705",
+                    }}
+                  >
+                    <Smartphone className="w-4 h-4" />
+                    <span>{t.pathology.systemA.planterRestrictedSwitchBtn}</span>
+                  </button>
+
+                  <Link
+                    href="/profile"
+                    className="flex items-center justify-center gap-2 py-3 px-6 rounded-xl text-xs font-mono font-bold uppercase tracking-wider border smooth-transition hover:opacity-80"
+                    style={{
+                      background: "var(--card-bg)",
+                      borderColor: "var(--card-border)",
+                      color: "var(--text-primary)",
+                    }}
+                  >
+                    <ShieldCheck className="w-4 h-4 text-amber-500" />
+                    <span>{t.pathology.systemA.planterRestrictedUpgradeBtn}</span>
+                  </Link>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div key="aerial" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-6">
+                
+                {/* Sub-navigation: Active Scan vs Flight History */}
+                <div className="flex justify-between items-center border-b pb-4" style={{ borderColor: "var(--card-border)" }}>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => setAerialSubTab("scan")}
+                      className="px-4 py-2 rounded-xl text-xs font-mono transition-all flex items-center gap-2"
+                      style={{
+                        background: aerialSubTab === "scan" ? "rgba(0, 229, 255, 0.15)" : "var(--card-bg)",
+                        border: aerialSubTab === "scan" ? "1px solid rgba(0, 229, 255, 0.4)" : "1px solid var(--card-border)",
+                        color: aerialSubTab === "scan" ? "#00E5FF" : "var(--text-secondary)",
+                      }}
+                    >
+                      <Plane className="w-3.5 h-3.5" /> {t.pathology.systemA.scanTab}
+                    </button>
+                    <button 
+                      onClick={() => setAerialSubTab("history")}
+                      className="px-4 py-2 rounded-xl text-xs font-mono transition-all flex items-center gap-2"
+                      style={{
+                        background: aerialSubTab === "history" ? "rgba(0, 229, 255, 0.15)" : "var(--card-bg)",
+                        border: aerialSubTab === "history" ? "1px solid rgba(0, 229, 255, 0.4)" : "1px solid var(--card-border)",
+                        color: aerialSubTab === "history" ? "#00E5FF" : "var(--text-secondary)",
+                      }}
+                    >
+                      <FileText className="w-3.5 h-3.5" /> Past Aerial Surveys ({HISTORICAL_AERIAL_SURVEYS.length})
+                    </button>
+                  </div>
 
                 {aerialSubTab === "scan" && (
                   <div className="flex items-center gap-3">
@@ -1230,7 +1331,8 @@ export default function PathologyPage() {
               )}
 
             </motion.div>
-          )}
+          )
+        )}
 
           {/* ═══════════════════════════════════════════════════════════════
               TAB: LEAF & TRUNK DIAGNOSTICS

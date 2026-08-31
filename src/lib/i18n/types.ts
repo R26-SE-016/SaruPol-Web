@@ -121,6 +121,10 @@ export interface TranslationSchema {
       colPurity: string;
       colDetectedPalms: string;
       colFlaggedTrees: string;
+      planterRestrictedTitle: string;
+      planterRestrictedDesc: string;
+      planterRestrictedUpgradeBtn: string;
+      planterRestrictedSwitchBtn: string;
     };
     systemB: {
       title: string;

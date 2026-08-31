@@ -114,6 +114,10 @@ export const ta: TranslationSchema = {
       colPurity: "மேற்கூரை தூய்மை",
       colDetectedPalms: "கண்டறியப்பட்ட மரங்கள்",
       colFlaggedTrees: "பாதிக்கப்பட்ட மரங்கள்",
+      planterRestrictedTitle: "நிறுவன UAV ட்ரோன் நிறமாலை அமைப்பு",
+      planterRestrictedDesc: "பெரிய அளவிலான 4K ட்ரோன் தாவர வரைபடங்கள், NDVI/VARI பல நிறமாலை பகுப்பாய்வு மற்றும் கள கண்காணிப்பு நடவடிக்கைகள் தோட்ட கண்காணிப்பாளர்கள் மற்றும் CRI ஆராய்ச்சி அதிகாரிகளுக்கு மட்டுமே அனுமதிக்கப்படுகிறது.",
+      planterRestrictedUpgradeBtn: "தோட்ட பங்கு அமைப்புகளைப் பார்க்கவும்",
+      planterRestrictedSwitchBtn: "மொபைல் இலை நோய் ஸ்கேனருக்கு மாறவும்",
     },
     systemB: {
       title: "Edge AI இலை நோய் ஸ்கேனர்",

@@ -114,6 +114,10 @@ export const en: TranslationSchema = {
       colPurity: "Canopy Purity",
       colDetectedPalms: "Detected Palms",
       colFlaggedTrees: "Flagged Outliers",
+      planterRestrictedTitle: "Enterprise UAV Aerial Multi-Spectral Intelligence",
+      planterRestrictedDesc: "Large-scale 4K orthomosaic canopy zoning, NDVI/VARI multispectral vegetation mapping, and automated field officer dispatch workflows are reserved for Estate Superintendents and CRI Research Officers.",
+      planterRestrictedUpgradeBtn: "View Plantation Role Settings",
+      planterRestrictedSwitchBtn: "Switch to Mobile Leaf Pathology Scanner",
     },
     systemB: {
       title: "Microscopic Edge AI Leaf Diagnostic Scanner",

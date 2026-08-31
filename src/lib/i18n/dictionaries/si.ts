@@ -114,6 +114,10 @@ export const si: TranslationSchema = {
       colPurity: "වියන් සංශුද්ධතාව",
       colDetectedPalms: "හඳුනාගත් ගස්",
       colFlaggedTrees: "අවදානම් ගස්",
+      planterRestrictedTitle: "ව්‍යවසාය UAV ඩ්‍රෝන බහු-වර්ණාවලි පද්ධතිය",
+      planterRestrictedDesc: "විශාල පරිමාණ 4K ඩ්‍රෝන වියන් සිතියම්කරණය, NDVI/VARI බහු-වර්ණාවලි විශ්ලේෂණය සහ ක්ෂේත්‍ර නිලධාරී මෙහෙයුම් වතු අධිකාරීවරුන් සහ CRI පර්යේෂණ නිලධාරීන්ට පමණක් සීමා වේ.",
+      planterRestrictedUpgradeBtn: "වතු කාර්යභාර තොරතුරු බලන්න",
+      planterRestrictedSwitchBtn: "ස්මාර්ට්ෆෝන් පත්‍ර රෝග ස්කෑනරයට මාරු වන්න",
     },
     systemB: {
       title: "මයික්‍රොස්කෝපික් Edge AI පත්‍ර රෝග ස්කෑනරය",
