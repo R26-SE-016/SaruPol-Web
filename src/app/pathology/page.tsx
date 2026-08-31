@@ -42,43 +42,6 @@ const DiagnosticMapInner = dynamic(() => import("@/components/pathology/Diagnost
 
 type TabType = "overview" | "aerial" | "mobile" | "knowledge" | "history";
 
-// Historical aerial surveys mock data
-const HISTORICAL_AERIAL_SURVEYS = [
-  {
-    id: "survey-2026-08-25",
-    estate_name: "Green Valley Estate (Kurunegala)",
-    date: "2026-08-25T08:30:00Z",
-    index_type: "VARI",
-    mean_index: 0.401,
-    healthy_canopy_pct: 68.1,
-    detected_palms: 24,
-    anomalies_count: 8,
-    status: "Completed"
-  },
-  {
-    id: "survey-2026-08-18",
-    estate_name: "Puttalam Coastal Plantation",
-    date: "2026-08-18T10:15:00Z",
-    index_type: "NDVI",
-    mean_index: 0.692,
-    healthy_canopy_pct: 84.5,
-    detected_palms: 412,
-    anomalies_count: 14,
-    status: "Completed"
-  },
-  {
-    id: "survey-2026-08-04",
-    estate_name: "Gampaha Research Grove",
-    date: "2026-08-04T07:45:00Z",
-    index_type: "VARI",
-    mean_index: 0.385,
-    healthy_canopy_pct: 71.0,
-    detected_palms: 185,
-    anomalies_count: 6,
-    status: "Completed"
-  }
-];
-
 export default function PathologyPage() {
   const { user } = useAuth();
   const isPlanter = user?.role === "planter";
@@ -1004,7 +967,7 @@ export default function PathologyPage() {
                         color: aerialSubTab === "history" ? "#00E5FF" : "var(--text-secondary)",
                       }}
                     >
-                      <FileText className="w-3.5 h-3.5" /> Past Aerial Surveys ({HISTORICAL_AERIAL_SURVEYS.length})
+                      <FileText className="w-3.5 h-3.5" /> Past Aerial Surveys ({aerialSurveysList.length})
                     </button>
                   </div>
 
@@ -1549,7 +1512,7 @@ export default function PathologyPage() {
                       color: mobileSubTab === "history" ? "#FF4C4C" : "var(--text-secondary)",
                     }}
                   >
-                    <FileText className="w-3.5 h-3.5" /> {t.pathology.systemB.recentScansTab} ({DEMO_DIAGNOSTICS.length})
+                    <FileText className="w-3.5 h-3.5" /> {t.pathology.systemB.recentScansTab} ({diagnosticsList.length})
                   </button>
                 </div>
 
