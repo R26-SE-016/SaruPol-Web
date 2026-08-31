@@ -88,7 +88,7 @@ export interface PathologyClassifyRequest {
   system?: string;
 }
 
-// ─── Yield Prediction (CocoCastAI) ───
+// ─── Yield Prediction (SaruPol Yield Engine) ───
 export interface YieldPredictionRequest {
   soil_moisture: number;
   temperature: number;

@@ -27,7 +27,7 @@
 2. **🔬 Pathology Diagnostic Lab (`/pathology`)**: Dual-tier surveillance suite:
    - **System A**: UAV drone spectral pipeline calculating VARI, NDVI, and ExG canopy segmentation with DBSCAN anomaly clustering.
    - **System B**: In-browser client-side WebAssembly Edge AI leaf pathology diagnostics with INT8 quantization (<35ms inference) and Shannon Entropy OOD gating.
-3. **📈 CocoCastAI Yield Forecaster (`/yield`)**: Hybrid Random Forest ($R^2=0.98$) and LSTM ($R^2=0.86$) ensemble model forecasting 45-day harvest cycles.
+3. **📈 SaruPol Yield Forecaster (`/yield`)**: Hybrid Random Forest ($R^2=0.98$) and LSTM ($R^2=0.86$) ensemble model forecasting 45-day harvest cycles.
 4. **💬 Agronomist Advisory AI (`/advisory`)**: Multi-LLM consensus RAG engine grounded in official Coconut Research Institute (CRI) literature supporting Sinhala, Tamil, and English.
 5. **🗺️ Field Operations & GIS (`/operations`)**: Georeferenced digital twin map interface for tree inventory, canopy stress hotspots, and field inspection scheduling.
 

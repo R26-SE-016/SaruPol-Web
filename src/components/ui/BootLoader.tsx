@@ -15,7 +15,7 @@ const BOOT_STEPS: BootStep[] = [
   { label: "SaruPol Core Gateway", icon: <Wifi className="w-4 h-4" />, duration: 550 },
   { label: "Soil Telemetry Triangulation", icon: <Database className="w-4 h-4" />, duration: 480 },
   { label: "CNN Pathology Vision Engine", icon: <Cpu className="w-4 h-4" />, duration: 620 },
-  { label: "CocoCastAI Yield Ensemble", icon: <Activity className="w-4 h-4" />, duration: 480 },
+  { label: "SaruPol Yield Ensemble", icon: <Activity className="w-4 h-4" />, duration: 480 },
   { label: "Agronomist Consensus RAG", icon: <Leaf className="w-4 h-4" />, duration: 420 },
   { label: "CRI Research Security Handshake", icon: <ShieldCheck className="w-4 h-4" />, duration: 350 },
 ];

@@ -55,11 +55,11 @@ export default function YieldPage() {
   const update = (key: keyof Params, val: number) => setParams(prev => ({ ...prev, [key]: val }));
 
   const sliders = [
-    { key: "temperature" as const, label: "Temperature", icon: <Thermometer className="w-4 h-4" />, min: 20, max: 40, step: 0.5, unit: "°C", color: "#FF4C4C" },
-    { key: "humidity" as const, label: "Humidity", icon: <Droplets className="w-4 h-4" />, min: 30, max: 100, step: 1, unit: "%", color: "#00E5FF" },
-    { key: "soil_moisture" as const, label: "Soil Moisture", icon: <Droplets className="w-4 h-4" />, min: 5, max: 60, step: 0.5, unit: "%", color: "#00FF9D" },
-    { key: "palm_age" as const, label: "Palm Age", icon: <TreePine className="w-4 h-4" />, min: 1, max: 60, step: 1, unit: "yrs", color: "#E6AF2E" },
-    { key: "palm_health" as const, label: "Palm Health", icon: <Heart className="w-4 h-4" />, min: 1, max: 5, step: 0.5, unit: "/5", color: "#A78BFA" },
+    { key: "temperature" as const, label: t.yield.temp, icon: <Thermometer className="w-4 h-4" />, min: 20, max: 40, step: 0.5, unit: "°C", color: "#FF4C4C" },
+    { key: "humidity" as const, label: t.yield.humidity, icon: <Droplets className="w-4 h-4" />, min: 30, max: 100, step: 1, unit: "%", color: "#00E5FF" },
+    { key: "soil_moisture" as const, label: t.yield.soilMoisture, icon: <Droplets className="w-4 h-4" />, min: 5, max: 60, step: 0.5, unit: "%", color: "#00FF9D" },
+    { key: "palm_age" as const, label: t.yield.palmAge, icon: <TreePine className="w-4 h-4" />, min: 1, max: 60, step: 1, unit: "yrs", color: "#E6AF2E" },
+    { key: "palm_health" as const, label: t.yield.palmHealth, icon: <Heart className="w-4 h-4" />, min: 1, max: 5, step: 0.5, unit: "/5", color: "#A78BFA" },
   ];
 
   return (
@@ -81,8 +81,8 @@ export default function YieldPage() {
               </p>
             </div>
           </div>
-          <p className="text-sm max-w-2xl" style={{ color: "rgba(232,239,232,0.35)" }}>
-            Hybrid machine learning ensemble combining Random Forest tabular regressors (R²=0.98) with LSTM sequential networks (R²=0.86) to project 45-day harvest cycles.
+          <p className="text-sm max-w-2xl leading-relaxed" style={{ color: "rgba(232,239,232,0.6)" }}>
+            {t.yield.description}
           </p>
         </motion.div>
 
@@ -99,7 +99,7 @@ export default function YieldPage() {
               <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center gap-2">
                   <span style={{ color: s.color }}>{s.icon}</span>
-                  <span className="text-xs uppercase tracking-wider font-mono" style={{ color: "rgba(232,239,232,0.7)" }}>
+                  <span className="text-xs uppercase tracking-wider font-mono font-medium" style={{ color: "rgba(232,239,232,0.85)" }}>
                     {s.label}
                   </span>
                 </div>
@@ -142,7 +142,7 @@ export default function YieldPage() {
               </>
             ) : (
               <>
-                <span>{t.yield.cycleForecast}</span>
+                <span>{t.yield.predictBtn}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
@@ -155,31 +155,31 @@ export default function YieldPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div className="glass-card p-6 text-center">
                 <p className="text-3xl font-mono font-light text-cyan-400">{result.hybrid}</p>
-                <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>
                   {t.yield.cycleForecast} (Nuts / Palm)
                 </p>
-                <span className="text-[9px] font-mono text-cyan-400/60">{result.status}</span>
+                <span className="text-[9px] font-mono text-cyan-400/80">{result.status}</span>
               </div>
               <div className="glass-card p-6 text-center">
                 <p className="text-3xl font-mono font-light text-emerald-400">{Math.round(result.hybrid * 8.1)}</p>
-                <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>
                   {t.yield.annualYield}
                 </p>
-                <span className="text-[9px] font-mono text-emerald-400/60">{t.yield.nutsPerPalm}</span>
+                <span className="text-[9px] font-mono text-emerald-400/80">{t.yield.nutsPerPalm}</span>
               </div>
               <div className="glass-card p-6 text-center">
                 <p className="text-3xl font-mono font-light text-amber-400">{result.confidence}</p>
-                <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>
                   {t.yield.ensembleConfidence}
                 </p>
-                <span className="text-[9px] font-mono text-amber-400/60">RF: {result.rf} · LSTM: {result.lstm}</span>
+                <span className="text-[9px] font-mono text-amber-400/80">RF: {result.rf} · LSTM: {result.lstm}</span>
               </div>
             </div>
 
             {/* Recommendations */}
             <div className="glass-card p-6">
               <h2 className="text-sm font-medium mb-3" style={{ color: "rgba(232,239,232,0.8)" }}>
-                CRI Yield Enhancement Directives
+                {t.yield.directivesTitle}
               </h2>
               <ul className="space-y-2">
                 {result.recommendations.map((rec, i) => (

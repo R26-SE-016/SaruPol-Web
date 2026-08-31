@@ -64,9 +64,30 @@ export interface TranslationSchema {
       history: string;
       protocols: string;
     };
+    overview: {
+      gatewaysTitle: string;
+      aerialTitle: string;
+      aerialDesc: string;
+      aerialBtn: string;
+      leafTitle: string;
+      leafDesc: string;
+      leafBtn: string;
+      kbTitle: string;
+      kbDesc: string;
+      kbBtn: string;
+      totalDiagnostics: string;
+      verifiedHealthy: string;
+      activePathogens: string;
+      avgConfidence: string;
+      pathogenProfile: string;
+      weeklyCadence: string;
+    };
     systemA: {
       title: string;
       desc: string;
+      scanTab: string;
+      historyTab: string;
+      estateLabel: string;
       uploadPrompt: string;
       analyzing: string;
       variIndex: string;
@@ -79,11 +100,14 @@ export interface TranslationSchema {
       moderateSeverity: string;
       actionRequired: string;
       dispatchFieldOfficer: string;
+      loadSample: string;
+      runAnalysis: string;
     };
     systemB: {
       title: string;
       desc: string;
       uploadOrCapture: string;
+      dropzoneSub: string;
       browsePhotos: string;
       analyzingWasm: string;
       resultTitle: string;
@@ -97,6 +121,7 @@ export interface TranslationSchema {
       biological: string;
       saveLocal: string;
       syncCloud: string;
+      runDiagnosisBtn: string;
     };
     diseases: {
       budRot: string;
@@ -109,6 +134,7 @@ export interface TranslationSchema {
   soil: {
     title: string;
     subtitle: string;
+    description: string;
     triangulation: string;
     sensorInputs: string;
     leafEst: string;
@@ -118,16 +144,24 @@ export interface TranslationSchema {
     mop: string;
     dolomite: string;
     calculateBtn: string;
+    treeNo: string;
+    zoneId: string;
   };
   yield: {
     title: string;
     subtitle: string;
+    description: string;
+    temp: string;
+    humidity: string;
+    soilMoisture: string;
+    palmAge: string;
+    palmHealth: string;
+    predictBtn: string;
     cycleForecast: string;
-    ensembleConfidence: string;
-    rfModel: string;
-    lstmModel: string;
     annualYield: string;
+    ensembleConfidence: string;
     nutsPerPalm: string;
+    directivesTitle: string;
   };
   advisory: {
     title: string;

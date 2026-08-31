@@ -563,7 +563,7 @@ export default function PathologyPage() {
               {/* Quick Launch Gateway Cards */}
               <div>
                 <h2 className="text-xs font-mono uppercase tracking-wider mb-3" style={{ color: "rgba(232, 239, 232, 0.4)" }}>
-                  Diagnostic Gateways
+                  {t.pathology.overview.gatewaysTitle}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   
@@ -582,17 +582,17 @@ export default function PathologyPage() {
                         <Plane className="w-6 h-6" style={{ color: "#00E5FF" }} />
                       </div>
                       <h3 className="text-lg font-medium text-white mb-1.5 flex items-center justify-between">
-                        <span>Aerial Surveillance</span>
+                        <span>{t.pathology.overview.aerialTitle}</span>
                         <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" style={{ color: "#00E5FF" }} />
                       </h3>
                       <p className="text-xs font-mono leading-relaxed" style={{ color: "rgba(232, 239, 232, 0.5)" }}>
-                        Multispectral canopy stress detection via VARI/NDVI indices with Excess Green (ExG) segmentation and Z-score outlier hotspot extraction.
+                        {t.pathology.overview.aerialDesc}
                       </p>
                     </div>
                     <div className="mt-6 pt-4 border-t flex items-center justify-between text-xs font-mono"
                       style={{ borderColor: "rgba(255, 255, 255, 0.05)", color: "#00E5FF" }}
                     >
-                      <span>Launch UAV Suite</span>
+                      <span>{t.pathology.overview.aerialBtn}</span>
                       <span>→</span>
                     </div>
                   </div>
@@ -612,17 +612,17 @@ export default function PathologyPage() {
                         <Smartphone className="w-6 h-6" style={{ color: "#FF4C4C" }} />
                       </div>
                       <h3 className="text-lg font-medium text-white mb-1.5 flex items-center justify-between">
-                        <span>Leaf & Trunk Diagnostics</span>
+                        <span>{t.pathology.overview.leafTitle}</span>
                         <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" style={{ color: "#FF4C4C" }} />
                       </h3>
                       <p className="text-xs font-mono leading-relaxed" style={{ color: "rgba(232, 239, 232, 0.5)" }}>
-                        Instant on-device microscopic inference powered by INT8 quantized MobileNetV2 with Shannon Entropy Out-of-Distribution (OOD) gating.
+                        {t.pathology.overview.leafDesc}
                       </p>
                     </div>
                     <div className="mt-6 pt-4 border-t flex items-center justify-between text-xs font-mono"
                       style={{ borderColor: "rgba(255, 255, 255, 0.05)", color: "#FF4C4C" }}
                     >
-                      <span>Run Leaf Scan</span>
+                      <span>{t.pathology.overview.leafBtn}</span>
                       <span>→</span>
                     </div>
                   </div>
@@ -642,17 +642,17 @@ export default function PathologyPage() {
                         <BookOpen className="w-6 h-6" style={{ color: "#00FF9D" }} />
                       </div>
                       <h3 className="text-lg font-medium text-white mb-1.5 flex items-center justify-between">
-                        <span>CRI Knowledge Base</span>
+                        <span>{t.pathology.overview.kbTitle}</span>
                         <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" style={{ color: "#00FF9D" }} />
                       </h3>
                       <p className="text-xs font-mono leading-relaxed" style={{ color: "rgba(232, 239, 232, 0.5)" }}>
-                        Official Coconut Research Institute (CRI) treatment protocols covering chemical fungicides, biological controls, and cultural management.
+                        {t.pathology.overview.kbDesc}
                       </p>
                     </div>
                     <div className="mt-6 pt-4 border-t flex items-center justify-between text-xs font-mono"
                       style={{ borderColor: "rgba(255, 255, 255, 0.05)", color: "#00FF9D" }}
                     >
-                      <span>Browse Protocols</span>
+                      <span>{t.pathology.overview.kbBtn}</span>
                       <span>→</span>
                     </div>
                   </div>
@@ -662,18 +662,18 @@ export default function PathologyPage() {
 
               {/* KPI Stat Cards */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <StatCard icon={<ClipboardList />} label="Total Diagnostics" value={stats.total} subtitle="Across all estates" trend={{ value: "+18%", positive: true }} accentColor="#00E5FF" />
-                <StatCard icon={<ShieldCheck />} label="Verified Healthy" value={stats.healthy} subtitle="Optimal foliage" accentColor="#00FF9D" />
-                <StatCard icon={<AlertTriangle />} label="Active Pathogens" value={stats.diseased} subtitle="Require attention" accentColor="#FF4C4C" />
-                <StatCard icon={<Camera />} label="Avg Confidence" value={`${(stats.avgConf*100).toFixed(0)}%`} subtitle="MobileNetV2-INT8" accentColor="#A78BFA" />
+                <StatCard icon={<ClipboardList />} label={t.pathology.overview.totalDiagnostics} value={stats.total} subtitle="Across all estates" trend={{ value: "+18%", positive: true }} accentColor="#00E5FF" />
+                <StatCard icon={<ShieldCheck />} label={t.pathology.overview.verifiedHealthy} value={stats.healthy} subtitle="Optimal foliage" accentColor="#00FF9D" />
+                <StatCard icon={<AlertTriangle />} label={t.pathology.overview.activePathogens} value={stats.diseased} subtitle="Require attention" accentColor="#FF4C4C" />
+                <StatCard icon={<Camera />} label={t.pathology.overview.avgConfidence} value={`${(stats.avgConf*100).toFixed(0)}%`} subtitle="MobileNetV2-INT8" accentColor="#A78BFA" />
               </div>
 
               {/* Charts Section */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <DiseaseChart diagnostics={DEMO_DIAGNOSTICS} title="Pathogen Distribution Profile" />
+                <DiseaseChart diagnostics={DEMO_DIAGNOSTICS} title={t.pathology.overview.pathogenProfile} />
                 
                 <div className="glass-card p-6 flex flex-col rounded-2xl">
-                  <h3 className="text-sm font-mono mb-4" style={{ color: "rgba(232, 239, 232, 0.5)" }}>Weekly Diagnostic Cadence</h3>
+                  <h3 className="text-sm font-mono mb-4" style={{ color: "rgba(232, 239, 232, 0.5)" }}>{t.pathology.overview.weeklyCadence}</h3>
                   <div className="flex-1 min-h-[220px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={weeklyData}>
