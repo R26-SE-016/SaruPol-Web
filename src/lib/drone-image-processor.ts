@@ -105,28 +105,26 @@ async function processTiffPreview(file: File): Promise<ProcessedDroneImage> {
 }
 
 /**
- * Standard image preview generator
+ * Standard image preview generator (JPEG, PNG, WebP)
  */
 async function processStandardPreview(file: File): Promise<ProcessedDroneImage> {
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    const objectUrl = URL.createObjectURL(file);
-
-    img.onload = () => {
-      URL.revokeObjectURL(objectUrl);
-      resolve({
-        previewUrl: objectUrl,
-        originalWidth: img.naturalWidth || img.width,
-        originalHeight: img.naturalHeight || img.height,
-        isTiff: false,
-      });
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      const img = new Image();
+      img.onload = () => {
+        resolve({
+          previewUrl: dataUrl,
+          originalWidth: img.naturalWidth || img.width,
+          originalHeight: img.naturalHeight || img.height,
+          isTiff: false,
+        });
+      };
+      img.onerror = () => reject(new Error('Failed to decode image'));
+      img.src = dataUrl;
     };
-
-    img.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      reject(new Error('Failed to load image file for preview'));
-    };
-
-    img.src = objectUrl;
+    reader.onerror = () => reject(new Error('Failed to read image file'));
+    reader.readAsDataURL(file);
   });
 }
