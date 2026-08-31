@@ -36,7 +36,7 @@ import {
   UserDiagnosticRecord, 
   UserAerialSurveyRecord 
 } from "@/lib/pathology-storage";
-import { processDroneImage, computeInstantSpectralPreview } from "@/lib/drone-image-processor";
+import { processDroneImage } from "@/lib/drone-image-processor";
 
 // Lazy load Leaflet Map for Diagnostic History
 const DiagnosticMapInner = dynamic(() => import("@/components/pathology/DiagnosticMap"), { ssr: false });
