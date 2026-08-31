@@ -115,17 +115,18 @@ export default function PathologyPage() {
       setUavResult(null);
       setUavError(null);
 
+      // UI Thumbnail preview (UTIF decoder for .tiff, object URL for jpg/png)
       try {
         const processed = await processDroneImage(file);
         setPrimaryPreview(processed.previewUrl);
-        setPrimaryBase64(processed.base64Payload);
       } catch (err: any) {
-        console.warn("[Drone Pre-processor] Fallback standard reader:", err);
         setPrimaryPreview(URL.createObjectURL(file));
-        const reader = new FileReader();
-        reader.onloadend = () => setPrimaryBase64(reader.result as string);
-        reader.readAsDataURL(file);
       }
+
+      // Read exact raw uncompressed binary base64 for backend Python processing
+      const reader = new FileReader();
+      reader.onloadend = () => setPrimaryBase64(reader.result as string);
+      reader.readAsDataURL(file);
     }
   };
 
@@ -137,13 +138,14 @@ export default function PathologyPage() {
       try {
         const processed = await processDroneImage(file);
         setNirPreview(processed.previewUrl);
-        setNirBase64(processed.base64Payload);
       } catch (err: any) {
         setNirPreview(URL.createObjectURL(file));
-        const reader = new FileReader();
-        reader.onloadend = () => setNirBase64(reader.result as string);
-        reader.readAsDataURL(file);
       }
+
+      // Read exact raw uncompressed binary base64 for backend Python processing
+      const reader = new FileReader();
+      reader.onloadend = () => setNirBase64(reader.result as string);
+      reader.readAsDataURL(file);
     }
   };
 
@@ -209,7 +211,7 @@ export default function PathologyPage() {
     }, "image/png");
   };
 
-  // Run Real Aerial Spectral Analysis (Lightning-fast client upload + analytical engine)
+  // Run Real Aerial Spectral Analysis (Direct to Python Backend)
   const runUavAnalysis = async () => {
     if (!primaryBase64 && !primaryFile) {
       setUavError("Please upload an aerial drone image first.");
@@ -258,49 +260,8 @@ export default function PathologyPage() {
         throw new Error("Invalid response format from spectral service");
       }
     } catch (err: any) {
-      console.warn("[Aerial Spectral] Executing high-precision client-side spectral engine:", err);
-      
-      try {
-        const clientAnalysis = await computeInstantSpectralPreview(
-          primaryBase64 || primaryPreview || "",
-          indexType,
-          nirBase64 || nirPreview || undefined,
-          userCoords
-        );
-
-        const fallbackResult = {
-          estate_id: estateId,
-          index_type: indexType,
-          image_dimensions: { width: 1200, height: 800 },
-          statistics: clientAnalysis.statistics,
-          heatmap_base64: clientAnalysis.heatmapDataUrl,
-          hotspots: clientAnalysis.hotspots,
-        };
-
-        setUavResult(fallbackResult as any);
-        if (clientAnalysis.hotspots && clientAnalysis.hotspots.length > 0) {
-          setSelectedHotspot(clientAnalysis.hotspots[0] as any);
-        }
-
-        const fallbackSurveyRecord: UserAerialSurveyRecord = {
-          id: `survey-${new Date().toISOString().split("T")[0]}-${Date.now().toString(36).slice(-4)}`,
-          estate_name: user?.estate_id || (estateId === "estate_001" ? "Green Valley Estate (Kurunegala)" : "Puttalam Coastal Plantation"),
-          date: new Date().toISOString(),
-          index_type: indexType,
-          mean_index: clientAnalysis.statistics.mean_index,
-          healthy_canopy_pct: clientAnalysis.statistics.healthy_canopy_pct,
-          detected_palms: clientAnalysis.statistics.estimated_palms_count,
-          anomalies_count: clientAnalysis.hotspots.length,
-          status: "Completed",
-          user_id: String(user?.id || "usr_cri_001"),
-          user_email: user?.email,
-        };
-        const updatedSurveys = saveUserAerialSurvey(fallbackSurveyRecord);
-        setAerialSurveysList(updatedSurveys);
-      } catch (clientErr: any) {
-        console.error("Client spectral analysis error:", clientErr);
-        setUavError("Failed to process aerial orthomosaic. Please verify file format.");
-      }
+      console.error("[Aerial Spectral Backend Error]:", err);
+      setUavError(`Backend processing error: ${err.message || "Failed to process on Cloud Run service"}.`);
     } finally {
       setIsProcessingUav(false);
     }
