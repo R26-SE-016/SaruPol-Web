@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/layout/Navbar";
-import { BarChart3, TrendingUp, Thermometer, Droplets, TreePine, Heart, RotateCcw } from "lucide-react";
+import { BarChart3, TrendingUp, Thermometer, Droplets, TreePine, Heart, ArrowRight } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 interface Params {
   temperature: number;
@@ -14,6 +15,7 @@ interface Params {
 }
 
 export default function YieldPage() {
+  const { t } = useTranslation();
   const [params, setParams] = useState<Params>({
     temperature: 28, humidity: 78, soil_moisture: 32, palm_age: 12, palm_health: 4.5,
   });
@@ -25,7 +27,7 @@ export default function YieldPage() {
 
   const handlePredict = async () => {
     setIsLoading(true);
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise(r => setTimeout(r, 1800));
 
     const { temperature, humidity, soil_moisture, palm_age, palm_health } = params;
 
@@ -37,14 +39,14 @@ export default function YieldPage() {
     const hybrid = Math.round((0.6 * rf + 0.4 * lstm) * 10) / 10;
 
     const diff = Math.abs(rf - lstm) / hybrid;
-    const confidence = diff < 0.1 ? "High" : diff < 0.2 ? "Moderate" : "Low";
+    const confidence = diff < 0.1 ? "High (±4%)" : diff < 0.2 ? "Moderate (±8%)" : "Low (±15%)";
     const status = hybrid > 10 ? "Excellent Yield" : hybrid > 6 ? "Good Yield" : "Below Average";
 
     const recommendations: string[] = [];
-    if (soil_moisture < 25) recommendations.push("Apply organic mulching to improve moisture retention");
-    if (palm_health < 3) recommendations.push("Apply recommended booster nitrogen doses");
-    if (humidity > 85) recommendations.push("Monitor for fungal infections in high humidity");
-    if (recommendations.length === 0) recommendations.push("All parameters are optimal. Maintain current practices.");
+    if (soil_moisture < 25) recommendations.push("Apply organic mulching around root zone to improve moisture retention");
+    if (palm_health < 3) recommendations.push("Apply CRI recommended booster nitrogen + potassium fertilizer doses");
+    if (humidity > 85) recommendations.push("Monitor for fungal pathogens and leaf rot under sustained high humidity");
+    if (recommendations.length === 0) recommendations.push("All environmental parameters are optimal. Maintain current irrigation schedule.");
 
     setResult({ rf, lstm, hybrid, confidence, status, recommendations });
     setIsLoading(false);
@@ -73,110 +75,123 @@ export default function YieldPage() {
               <BarChart3 className="w-5 h-5" style={{ color: "#00E5FF" }} />
             </div>
             <div>
-              <h1 className="text-2xl font-light" style={{ fontFamily: "var(--font-outfit)" }}>CocoCastAI</h1>
-              <p className="text-[10px] uppercase tracking-[0.3em] font-mono" style={{ color: "rgba(0,229,255,0.5)" }}>
-                Hybrid RF + LSTM 45-Day Yield Prediction
+              <h1 className="text-2xl font-light" style={{ fontFamily: "var(--font-outfit)" }}>{t.yield.title}</h1>
+              <p className="text-[10px] uppercase tracking-[0.3em] font-mono" style={{ color: "rgba(0,229,255,0.4)" }}>
+                {t.yield.subtitle}
               </p>
             </div>
           </div>
+          <p className="text-sm max-w-2xl" style={{ color: "rgba(232,239,232,0.35)" }}>
+            Hybrid machine learning ensemble combining Random Forest tabular regressors (R²=0.98) with LSTM sequential networks (R²=0.86) to project 45-day harvest cycles.
+          </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Parameter Sliders */}
-          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <div className="glass-card p-6 space-y-5">
-              <h3 className="text-sm font-medium mb-4" style={{ color: "rgba(232,239,232,0.7)" }}>Input Parameters</h3>
-              {sliders.map(s => (
-                <div key={s.key}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span style={{ color: `${s.color}80` }}>{s.icon}</span>
-                      <span className="text-xs" style={{ color: "rgba(232,239,232,0.5)" }}>{s.label}</span>
-                    </div>
-                    <span className="text-sm font-mono" style={{ color: s.color }}>
-                      {params[s.key]}{s.unit}
-                    </span>
-                  </div>
-                  <input
-                    type="range" min={s.min} max={s.max} step={s.step} value={params[s.key]}
-                    onChange={(e) => update(s.key, parseFloat(e.target.value))}
-                    className="w-full h-1 rounded-full appearance-none cursor-pointer"
-                    style={{
-                      background: `linear-gradient(to right, ${s.color} 0%, ${s.color} ${((params[s.key] - s.min) / (s.max - s.min)) * 100}%, rgba(255,255,255,0.06) ${((params[s.key] - s.min) / (s.max - s.min)) * 100}%, rgba(255,255,255,0.06) 100%)`,
-                    }}
-                  />
+        {/* Sliders */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+          {sliders.map((s, i) => (
+            <motion.div
+              key={s.key}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + i * 0.05 }}
+              className="glass-card p-5"
+            >
+              <div className="flex justify-between items-center mb-3">
+                <div className="flex items-center gap-2">
+                  <span style={{ color: s.color }}>{s.icon}</span>
+                  <span className="text-xs uppercase tracking-wider font-mono" style={{ color: "rgba(232,239,232,0.7)" }}>
+                    {s.label}
+                  </span>
                 </div>
-              ))}
+                <span className="text-sm font-mono font-medium" style={{ color: s.color }}>
+                  {params[s.key]} {s.unit}
+                </span>
+              </div>
+              <input
+                type="range"
+                min={s.min}
+                max={s.max}
+                step={s.step}
+                value={params[s.key]}
+                onChange={(e) => update(s.key, parseFloat(e.target.value))}
+                className="w-full h-1.5 rounded-lg appearance-none cursor-pointer"
+                style={{
+                  background: `linear-gradient(90deg, ${s.color} ${(params[s.key] - s.min) / (s.max - s.min) * 100}%, rgba(255,255,255,0.05) 0%)`,
+                }}
+              />
+            </motion.div>
+          ))}
+        </div>
 
-              <button onClick={handlePredict} disabled={isLoading}
-                className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-medium smooth-transition mt-4"
-                style={{ background: "rgba(0,229,255,0.12)", border: "1px solid rgba(0,229,255,0.15)", color: "#00E5FF" }}
-              >
-                {isLoading ? (
-                  <><RotateCcw className="w-4 h-4 animate-spin" /> Forecasting...</>
-                ) : (
-                  <><TrendingUp className="w-4 h-4" /> Predict 45-Day Yield</>
-                )}
-              </button>
+        {/* Predict Button */}
+        <div className="mb-10">
+          <button
+            onClick={handlePredict}
+            disabled={isLoading}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl text-xs uppercase tracking-widest font-mono font-medium smooth-transition"
+            style={{
+              background: "linear-gradient(135deg, rgba(0,229,255,0.2), rgba(0,255,157,0.2))",
+              color: "#00E5FF",
+              border: "1px solid rgba(0,229,255,0.3)",
+            }}
+          >
+            {isLoading ? (
+              <>
+                <div className="w-4 h-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
+                <span>{t.common.loading}</span>
+              </>
+            ) : (
+              <>
+                <span>{t.yield.cycleForecast}</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Results */}
+        {result && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="glass-card p-6 text-center">
+                <p className="text-3xl font-mono font-light text-cyan-400">{result.hybrid}</p>
+                <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  {t.yield.cycleForecast} (Nuts / Palm)
+                </p>
+                <span className="text-[9px] font-mono text-cyan-400/60">{result.status}</span>
+              </div>
+              <div className="glass-card p-6 text-center">
+                <p className="text-3xl font-mono font-light text-emerald-400">{Math.round(result.hybrid * 8.1)}</p>
+                <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  {t.yield.annualYield}
+                </p>
+                <span className="text-[9px] font-mono text-emerald-400/60">{t.yield.nutsPerPalm}</span>
+              </div>
+              <div className="glass-card p-6 text-center">
+                <p className="text-3xl font-mono font-light text-amber-400">{result.confidence}</p>
+                <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  {t.yield.ensembleConfidence}
+                </p>
+                <span className="text-[9px] font-mono text-amber-400/60">RF: {result.rf} · LSTM: {result.lstm}</span>
+              </div>
+            </div>
+
+            {/* Recommendations */}
+            <div className="glass-card p-6">
+              <h2 className="text-sm font-medium mb-3" style={{ color: "rgba(232,239,232,0.8)" }}>
+                CRI Yield Enhancement Directives
+              </h2>
+              <ul className="space-y-2">
+                {result.recommendations.map((rec, i) => (
+                  <li key={i} className="text-xs font-mono flex items-center gap-2" style={{ color: "rgba(232,239,232,0.6)" }}>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    {rec}
+                  </li>
+                ))}
+              </ul>
             </div>
           </motion.div>
-
-          {/* Results */}
-          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            {result ? (
-              <div className="space-y-5">
-                {/* Model Comparison */}
-                <div className="glass-card p-6">
-                  <h3 className="text-sm font-medium mb-4" style={{ color: "rgba(232,239,232,0.7)" }}>Model Predictions</h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { label: "Random Forest", val: result.rf, r2: "R²=0.9845", color: "#00FF9D" },
-                      { label: "LSTM", val: result.lstm, r2: "R²=0.8629", color: "#00E5FF" },
-                      { label: "Hybrid (Production)", val: result.hybrid, r2: "0.6×RF + 0.4×LSTM", color: "#E6AF2E" },
-                    ].map(m => (
-                      <div key={m.label} className="text-center p-4 rounded-xl" style={{ background: `${m.color}08`, border: `1px solid ${m.color}12` }}>
-                        <p className="text-2xl font-mono font-light" style={{ color: m.color }}>{m.val}</p>
-                        <p className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>nuts/palm</p>
-                        <p className="text-[9px] font-mono mt-1" style={{ color: "rgba(255,255,255,0.15)" }}>{m.r2}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Status */}
-                <div className="glass-card p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs" style={{ color: "rgba(232,239,232,0.5)" }}>Yield Status</span>
-                    <span className="text-xs font-mono px-2 py-0.5 rounded-full" style={{ background: "rgba(0,255,157,0.08)", color: "#00FF9D" }}>
-                      {result.status}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs" style={{ color: "rgba(232,239,232,0.5)" }}>Confidence Level</span>
-                    <span className="text-xs font-mono" style={{ color: result.confidence === "High" ? "#00FF9D" : result.confidence === "Moderate" ? "#E6AF2E" : "#FF4C4C" }}>
-                      {result.confidence}
-                    </span>
-                  </div>
-
-                  <h4 className="text-[10px] uppercase tracking-wider mb-2 font-mono" style={{ color: "rgba(0,229,255,0.4)" }}>Recommendations</h4>
-                  <ul className="space-y-2">
-                    {result.recommendations.map((rec, i) => (
-                      <li key={i} className="text-xs leading-relaxed flex items-start gap-2" style={{ color: "rgba(232,239,232,0.5)" }}>
-                        <span style={{ color: "rgba(0,255,157,0.4)" }}>•</span>
-                        {rec}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ) : (
-              <div className="glass-card p-8 flex flex-col items-center justify-center min-h-[420px]">
-                <BarChart3 className="w-12 h-12 mb-4" style={{ color: "rgba(255,255,255,0.08)" }} />
-                <p className="text-sm" style={{ color: "rgba(255,255,255,0.2)" }}>Adjust parameters and run prediction</p>
-              </div>
-            )}
-          </motion.div>
-        </div>
+        )}
       </div>
     </main>
   );

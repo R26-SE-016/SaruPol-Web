@@ -4,6 +4,7 @@ import "./globals.css";
 import CustomCursor from "@/components/ui/CustomCursor";
 import BootLoader from "@/components/ui/BootLoader";
 import CommandPalette from "@/components/ui/CommandPalette";
+import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -62,10 +63,12 @@ export default function RootLayout({
           color: "#e8efe8",
         }}
       >
-        <CustomCursor />
-        <BootLoader />
-        <CommandPalette />
-        {children}
+        <LanguageProvider>
+          <CustomCursor />
+          <BootLoader />
+          <CommandPalette />
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

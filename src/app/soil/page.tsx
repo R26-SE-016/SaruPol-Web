@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/layout/Navbar";
 import { FlaskConical, Beaker, Droplets, Leaf, ArrowRight, RotateCcw } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 interface NPKPoint {
   N: string; P: string; K: string; pH: string;
@@ -12,6 +13,7 @@ interface NPKPoint {
 const defaultPoint = (): NPKPoint => ({ N: "0.016", P: "0.340", K: "0.063", pH: "6.4" });
 
 export default function SoilPage() {
+  const { t } = useTranslation();
   const [treeNo, setTreeNo] = useState("104");
   const [zoneId, setZoneId] = useState("Block A");
   const [pointA, setPointA] = useState<NPKPoint>(defaultPoint());
@@ -100,9 +102,9 @@ export default function SoilPage() {
               <FlaskConical className="w-5 h-5" style={{ color: "#00FF9D" }} />
             </div>
             <div>
-              <h1 className="text-2xl font-light" style={{ fontFamily: "var(--font-outfit)" }}>Soil Intelligence</h1>
+              <h1 className="text-2xl font-light" style={{ fontFamily: "var(--font-outfit)" }}>{t.soil.title}</h1>
               <p className="text-[10px] uppercase tracking-[0.3em] font-mono" style={{ color: "rgba(0,255,157,0.4)" }}>
-                CRI Differential Fertilizer Recommendation Engine
+                {t.soil.subtitle}
               </p>
             </div>
           </div>
@@ -134,77 +136,91 @@ export default function SoilPage() {
         {/* 3-Point Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <PointCard title="Point A" point={pointA} setter={setPointA} color="#00FF9D" />
+            <PointCard title="Point A (0°)" point={pointA} setter={setPointA} color="#00FF9D" />
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <PointCard title="Point B" point={pointB} setter={setPointB} color="#00E5FF" />
+            <PointCard title="Point B (120°)" point={pointB} setter={setPointB} color="#00E5FF" />
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-            <PointCard title="Point C" point={pointC} setter={setPointC} color="#E6AF2E" />
+            <PointCard title="Point C (240°)" point={pointC} setter={setPointC} color="#E6AF2E" />
           </motion.div>
         </div>
 
-        {/* Analyze Button */}
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="flex gap-3 mb-10">
-          <button onClick={handleAnalyze} disabled={isAnalyzing}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium smooth-transition"
+        {/* Calculate Button */}
+        <div className="flex gap-4 mb-10">
+          <button
+            onClick={handleAnalyze}
+            disabled={isAnalyzing}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl text-xs uppercase tracking-widest font-mono font-medium smooth-transition"
             style={{
-              background: isAnalyzing ? "rgba(0,255,157,0.1)" : "rgba(0,255,157,0.15)",
-              border: "1px solid rgba(0,255,157,0.2)",
+              background: "linear-gradient(135deg, rgba(0,255,157,0.2), rgba(0,229,255,0.2))",
               color: "#00FF9D",
+              border: "1px solid rgba(0,255,157,0.3)",
             }}
           >
             {isAnalyzing ? (
-              <><RotateCcw className="w-4 h-4 animate-spin" /> Analyzing...</>
+              <>
+                <div className="w-4 h-4 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" />
+                <span>{t.common.loading}</span>
+              </>
             ) : (
-              <><Beaker className="w-4 h-4" /> Run CRI DFR Analysis</>
+              <>
+                <span>{t.soil.calculateBtn}</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
             )}
           </button>
-        </motion.div>
+        </div>
 
         {/* Results */}
         {result && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            {/* Predicted Leaf NPK */}
+            {/* Leaf NPK */}
             <div className="glass-card p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Leaf className="w-4 h-4" style={{ color: "#00FF9D" }} />
-                <h3 className="text-sm font-medium" style={{ color: "rgba(232,239,232,0.8)" }}>Predicted 14th Frond Leaf NPK</h3>
-              </div>
+              <h2 className="text-sm font-medium mb-4" style={{ color: "rgba(232,239,232,0.8)" }}>
+                {t.soil.leafEst}
+              </h2>
               <div className="grid grid-cols-3 gap-4">
-                {[
-                  { label: "Leaf N", val: result.leafN.toFixed(3), unit: "%" },
-                  { label: "Leaf P", val: result.leafP.toFixed(3), unit: "%" },
-                  { label: "Leaf K", val: result.leafK.toFixed(3), unit: "%" },
-                ].map(item => (
-                  <div key={item.label} className="text-center p-4 rounded-xl" style={{ background: "rgba(0,255,157,0.04)" }}>
-                    <p className="text-2xl font-mono font-light" style={{ color: "#00FF9D" }}>{item.val}</p>
-                    <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>{item.label} ({item.unit})</p>
-                  </div>
-                ))}
+                <div className="p-4 rounded-lg bg-black/40 text-center">
+                  <p className="text-2xl font-mono font-light text-emerald-400">{result.leafN.toFixed(2)}%</p>
+                  <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Leaf Nitrogen (N)</p>
+                  <span className="text-[9px] font-mono text-emerald-400/60">Optimum: 1.9 - 2.1%</span>
+                </div>
+                <div className="p-4 rounded-lg bg-black/40 text-center">
+                  <p className="text-2xl font-mono font-light text-cyan-400">{result.leafP.toFixed(3)}%</p>
+                  <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Leaf Phosphorus (P)</p>
+                  <span className="text-[9px] font-mono text-cyan-400/60">Optimum: 0.12 - 0.14%</span>
+                </div>
+                <div className="p-4 rounded-lg bg-black/40 text-center">
+                  <p className="text-2xl font-mono font-light text-amber-400">{result.leafK.toFixed(2)}%</p>
+                  <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Leaf Potassium (K)</p>
+                  <span className="text-[9px] font-mono text-amber-400/60">Optimum: 1.2 - 1.5%</span>
+                </div>
               </div>
             </div>
 
-            {/* Fertilizer Recommendation */}
+            {/* DFR Dosage */}
             <div className="glass-card p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Droplets className="w-4 h-4" style={{ color: "#00E5FF" }} />
-                <h3 className="text-sm font-medium" style={{ color: "rgba(232,239,232,0.8)" }}>CRI Fertilizer Recommendation</h3>
-                <span className="text-[9px] font-mono ml-auto" style={{ color: "rgba(255,255,255,0.15)" }}>grams/palm/year</span>
-              </div>
+              <h2 className="text-sm font-medium mb-4" style={{ color: "rgba(232,239,232,0.8)" }}>
+                {t.soil.dosingPlan}
+              </h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                  { name: "Urea", val: result.urea, color: "#00FF9D", desc: "Nitrogen Source" },
-                  { name: "ERP", val: result.erp, color: "#E6AF2E", desc: "Phosphorus Source" },
-                  { name: "MOP", val: result.mop, color: "#00E5FF", desc: "Potassium Source" },
-                  { name: "Dolomite", val: result.dolomite, color: "#A78BFA", desc: "pH Neutralizer" },
-                ].map(fert => (
-                  <div key={fert.name} className="p-4 rounded-xl text-center" style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${fert.color}15` }}>
-                    <p className="text-2xl font-mono font-light" style={{ color: fert.color }}>{fert.val}g</p>
-                    <p className="text-xs font-medium mt-1" style={{ color: "rgba(232,239,232,0.6)" }}>{fert.name}</p>
-                    <p className="text-[9px] mt-0.5" style={{ color: "rgba(255,255,255,0.2)" }}>{fert.desc}</p>
-                  </div>
-                ))}
+                <div className="p-4 rounded-lg bg-black/40">
+                  <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>{t.soil.urea}</p>
+                  <p className="text-xl font-mono text-emerald-400">{result.urea} <span className="text-xs">g</span></p>
+                </div>
+                <div className="p-4 rounded-lg bg-black/40">
+                  <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>{t.soil.erp}</p>
+                  <p className="text-xl font-mono text-cyan-400">{result.erp} <span className="text-xs">g</span></p>
+                </div>
+                <div className="p-4 rounded-lg bg-black/40">
+                  <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>{t.soil.mop}</p>
+                  <p className="text-xl font-mono text-amber-400">{result.mop} <span className="text-xs">g</span></p>
+                </div>
+                <div className="p-4 rounded-lg bg-black/40">
+                  <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>{t.soil.dolomite}</p>
+                  <p className="text-xl font-mono text-purple-400">{result.dolomite} <span className="text-xs">g</span></p>
+                </div>
               </div>
             </div>
           </motion.div>

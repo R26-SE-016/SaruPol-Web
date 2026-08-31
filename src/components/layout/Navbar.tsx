@@ -5,20 +5,24 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Menu, X, FlaskConical, BarChart3, MessageCircle, Map, Microscope } from "lucide-react";
-
-const navLinks = [
-  { name: "Dashboard", path: "/", icon: <BarChart3 className="w-4 h-4" /> },
-  { name: "Soil Intelligence", path: "/soil", icon: <FlaskConical className="w-4 h-4" /> },
-  { name: "Pathology Lab", path: "/pathology", icon: <Microscope className="w-4 h-4" /> },
-  { name: "Yield Forecast", path: "/yield", icon: <BarChart3 className="w-4 h-4" /> },
-  { name: "Advisory AI", path: "/advisory", icon: <MessageCircle className="w-4 h-4" /> },
-  { name: "Operations", path: "/operations", icon: <Map className="w-4 h-4" /> },
-];
+import { Menu, X, FlaskConical, BarChart3, MessageCircle, Map, Microscope, Globe } from "lucide-react";
+import { useTranslation, SUPPORTED_LANGUAGES } from "@/lib/i18n/LanguageContext";
+import { Language } from "@/lib/i18n/types";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const { t, language, setLanguage } = useTranslation();
+
+  const navLinks = [
+    { name: t.nav.dashboard, path: "/", icon: <BarChart3 className="w-4 h-4" /> },
+    { name: t.nav.soil, path: "/soil", icon: <FlaskConical className="w-4 h-4" /> },
+    { name: t.nav.pathology, path: "/pathology", icon: <Microscope className="w-4 h-4" /> },
+    { name: t.nav.yield, path: "/yield", icon: <BarChart3 className="w-4 h-4" /> },
+    { name: t.nav.advisory, path: "/advisory", icon: <MessageCircle className="w-4 h-4" /> },
+    { name: t.nav.operations, path: "/operations", icon: <Map className="w-4 h-4" /> },
+  ];
 
   const isActive = (path: string) => {
     if (path === "/") return pathname === "/";
@@ -30,7 +34,7 @@ export default function Navbar() {
       <nav
         className="fixed top-0 left-0 w-full z-50 border-b select-none"
         style={{
-          background: "rgba(3, 7, 5, 0.85)",
+          background: "rgba(3, 7, 5, 0.88)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           borderColor: "rgba(212, 175, 55, 0.18)",
@@ -56,7 +60,7 @@ export default function Navbar() {
                 priority
               />
             </div>
-            
+
             <div className="relative flex items-center">
               <Image
                 src="/brand/logo-text.png"
@@ -73,7 +77,7 @@ export default function Navbar() {
           <div className="hidden lg:flex gap-1 items-center">
             {navLinks.map((link) => (
               <Link
-                key={link.name}
+                key={link.path}
                 href={link.path}
                 className="relative px-3.5 py-2 rounded-lg text-xs font-medium tracking-wide smooth-transition flex items-center gap-2"
                 style={{
@@ -99,12 +103,50 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Enterprise Station Badge & Profile Icon */}
+          {/* Enterprise Station Badge, Tri-Language Switcher & Profile Icon */}
           <div className="hidden lg:flex items-center gap-3">
+            {/* Tri-Language Switcher (Segmented Glass Pill) */}
+            <div
+              className="flex items-center p-1 rounded-xl border relative"
+              style={{
+                background: "rgba(10, 15, 12, 0.8)",
+                borderColor: "rgba(212,175,55,0.25)",
+              }}
+            >
+              {SUPPORTED_LANGUAGES.map((lang) => {
+                const isSelected = language === lang.code;
+                return (
+                  <button
+                    key={lang.code}
+                    onClick={() => setLanguage(lang.code as Language)}
+                    className="relative px-2.5 py-1 text-xs font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5"
+                    style={{
+                      color: isSelected ? "#030705" : "rgba(232,239,232,0.6)",
+                      fontWeight: isSelected ? "700" : "500",
+                    }}
+                  >
+                    {isSelected && (
+                      <motion.div
+                        layoutId="active-lang-pill"
+                        className="absolute inset-0 rounded-lg shadow-sm"
+                        style={{
+                          background: "linear-gradient(135deg, #00FF9D, #D4AF37)",
+                        }}
+                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                      />
+                    )}
+                    <span className="relative z-10">{lang.nativeLabel}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* CRI Station Kurunegala Badge */}
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-xs font-mono text-white/80">CRI Station Kurunegala</span>
+              <span className="text-xs font-mono text-white/80">{t.nav.stationBadge}</span>
             </div>
+
             <div
               className="w-9 h-9 rounded-xl overflow-hidden p-1 flex items-center justify-center"
               style={{
@@ -142,16 +184,16 @@ export default function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-6 lg:hidden"
+            className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-5 lg:hidden px-4"
             style={{
               background: "rgba(3, 7, 5, 0.98)",
               backdropFilter: "blur(30px)",
             }}
           >
             {/* Brand in Mobile Drawer */}
-            <div className="flex flex-col items-center gap-3 mb-4">
+            <div className="flex flex-col items-center gap-2 mb-2">
               <div
-                className="w-18 h-18 rounded-2xl p-2.5 flex items-center justify-center shadow-2xl"
+                className="w-16 h-16 rounded-2xl p-2 flex items-center justify-center shadow-2xl"
                 style={{
                   background: "linear-gradient(145deg, rgba(28,32,28,0.95), rgba(10,14,11,0.98))",
                   border: "1px solid rgba(212,175,55,0.4)",
@@ -161,8 +203,8 @@ export default function Navbar() {
                 <Image
                   src="/brand/logo-icon.png"
                   alt="SaruPol Icon"
-                  width={60}
-                  height={60}
+                  width={56}
+                  height={56}
                   className="object-contain"
                 />
               </div>
@@ -175,29 +217,62 @@ export default function Navbar() {
               />
             </div>
 
-            {navLinks.map((link, i) => (
-              <motion.div
-                key={link.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-              >
-                <Link
-                  href={link.path}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 text-lg font-light tracking-widest uppercase smooth-transition px-5 py-2.5 rounded-xl"
-                  style={{
-                    color: isActive(link.path) ? "#00FF9D" : "rgba(232,239,232,0.7)",
-                    background: isActive(link.path) ? "rgba(0,255,157,0.08)" : "transparent",
-                  }}
+            {/* Mobile Language Switcher */}
+            <div
+              className="flex items-center p-1 rounded-xl border gap-1 mb-3"
+              style={{
+                background: "rgba(15, 20, 16, 0.9)",
+                borderColor: "rgba(212,175,55,0.3)",
+              }}
+            >
+              {SUPPORTED_LANGUAGES.map((lang) => {
+                const isSelected = language === lang.code;
+                return (
+                  <button
+                    key={lang.code}
+                    onClick={() => setLanguage(lang.code as Language)}
+                    className="px-3.5 py-1.5 text-xs rounded-lg font-medium transition-all"
+                    style={{
+                      background: isSelected
+                        ? "linear-gradient(135deg, #00FF9D, #D4AF37)"
+                        : "transparent",
+                      color: isSelected ? "#030705" : "rgba(232,239,232,0.7)",
+                      fontWeight: isSelected ? "700" : "500",
+                    }}
+                  >
+                    {lang.nativeLabel}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Mobile Nav Links */}
+            <div className="w-full max-w-xs space-y-2">
+              {navLinks.map((link, i) => (
+                <motion.div
+                  key={link.path}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.04 }}
                 >
-                  <span style={{ color: isActive(link.path) ? "#00FF9D" : "#D4AF37" }}>
-                    {link.icon}
-                  </span>
-                  {link.name}
-                </Link>
-              </motion.div>
-            ))}
+                  <Link
+                    href={link.path}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 text-base font-light tracking-wide smooth-transition px-4 py-2.5 rounded-xl w-full"
+                    style={{
+                      color: isActive(link.path) ? "#00FF9D" : "rgba(232,239,232,0.75)",
+                      background: isActive(link.path) ? "rgba(0,255,157,0.1)" : "rgba(255,255,255,0.03)",
+                      border: isActive(link.path) ? "1px solid rgba(0,255,157,0.3)" : "1px solid transparent",
+                    }}
+                  >
+                    <span style={{ color: isActive(link.path) ? "#00FF9D" : "#D4AF37" }}>
+                      {link.icon}
+                    </span>
+                    {link.name}
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/layout/Navbar";
 import { MessageCircle, Send, Mic, MicOff, Volume2, Globe, Bot, User, Sparkles } from "lucide-react";
+import { useTranslation, SUPPORTED_LANGUAGES } from "@/lib/i18n/LanguageContext";
+import { Language } from "@/lib/i18n/types";
 
 interface Message {
   id: string;
@@ -15,17 +17,10 @@ interface Message {
   timestamp: Date;
 }
 
-const QUICK_PROMPTS = [
-  "What fertilizer schedule for adult palms during rainy season?",
-  "How to treat Bud Rot in coconut trees?",
-  "Best practices for coconut seedling care",
-  "Recommended NPK ratio for dry zone palms",
-];
-
 export default function AdvisoryPage() {
+  const { t, language, setLanguage } = useTranslation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [language, setLanguage] = useState<"en" | "si" | "ta">("en");
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -48,21 +43,21 @@ export default function AdvisoryPage() {
     setIsLoading(true);
 
     // Simulate RAG response
-    await new Promise(r => setTimeout(r, 2500));
+    await new Promise(r => setTimeout(r, 2000));
 
     let answer = "Welcome to the SaruPol AI Advisor! I can help with coconut plantation management, disease control, soil nutrients, and yield forecasts.";
     let sources = ["SaruPol General Knowledge Base"];
     const lowerText = text.toLowerCase();
 
-    if (lowerText.includes("bud rot") || lowerText.includes("rot")) {
-      answer = "**Bud Rot** is a critical fungal disease caused by *Phytophthora palmivora*. It leads to rotting of the spindle leaf and heart bud.\n\n**Treatment Plan:**\n1. Cut off and destroy all infected crown tissues immediately\n2. Apply Bordeaux paste or copper oxychloride paste to cut surfaces\n3. Spray neighboring palms with Mancozeb (4g/L) prophylactically\n4. Ensure good drainage around the palm base\n\n*Source: CRI Disease Advisory Leaflet No. 4*";
+    if (lowerText.includes("bud rot") || lowerText.includes("rot") || lowerText.includes("කුණු") || lowerText.includes("அழுகல்")) {
+      answer = "**Bud Rot (Phytophthora palmivora)**\n\n**Treatment Protocol:**\n1. Cut off and destroy all infected crown tissues immediately\n2. Apply Bordeaux paste or copper oxychloride paste to cut surfaces\n3. Spray neighboring palms with Mancozeb (4g/L) prophylactically\n4. Ensure adequate soil drainage around the palm base\n\n*Reference: CRI Disease Advisory Leaflet No. 4*";
       sources = ["CRI Disease Advisory Leaflet No. 4", "Coconut Cultivation Handbook - Section 12"];
-    } else if (lowerText.includes("fertilizer") || lowerText.includes("npk")) {
-      answer = "For **adult palms** (8+ years), the CRI recommends per palm per year:\n\n| Fertilizer | Amount |\n|---|---|\n| Urea | 800g |\n| Eppawala Rock Phosphate | 600g |\n| Muriate of Potash | 1600g |\n| Dolomite | 1000g |\n\nApply in split doses during the rainy season (May-June and Oct-Nov) for optimal absorption.\n\n*Source: CRI Advisory Circular A1*";
+    } else if (lowerText.includes("fertilizer") || lowerText.includes("npk") || lowerText.includes("පොහොර") || lowerText.includes("உர")) {
+      answer = "**CRI Fertilizer Recommendation for Adult Palms (8+ yrs):**\n\n• Urea: 800g / palm / year\n• Eppawala Rock Phosphate (ERP): 600g / palm / year\n• Muriate of Potash (MOP): 1600g / palm / year\n• Agricultural Dolomite: 1000g / palm / year\n\nApply in split doses during the monsoon rainy season for optimum root absorption.\n\n*Reference: CRI Soils & Nutrition Circular A1*";
       sources = ["CRI Soils & Plant Nutrition Advisory Circular No. A1"];
-    } else if (lowerText.includes("seedling") || lowerText.includes("young")) {
-      answer = "For **young palms** (1-4 years), focus on:\n\n1. **Watering**: 40-50 liters per seedling every 3 days during dry periods\n2. **Mulching**: Apply 10cm thick organic mulch around the base (1.5m radius)\n3. **Fertilizer**: Urea 250g + TSP 350g per palm per year, applied in 2 splits\n4. **Weed Control**: Keep a 2m circle weed-free around each seedling\n5. **Protection**: Install wire mesh if cattle grazing is present\n\n*Source: CRI Young Palm Care Guidelines*";
-      sources = ["CRI Young Palm Care Guidelines", "Coconut Cultivation Handbook"];
+    } else if (lowerText.includes("bleeding") || lowerText.includes("ලේ") || lowerText.includes("வடியல்")) {
+      answer = "**Stem Bleeding (Ceratocystis paradoxa):**\n\n1. Scrape off the bleeding patch with a sterilized chisel down to healthy tissue\n2. Paint the scraped wound with Coal Tar or Copper Fungicide paste\n3. Improve estate drainage to eliminate waterlogging\n\n*Reference: CRI Stem Bleeding Advisory*";
+      sources = ["CRI Pathology Technical Bulletin 2026"];
     }
 
     const assistantMsg: Message = {
@@ -80,18 +75,15 @@ export default function AdvisoryPage() {
 
   const toggleVoice = () => {
     if (!isListening) {
-      // Web Speech API placeholder
       setIsListening(true);
       setTimeout(() => {
         setIsListening(false);
-        setInput("What is the recommended fertilizer for coconut palms?");
-      }, 3000);
+        setInput(t.advisory.suggestedQuestions[0]);
+      }, 2500);
     } else {
       setIsListening(false);
     }
   };
-
-  const langLabels: Record<string, string> = { en: "English", si: "සිංහල", ta: "தமிழ்" };
 
   return (
     <main className="min-h-screen relative flex flex-col">
@@ -107,23 +99,26 @@ export default function AdvisoryPage() {
                 <MessageCircle className="w-5 h-5" style={{ color: "#E6AF2E" }} />
               </div>
               <div>
-                <h1 className="text-2xl font-light" style={{ fontFamily: "var(--font-outfit)" }}>Advisory AI</h1>
+                <h1 className="text-2xl font-light" style={{ fontFamily: "var(--font-outfit)" }}>{t.advisory.title}</h1>
                 <p className="text-[10px] uppercase tracking-[0.3em] font-mono" style={{ color: "rgba(230,175,46,0.5)" }}>
-                  Multi-LLM Consensus RAG Engine
+                  {t.advisory.subtitle}
                 </p>
               </div>
             </div>
             {/* Language Toggle */}
-            <div className="flex items-center gap-1 p-1 rounded-full" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
-              {(["en", "si", "ta"] as const).map(lang => (
-                <button key={lang} onClick={() => setLanguage(lang)}
-                  className="px-3 py-1 rounded-full text-[10px] font-mono smooth-transition"
+            <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              {SUPPORTED_LANGUAGES.map(lang => (
+                <button
+                  key={lang.code}
+                  onClick={() => setLanguage(lang.code as Language)}
+                  className="px-3 py-1 rounded-lg text-xs font-mono smooth-transition"
                   style={{
-                    background: language === lang ? "rgba(230,175,46,0.15)" : "transparent",
-                    color: language === lang ? "#E6AF2E" : "rgba(255,255,255,0.3)",
+                    background: language === lang.code ? "rgba(230,175,46,0.2)" : "transparent",
+                    color: language === lang.code ? "#E6AF2E" : "rgba(255,255,255,0.4)",
+                    fontWeight: language === lang.code ? "700" : "400",
                   }}
                 >
-                  {langLabels[lang]}
+                  {lang.nativeLabel}
                 </button>
               ))}
             </div>
@@ -134,17 +129,20 @@ export default function AdvisoryPage() {
         <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2" style={{ maxHeight: "calc(100vh - 280px)" }}>
           {messages.length === 0 && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-16">
-              <Sparkles className="w-10 h-10 mb-4" style={{ color: "rgba(230,175,46,0.2)" }} />
-              <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.25)" }}>
-                Ask any question about coconut plantation management
+              <Sparkles className="w-10 h-10 mb-4" style={{ color: "rgba(230,175,46,0.3)" }} />
+              <p className="text-sm mb-6 font-light" style={{ color: "rgba(255,255,255,0.4)" }}>
+                {t.advisory.title}
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-lg">
-                {QUICK_PROMPTS.map(prompt => (
-                  <button key={prompt} onClick={() => sendMessage(prompt)}
-                    className="text-left px-3 py-2 rounded-xl text-xs smooth-transition"
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl w-full">
+                {t.advisory.suggestedQuestions.map((prompt, i) => (
+                  <button
+                    key={i}
+                    onClick={() => sendMessage(prompt)}
+                    className="text-left px-4 py-3 rounded-xl text-xs font-mono smooth-transition hover:border-amber-500/40"
                     style={{
-                      background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
-                      color: "rgba(232,239,232,0.5)"
+                      background: "rgba(255,255,255,0.03)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      color: "rgba(232,239,232,0.7)"
                     }}
                   >
                     {prompt}
@@ -171,14 +169,16 @@ export default function AdvisoryPage() {
                   border: `1px solid ${msg.role === "user" ? "rgba(0,255,157,0.12)" : "rgba(255,255,255,0.06)"}`,
                 }}
               >
-                <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "rgba(232,239,232,0.8)" }}>
+                <p className="text-sm leading-relaxed whitespace-pre-wrap font-light" style={{ color: "rgba(232,239,232,0.85)" }}>
                   {msg.content}
                 </p>
                 {msg.sources && (
                   <div className="mt-3 pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                    <p className="text-[9px] uppercase tracking-wider font-mono mb-1" style={{ color: "rgba(230,175,46,0.4)" }}>Sources</p>
+                    <p className="text-[9px] uppercase tracking-wider font-mono mb-1" style={{ color: "rgba(230,175,46,0.5)" }}>
+                      {t.advisory.consensusVerified}
+                    </p>
                     {msg.sources.map((s, i) => (
-                      <span key={i} className="text-[10px] font-mono mr-2" style={{ color: "rgba(255,255,255,0.25)" }}>
+                      <span key={i} className="text-[10px] font-mono mr-2" style={{ color: "rgba(255,255,255,0.35)" }}>
                         [{i + 1}] {s}
                       </span>
                     ))}
@@ -200,56 +200,47 @@ export default function AdvisoryPage() {
               <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(230,175,46,0.1)" }}>
                 <Bot className="w-3.5 h-3.5" style={{ color: "#E6AF2E" }} />
               </div>
-              <div className="p-4 rounded-2xl rounded-bl-md" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                <div className="flex gap-1.5">
-                  <div className="w-2 h-2 rounded-full loading-dot" style={{ background: "rgba(230,175,46,0.5)" }} />
-                  <div className="w-2 h-2 rounded-full loading-dot" style={{ background: "rgba(230,175,46,0.5)" }} />
-                  <div className="w-2 h-2 rounded-full loading-dot" style={{ background: "rgba(230,175,46,0.5)" }} />
-                </div>
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-amber-400 animate-bounce" />
+                <div className="w-2 h-2 rounded-full bg-amber-400 animate-bounce [animation-delay:0.2s]" />
+                <div className="w-2 h-2 rounded-full bg-amber-400 animate-bounce [animation-delay:0.4s]" />
+                <span className="text-xs font-mono text-white/40 ml-2">Consulting CRI Multi-LLM RAG...</span>
               </div>
             </div>
           )}
+
           <div ref={chatEndRef} />
         </div>
 
         {/* Input Bar */}
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-          className="sticky bottom-4 flex items-center gap-2 p-2 rounded-2xl"
-          style={{
-            background: "rgba(8, 20, 14, 0.9)",
-            border: "1px solid rgba(0,255,157,0.1)",
-            backdropFilter: "blur(20px)",
-          }}
-        >
-          <button onClick={toggleVoice}
-            className="p-2.5 rounded-xl smooth-transition"
-            style={{
-              background: isListening ? "rgba(255,76,76,0.15)" : "rgba(255,255,255,0.04)",
-              color: isListening ? "#FF4C4C" : "rgba(255,255,255,0.3)",
-            }}
+        <div className="glass-panel p-3 flex items-center gap-3">
+          <button
+            onClick={toggleVoice}
+            className={`p-2.5 rounded-xl smooth-transition ${isListening ? "bg-red-500/20 text-red-400" : "bg-white/5 text-white/50 hover:text-white"}`}
           >
             {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
           </button>
-
           <input
+            type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
-            placeholder={`Ask in ${langLabels[language]}...`}
-            className="flex-1 bg-transparent text-sm outline-none px-2"
+            placeholder={isListening ? t.advisory.listening : t.advisory.chatPlaceholder}
+            className="flex-1 bg-transparent text-sm outline-none px-2 font-mono"
             style={{ color: "#e8efe8" }}
           />
-
-          <button onClick={() => sendMessage(input)} disabled={!input.trim() || isLoading}
+          <button
+            onClick={() => sendMessage(input)}
+            disabled={!input.trim() || isLoading}
             className="p-2.5 rounded-xl smooth-transition"
             style={{
-              background: input.trim() ? "rgba(0,255,157,0.12)" : "rgba(255,255,255,0.03)",
-              color: input.trim() ? "#00FF9D" : "rgba(255,255,255,0.15)",
+              background: input.trim() ? "linear-gradient(135deg, #E6AF2E, #00FF9D)" : "rgba(255,255,255,0.05)",
+              color: input.trim() ? "#030705" : "rgba(255,255,255,0.2)",
             }}
           >
             <Send className="w-4 h-4" />
           </button>
-        </motion.div>
+        </div>
       </div>
     </main>
   );

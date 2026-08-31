@@ -21,6 +21,7 @@ import { runEdgeInference, loadEdgeModel } from "@/lib/edge-inference";
 import { DEMO_DIAGNOSTICS, DISEASE_COLORS, DEMO_KNOWLEDGE, KnowledgeItem } from "@/lib/demo-data";
 import { pathology as pathologyApi } from "@/lib/api";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip as RechartsTooltip, CartesianGrid } from "recharts";
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 // Lazy load Leaflet Map for Diagnostic History
 const DiagnosticMapInner = dynamic(() => import("@/components/pathology/DiagnosticMap"), { ssr: false });
@@ -65,6 +66,7 @@ const HISTORICAL_AERIAL_SURVEYS = [
 ];
 
 export default function PathologyPage() {
+  const { t } = useTranslation();
   // Default to Overview / Gateway Dashboard
   const [tab, setTab] = useState<TabType>("overview");
   const [modelReady, setModelReady] = useState(false);
@@ -466,7 +468,7 @@ export default function PathologyPage() {
             <div>
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-light tracking-tight" style={{ fontFamily: "var(--font-outfit)" }}>
-                  Pathology Diagnostic Suite
+                  {t.pathology.title}
                 </h1>
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase"
                   style={{
@@ -479,7 +481,7 @@ export default function PathologyPage() {
                 </span>
               </div>
               <p className="text-xs font-mono tracking-wide mt-0.5" style={{ color: "rgba(232, 239, 232, 0.5)" }}>
-                Multimodal Canopy Spectral Analysis & On-Device Deep Learning Diagnostics
+                {t.pathology.subtitle}
               </p>
             </div>
           </div>
@@ -506,25 +508,25 @@ export default function PathologyPage() {
           }}
         >
           {[
-            { id: "overview" as const, label: "Dashboard", icon: LayoutDashboard, color: "#00FF9D" },
-            { id: "aerial" as const, label: "Aerial Surveillance", icon: Plane, color: "#00E5FF" },
-            { id: "mobile" as const, label: "Leaf Diagnostics", icon: Smartphone, color: "#FF4C4C" },
-            { id: "knowledge" as const, label: "Knowledge Base", icon: BookOpen, color: "#00FF9D" },
-            { id: "history" as const, label: "GIS Map & History", icon: Map, color: "#A78BFA" },
-          ].map(t => (
+            { id: "overview" as const, label: t.nav.dashboard, icon: LayoutDashboard, color: "#00FF9D" },
+            { id: "aerial" as const, label: t.pathology.tabs.systemA, icon: Plane, color: "#00E5FF" },
+            { id: "mobile" as const, label: t.pathology.tabs.systemB, icon: Smartphone, color: "#FF4C4C" },
+            { id: "knowledge" as const, label: t.pathology.tabs.protocols, icon: BookOpen, color: "#00FF9D" },
+            { id: "history" as const, label: t.pathology.tabs.history, icon: Map, color: "#A78BFA" },
+          ].map(tabItem => (
             <button 
-              key={t.id} 
-              onClick={() => setTab(t.id)}
+              key={tabItem.id} 
+              onClick={() => setTab(tabItem.id)}
               className="flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl text-xs font-mono transition-all text-center"
               style={{
-                background: tab === t.id ? "rgba(0, 255, 157, 0.08)" : "transparent",
-                color: tab === t.id ? "#00FF9D" : "rgba(232, 239, 232, 0.5)",
-                border: tab === t.id ? "1px solid rgba(0, 255, 157, 0.3)" : "1px solid transparent",
-                boxShadow: tab === t.id ? "0 0 20px rgba(0, 255, 157, 0.08)" : "none"
+                background: tab === tabItem.id ? "rgba(0, 255, 157, 0.08)" : "transparent",
+                color: tab === tabItem.id ? "#00FF9D" : "rgba(232, 239, 232, 0.5)",
+                border: tab === tabItem.id ? "1px solid rgba(0, 255, 157, 0.3)" : "1px solid transparent",
+                boxShadow: tab === tabItem.id ? "0 0 20px rgba(0, 255, 157, 0.08)" : "none"
               }}
             >
-              <t.icon className="w-4 h-4 flex-shrink-0" style={{ color: tab === t.id ? t.color : "inherit" }} /> 
-              <span className="font-medium truncate">{t.label}</span>
+              <tabItem.icon className="w-4 h-4 flex-shrink-0" style={{ color: tab === tabItem.id ? tabItem.color : "inherit" }} /> 
+              <span className="font-medium truncate">{tabItem.label}</span>
             </button>
           ))}
         </div>

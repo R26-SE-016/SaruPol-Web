@@ -8,63 +8,66 @@ import {
   FlaskConical, Microscope, BarChart3, MessageCircle, Map,
   ArrowRight, Activity, Cpu, Database, Wifi, TrendingUp
 } from "lucide-react";
-
-const modules = [
-  {
-    title: "Soil Intelligence",
-    subtitle: "CRI Differential Fertilizer Recommendation Engine",
-    description: "3-point spatial triangulation converting IoT soil NPK to 14th Frond Leaf NPK with CRI-grade Urea, ERP, MOP, and Dolomite dosing.",
-    href: "/soil",
-    icon: <FlaskConical className="w-6 h-6" />,
-    tag: "S1",
-    accent: "#00FF9D",
-  },
-  {
-    title: "Pathology Lab",
-    subtitle: "CNN Vision Diagnostics & Treatment Dossier",
-    description: "Real-time disease classification for Bud Rot, Stem Bleeding, Gray Leaf Spot, and Leaf Rot with CRI treatment protocols.",
-    href: "/pathology",
-    icon: <Microscope className="w-6 h-6" />,
-    tag: "S2",
-    accent: "#FF4C4C",
-  },
-  {
-    title: "CocoCastAI",
-    subtitle: "Hybrid RF + LSTM Yield Forecasting",
-    description: "45-day harvest cycle prediction using Random Forest (R²=0.98) and LSTM (R²=0.86) ensemble with confidence intervals.",
-    href: "/yield",
-    icon: <BarChart3 className="w-6 h-6" />,
-    tag: "S3",
-    accent: "#00E5FF",
-  },
-  {
-    title: "Advisory AI",
-    subtitle: "Multi-LLM Consensus RAG Engine",
-    description: "Knowledge-grounded agronomist chat with CRI citation tags. Supports English, Sinhala, and Tamil with voice synthesis.",
-    href: "/advisory",
-    icon: <MessageCircle className="w-6 h-6" />,
-    tag: "S4",
-    accent: "#E6AF2E",
-  },
-  {
-    title: "Field Operations",
-    subtitle: "Canopy Hotspot Monitoring & Tree Inventory",
-    description: "Aerial spectral analysis with NDVI/VARI heatmaps, hotspot alerts, and digital twin plantation management.",
-    href: "/operations",
-    icon: <Map className="w-6 h-6" />,
-    tag: "S5",
-    accent: "#A78BFA",
-  },
-];
-
-const telemetryStats = [
-  { label: "Active Subsystems", value: "6", icon: <Cpu className="w-5 h-5" /> },
-  { label: "ML Models Loaded", value: "4", icon: <Activity className="w-5 h-5" /> },
-  { label: "Gateway Uptime", value: "99.9%", icon: <Wifi className="w-5 h-5" /> },
-  { label: "Cloud Functions", value: "8 ACTIVE", icon: <TrendingUp className="w-5 h-5" /> },
-];
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
+
+  const modules = [
+    {
+      title: t.home.modules.soilTitle,
+      subtitle: t.home.modules.soilSub,
+      description: t.home.modules.soilDesc,
+      href: "/soil",
+      icon: <FlaskConical className="w-6 h-6" />,
+      tag: "S1",
+      accent: "#00FF9D",
+    },
+    {
+      title: t.home.modules.pathologyTitle,
+      subtitle: t.home.modules.pathologySub,
+      description: t.home.modules.pathologyDesc,
+      href: "/pathology",
+      icon: <Microscope className="w-6 h-6" />,
+      tag: "S2",
+      accent: "#FF4C4C",
+    },
+    {
+      title: t.home.modules.yieldTitle,
+      subtitle: t.home.modules.yieldSub,
+      description: t.home.modules.yieldDesc,
+      href: "/yield",
+      icon: <BarChart3 className="w-6 h-6" />,
+      tag: "S3",
+      accent: "#00E5FF",
+    },
+    {
+      title: t.home.modules.advisoryTitle,
+      subtitle: t.home.modules.advisorySub,
+      description: t.home.modules.advisoryDesc,
+      href: "/advisory",
+      icon: <MessageCircle className="w-6 h-6" />,
+      tag: "S4",
+      accent: "#E6AF2E",
+    },
+    {
+      title: t.home.modules.operationsTitle,
+      subtitle: t.home.modules.operationsSub,
+      description: t.home.modules.operationsDesc,
+      href: "/operations",
+      icon: <Map className="w-6 h-6" />,
+      tag: "S5",
+      accent: "#A78BFA",
+    },
+  ];
+
+  const telemetryStats = [
+    { label: t.home.stats.activeSubsystems, value: "6", icon: <Cpu className="w-5 h-5" /> },
+    { label: t.home.stats.mlModels, value: "4", icon: <Activity className="w-5 h-5" /> },
+    { label: t.home.stats.gatewayUptime, value: "99.9%", icon: <Wifi className="w-5 h-5" /> },
+    { label: t.home.stats.cloudFunctions, value: "8 ACTIVE", icon: <TrendingUp className="w-5 h-5" /> },
+  ];
+
   return (
     <main className="min-h-screen flex flex-col items-center relative overflow-hidden">
       <Navbar />
@@ -133,15 +136,14 @@ export default function DashboardPage() {
 
         {/* Crisp Subtitle */}
         <motion.p
+          key={t.home.subtitle}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.8 }}
+          transition={{ duration: 0.5 }}
           className="text-base sm:text-lg md:text-xl font-light mb-5 max-w-2xl mx-auto leading-relaxed"
           style={{ color: "rgba(232, 239, 232, 0.8)" }}
         >
-          AI & IoT-driven Decision Support for Sri Lankan Coconut Plantations.
-          <br className="hidden sm:inline" />
-          Precision soil triangulation, pathology diagnostics, yield forecasting, and agronomist advisory.
+          {t.home.subtitle}
         </motion.p>
 
         <motion.div
@@ -161,7 +163,7 @@ export default function DashboardPage() {
             ⌘ + K
           </kbd>
           <span className="text-xs tracking-widest uppercase font-mono" style={{ color: "rgba(255,255,255,0.4)" }}>
-            Quick Command Palette
+            {t.home.commandPalette}
           </span>
         </motion.div>
       </motion.div>
@@ -256,7 +258,7 @@ export default function DashboardPage() {
                     className="flex items-center gap-2 text-xs tracking-widest uppercase smooth-transition relative z-10 font-mono"
                     style={{ color: "rgba(212,175,55,0.8)" }}
                   >
-                    <span>Launch Module</span>
+                    <span>{t.home.modules.launchModule}</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1.5 transition-transform" />
                   </div>
                 </div>
@@ -276,28 +278,28 @@ export default function DashboardPage() {
         <div className="glass-panel p-5 flex flex-col items-center text-center">
           <Database className="w-5 h-5 mb-3" style={{ color: "rgba(212,175,55,0.8)" }} />
           <h3 className="text-xs uppercase tracking-widest mb-1 font-mono" style={{ color: "rgba(232,239,232,0.85)" }}>
-            6 AI Research Subsystems
+            {t.home.telemetryBar.subsystemsTitle}
           </h3>
           <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.35)" }}>
-            Soil · Pathology · Yield · Advisory · Operations · Analytics
+            {t.home.telemetryBar.subsystemsDesc}
           </p>
         </div>
         <div className="glass-panel p-5 flex flex-col items-center text-center">
           <Cpu className="w-5 h-5 mb-3" style={{ color: "rgba(0,255,157,0.8)" }} />
           <h3 className="text-xs uppercase tracking-widest mb-1 font-mono" style={{ color: "rgba(232,239,232,0.85)" }}>
-            Hybrid ML Architecture
+            {t.home.telemetryBar.mlTitle}
           </h3>
           <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.35)" }}>
-            Random Forest · LSTM · CNN · Multi-LLM RAG Consensus
+            {t.home.telemetryBar.mlDesc}
           </p>
         </div>
         <div className="glass-panel p-5 flex flex-col items-center text-center">
           <TrendingUp className="w-5 h-5 mb-3" style={{ color: "rgba(212,175,55,0.8)" }} />
           <h3 className="text-xs uppercase tracking-widest mb-1 font-mono" style={{ color: "rgba(232,239,232,0.85)" }}>
-            CRI Research Grade
+            {t.home.telemetryBar.criTitle}
           </h3>
           <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.35)" }}>
-            Validated against Coconut Research Institute Sri Lanka guidelines
+            {t.home.telemetryBar.criDesc}
           </p>
         </div>
       </motion.div>
@@ -326,7 +328,7 @@ export default function DashboardPage() {
           />
         </div>
         <p className="text-[10px] tracking-[0.3em] uppercase font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>
-          සරුපොල් (SaruPol) Precision Coconut Research Initiative · 2026
+          {t.home.footer}
         </p>
       </footer>
     </main>
