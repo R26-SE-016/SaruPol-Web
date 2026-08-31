@@ -15,6 +15,26 @@ export interface UserDiagnosticRecord {
   image_base64?: string;
   entropy?: number;
   synced?: boolean;
+  source?: "mobile_leaf";
+}
+
+export interface CanopyHotspotRecord {
+  id: string;
+  location: { lat: number; lng: number };
+  pixel_coordinates?: { x: number; y: number };
+  mean_index_value: number;
+  severity: "critical" | "high" | "moderate";
+  area_sq_pixels?: number;
+  radius_meters?: number;
+  recommended_action: string;
+  z_score?: number;
+  relative_drop_pct?: number;
+  estate_name: string;
+  survey_id?: string;
+  captured_at: string;
+  user_id: string;
+  user_email?: string;
+  source?: "aerial_uav";
 }
 
 export interface UserAerialSurveyRecord {
@@ -29,10 +49,20 @@ export interface UserAerialSurveyRecord {
   status: string;
   user_id: string;
   user_email?: string;
+  hotspots?: CanopyHotspotRecord[];
 }
 
-// Representative Agro-Climatic GPS coordinates for Sri Lankan coconut estates
+// Exact, calibrated Agro-Climatic GPS coordinates for Sri Lankan coconut estates
 export const ESTATE_COORDINATES: Record<string, { lat: number; lng: number }> = {
+  // Key ID mappings
+  "estate_001": { lat: 7.4863, lng: 80.3623 },
+  "estate_002": { lat: 8.0362, lng: 79.8283 },
+  "estate_003": { lat: 7.0840, lng: 79.9939 },
+
+  // Named estates
+  "Green Valley Estate (Kurunegala)": { lat: 7.4863, lng: 80.3623 },
+  "Puttalam Coastal Plantation": { lat: 8.0362, lng: 79.8283 },
+  "Gampaha Research Grove": { lat: 7.0840, lng: 79.9939 },
   "Makandura Experimental Estate (Intermediate Zone)": { lat: 7.3275, lng: 79.9880 },
   "Lunuwila CRI Headquarters (Wet Zone)": { lat: 7.3414, lng: 79.8656 },
   "Puttalam Seed Garden (Dry Zone)": { lat: 8.0362, lng: 79.8283 },
@@ -49,8 +79,8 @@ export const ESTATE_COORDINATES: Record<string, { lat: number; lng: number }> = 
 };
 
 export function getEstateCoordinates(estateName?: string): { lat: number; lng: number } {
-  if (!estateName) return { lat: 7.3275, lng: 79.9880 };
-  return ESTATE_COORDINATES[estateName] || { lat: 7.3275, lng: 79.9880 };
+  if (!estateName) return { lat: 7.4863, lng: 80.3623 };
+  return ESTATE_COORDINATES[estateName] || { lat: 7.4863, lng: 80.3623 };
 }
 
 // Initial seed diagnostics for demo research accounts
@@ -59,78 +89,149 @@ const DEMO_SEEDED_DIAGNOSTICS: UserDiagnosticRecord[] = [
     id: "diag-001",
     disease_class: "bud rot",
     confidence: 0.94,
-    location: { lat: 7.3285, lng: 79.9892 },
+    location: { lat: 7.3422, lng: 79.8662 },
     captured_at: "2026-08-28T10:30:00Z",
     estate_name: "Lunuwila CRI Headquarters (Wet Zone)",
     user_id: "usr_cri_001",
     user_email: "agronomist@cri.lk",
     synced: true,
+    source: "mobile_leaf",
   },
   {
     id: "diag-002",
     disease_class: "gray leaf spot",
     confidence: 0.88,
-    location: { lat: 7.3298, lng: 79.9875 },
+    location: { lat: 7.3408, lng: 79.8649 },
     captured_at: "2026-08-27T11:15:00Z",
     estate_name: "Lunuwila CRI Headquarters (Wet Zone)",
     user_id: "usr_cri_001",
     user_email: "agronomist@cri.lk",
     synced: true,
+    source: "mobile_leaf",
   },
   {
     id: "diag-003",
     disease_class: "healthy leaves",
     confidence: 0.98,
-    location: { lat: 7.3265, lng: 79.9908 },
+    location: { lat: 7.4875, lng: 80.3635 },
     captured_at: "2026-08-27T09:20:00Z",
-    estate_name: "Makandura Experimental Estate (Intermediate Zone)",
+    estate_name: "Green Valley Estate (Kurunegala)",
     user_id: "usr_plt_042",
     user_email: "planter@sarupol.lk",
     synced: true,
+    source: "mobile_leaf",
   },
   {
     id: "diag-004",
     disease_class: "healthy leaves",
     confidence: 0.96,
-    location: { lat: 7.3275, lng: 79.9898 },
+    location: { lat: 7.4855, lng: 80.3615 },
     captured_at: "2026-08-26T14:45:00Z",
-    estate_name: "Makandura Experimental Estate (Intermediate Zone)",
+    estate_name: "Green Valley Estate (Kurunegala)",
     user_id: "usr_plt_042",
     user_email: "planter@sarupol.lk",
     synced: true,
+    source: "mobile_leaf",
   },
   {
     id: "diag-005",
     disease_class: "leaf rot",
     confidence: 0.82,
-    location: { lat: 7.3305, lng: 79.9865 },
+    location: { lat: 7.3430, lng: 79.8670 },
     captured_at: "2026-08-25T16:10:00Z",
     estate_name: "Lunuwila CRI Headquarters (Wet Zone)",
     user_id: "usr_cri_001",
     user_email: "agronomist@cri.lk",
     synced: true,
+    source: "mobile_leaf",
   },
   {
     id: "diag-006",
     disease_class: "bud root dropping",
     confidence: 0.89,
-    location: { lat: 7.3280, lng: 79.9915 },
+    location: { lat: 7.4880, lng: 80.3640 },
     captured_at: "2026-08-24T10:05:00Z",
-    estate_name: "Makandura Experimental Estate (Intermediate Zone)",
+    estate_name: "Green Valley Estate (Kurunegala)",
     user_id: "usr_plt_042",
     user_email: "planter@sarupol.lk",
     synced: true,
+    source: "mobile_leaf",
   },
   {
     id: "diag-007",
     disease_class: "stembleeding",
     confidence: 0.93,
-    location: { lat: 7.3310, lng: 79.9880 },
+    location: { lat: 7.3418, lng: 79.8652 },
     captured_at: "2026-08-23T14:15:00Z",
     estate_name: "Lunuwila CRI Headquarters (Wet Zone)",
     user_id: "usr_cri_001",
     user_email: "agronomist@cri.lk",
     synced: true,
+    source: "mobile_leaf",
+  },
+];
+
+// Initial calibrated aerial stressed tree hotspots for demo accounts
+const DEMO_SEEDED_HOTSPOTS: CanopyHotspotRecord[] = [
+  {
+    id: "hs-uav-001",
+    estate_name: "Green Valley Estate (Kurunegala)",
+    location: { lat: 7.4878, lng: 80.3638 },
+    pixel_coordinates: { x: 340, y: 512 },
+    mean_index_value: -0.045,
+    severity: "critical",
+    recommended_action: "Dispatch field officer for immediate Bud Rot trunk inspection and fungicide paste application.",
+    z_score: -2.85,
+    relative_drop_pct: 42.5,
+    captured_at: "2026-08-28T09:00:00Z",
+    user_id: "usr_cri_001",
+    user_email: "agronomist@cri.lk",
+    source: "aerial_uav",
+  },
+  {
+    id: "hs-uav-002",
+    estate_name: "Green Valley Estate (Kurunegala)",
+    location: { lat: 7.4850, lng: 80.3610 },
+    pixel_coordinates: { x: 720, y: 280 },
+    mean_index_value: 0.012,
+    severity: "high",
+    recommended_action: "Inspect for severe potassium deficiency chlorosis or early Leaf Rot lesions.",
+    z_score: -2.10,
+    relative_drop_pct: 28.0,
+    captured_at: "2026-08-28T09:00:00Z",
+    user_id: "usr_cri_001",
+    user_email: "agronomist@cri.lk",
+    source: "aerial_uav",
+  },
+  {
+    id: "hs-uav-003",
+    estate_name: "Green Valley Estate (Kurunegala)",
+    location: { lat: 7.4868, lng: 80.3629 },
+    pixel_coordinates: { x: 510, y: 640 },
+    mean_index_value: 0.038,
+    severity: "moderate",
+    recommended_action: "Monitor canopy vigor during next UAV surveillance cycle.",
+    z_score: -1.65,
+    relative_drop_pct: 16.2,
+    captured_at: "2026-08-28T09:00:00Z",
+    user_id: "usr_cri_001",
+    user_email: "agronomist@cri.lk",
+    source: "aerial_uav",
+  },
+  {
+    id: "hs-uav-004",
+    estate_name: "Lunuwila CRI Headquarters (Wet Zone)",
+    location: { lat: 7.3428, lng: 79.8668 },
+    pixel_coordinates: { x: 420, y: 480 },
+    mean_index_value: -0.062,
+    severity: "critical",
+    recommended_action: "Immediate phytosanitary quarantine check for Phytophthora crown collapse.",
+    z_score: -3.10,
+    relative_drop_pct: 54.0,
+    captured_at: "2026-08-25T08:30:00Z",
+    user_id: "usr_cri_001",
+    user_email: "agronomist@cri.lk",
+    source: "aerial_uav",
   },
 ];
 
@@ -146,6 +247,7 @@ const DEMO_SEEDED_AERIAL_SURVEYS: UserAerialSurveyRecord[] = [
     anomalies_count: 8,
     status: "Completed",
     user_id: "usr_cri_001",
+    hotspots: [DEMO_SEEDED_HOTSPOTS[3]],
   },
   {
     id: "survey-2026-08-18",
@@ -161,7 +263,7 @@ const DEMO_SEEDED_AERIAL_SURVEYS: UserAerialSurveyRecord[] = [
   },
   {
     id: "survey-2026-08-04",
-    estate_name: "Makandura Experimental Estate (Intermediate Zone)",
+    estate_name: "Green Valley Estate (Kurunegala)",
     date: "2026-08-04T07:45:00Z",
     index_type: "VARI",
     mean_index: 0.385,
@@ -170,6 +272,7 @@ const DEMO_SEEDED_AERIAL_SURVEYS: UserAerialSurveyRecord[] = [
     anomalies_count: 6,
     status: "Completed",
     user_id: "usr_cri_001",
+    hotspots: [DEMO_SEEDED_HOTSPOTS[0], DEMO_SEEDED_HOTSPOTS[1], DEMO_SEEDED_HOTSPOTS[2]],
   },
 ];
 
@@ -202,7 +305,6 @@ export function getUserDiagnostics(userId?: string | number, userEmail?: string)
       return seeded;
     }
 
-    // For any other newly registered user: start with clean empty diagnostic array
     return [];
   } catch (e) {
     console.warn("Failed to load user diagnostics:", e);
@@ -246,7 +348,7 @@ export function getUserAerialSurveys(userId?: string | number, userEmail?: strin
     }
 
     const cleanEmail = (userEmail || "").trim().toLowerCase();
-    if (cleanEmail === "agronomist@cri.lk" || effectiveId === "usr_cri_001") {
+    if (cleanEmail === "agronomist@cri.lk" || effectiveId === "usr_cri_001" || cleanEmail === "planter@sarupol.lk" || effectiveId === "usr_plt_042") {
       localStorage.setItem(storageKey, JSON.stringify(DEMO_SEEDED_AERIAL_SURVEYS));
       return DEMO_SEEDED_AERIAL_SURVEYS;
     }
@@ -271,9 +373,83 @@ export function saveUserAerialSurvey(record: UserAerialSurveyRecord): UserAerial
     const current = getUserAerialSurveys(record.user_id, record.user_email);
     const updated = [record, ...current];
     localStorage.setItem(storageKey, JSON.stringify(updated));
+
+    // Also persist any detected stressed tree hotspots
+    if (record.hotspots && record.hotspots.length > 0) {
+      saveUserHotspots(record.hotspots, record.user_id);
+    }
+
     return updated;
   } catch (e) {
     console.warn("Failed to save user aerial survey:", e);
+    return [];
+  }
+}
+
+/**
+ * Retrieve all individual stressed tree hotspots identified via System A aerial surveys.
+ */
+export function getUserHotspots(userId?: string | number, userEmail?: string): CanopyHotspotRecord[] {
+  if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
+
+  const effectiveId = String(userId || "guest");
+  const storageKey = `sarupol_user_hotspots_${effectiveId}`;
+
+  try {
+    const raw = localStorage.getItem(storageKey);
+    if (raw) {
+      return JSON.parse(raw);
+    }
+
+    const cleanEmail = (userEmail || "").trim().toLowerCase();
+    if (cleanEmail === "agronomist@cri.lk" || effectiveId === "usr_cri_001" || cleanEmail === "planter@sarupol.lk" || effectiveId === "usr_plt_042") {
+      localStorage.setItem(storageKey, JSON.stringify(DEMO_SEEDED_HOTSPOTS));
+      return DEMO_SEEDED_HOTSPOTS;
+    }
+
+    return [];
+  } catch (e) {
+    console.warn("Failed to load user hotspots:", e);
+    return [];
+  }
+}
+
+/**
+ * Save individual stressed tree hotspots into user telemetry storage.
+ */
+export function saveUserHotspots(hotspots: CanopyHotspotRecord[], userId?: string | number): CanopyHotspotRecord[] {
+  if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
+
+  const effectiveId = String(userId || "guest");
+  const storageKey = `sarupol_user_hotspots_${effectiveId}`;
+
+  try {
+    const current = getUserHotspots(userId);
+    const updated = [...hotspots, ...current.filter((c) => !hotspots.some((h) => h.id === c.id))];
+    localStorage.setItem(storageKey, JSON.stringify(updated));
+    return updated;
+  } catch (e) {
+    console.warn("Failed to save user hotspots:", e);
+    return [];
+  }
+}
+
+/**
+ * Delete a single stressed tree hotspot.
+ */
+export function deleteUserHotspot(id: string, userId?: string | number): CanopyHotspotRecord[] {
+  if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
+
+  const effectiveId = String(userId || "guest");
+  const storageKey = `sarupol_user_hotspots_${effectiveId}`;
+
+  try {
+    const current = getUserHotspots(userId);
+    const updated = current.filter((item) => item.id !== id);
+    localStorage.setItem(storageKey, JSON.stringify(updated));
+    return updated;
+  } catch (e) {
+    console.warn("Failed to delete user hotspot:", e);
     return [];
   }
 }
@@ -308,7 +484,7 @@ export function clearAllUserDiagnostics(userId?: string | number): UserDiagnosti
   const storageKey = `sarupol_user_diagnostics_${effectiveId}`;
 
   try {
-    localStorage.setItem(storageKey, JSON.stringify([]));
+    localStorage.removeItem(storageKey);
     return [];
   } catch (e) {
     console.warn("Failed to clear user diagnostics:", e);
@@ -346,11 +522,10 @@ export function clearAllUserAerialSurveys(userId?: string | number): UserAerialS
   const storageKey = `sarupol_user_aerial_${effectiveId}`;
 
   try {
-    localStorage.setItem(storageKey, JSON.stringify([]));
+    localStorage.removeItem(storageKey);
     return [];
   } catch (e) {
     console.warn("Failed to clear user aerial surveys:", e);
     return [];
   }
 }
-

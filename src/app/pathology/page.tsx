@@ -32,15 +32,20 @@ import { useAuth } from "@/lib/auth/AuthContext";
 import { 
   getUserDiagnostics, 
   saveUserDiagnostic, 
-  deleteUserDiagnostic,
-  clearAllUserDiagnostics,
+  deleteUserDiagnostic, 
+  clearAllUserDiagnostics, 
   getUserAerialSurveys, 
   saveUserAerialSurvey, 
-  deleteUserAerialSurvey,
-  clearAllUserAerialSurveys,
+  deleteUserAerialSurvey, 
+  clearAllUserAerialSurveys, 
+  getUserHotspots, 
+  saveUserHotspots, 
+  deleteUserHotspot, 
   getEstateCoordinates, 
+  ESTATE_COORDINATES, 
   UserDiagnosticRecord, 
-  UserAerialSurveyRecord 
+  UserAerialSurveyRecord, 
+  CanopyHotspotRecord 
 } from "@/lib/pathology-storage";
 import { processDroneImage } from "@/lib/drone-image-processor";
 
@@ -63,6 +68,7 @@ export default function PathologyPage() {
   // User-scoped telemetry state
   const [diagnosticsList, setDiagnosticsList] = useState<UserDiagnosticRecord[]>([]);
   const [aerialSurveysList, setAerialSurveysList] = useState<UserAerialSurveyRecord[]>([]);
+  const [hotspotsList, setHotspotsList] = useState<CanopyHotspotRecord[]>([]);
 
   // Synchronize telemetry with active authenticated user
   useEffect(() => {
@@ -71,9 +77,12 @@ export default function PathologyPage() {
       setDiagnosticsList(userDiags);
       const userSurveys = getUserAerialSurveys(user.id, user.email);
       setAerialSurveysList(userSurveys);
+      const userHotspots = getUserHotspots(user.id, user.email);
+      setHotspotsList(userHotspots);
     } else {
       setDiagnosticsList([]);
       setAerialSurveysList([]);
+      setHotspotsList([]);
     }
   }, [user]);
 
@@ -82,6 +91,13 @@ export default function PathologyPage() {
     if (typeof window !== "undefined") {
       const updated = deleteUserDiagnostic(id, user?.id, user?.email);
       setDiagnosticsList(updated);
+    }
+  };
+
+  const handleDeleteHotspot = (id: string) => {
+    if (typeof window !== "undefined") {
+      const updated = deleteUserHotspot(id, user?.id);
+      setHotspotsList(updated);
     }
   };
 
@@ -258,7 +274,8 @@ export default function PathologyPage() {
     setUavError(null);
     setDispatchAlert(null);
 
-    const userCoords = getEstateCoordinates(user?.estate_id);
+    // Exact calibrated GPS coordinates for the selected estate
+    const selectedCoords = ESTATE_COORDINATES[estateId] || getEstateCoordinates(user?.estate_id);
 
     try {
       const payload = {
@@ -266,7 +283,7 @@ export default function PathologyPage() {
         nir_image: nirBase64 || undefined,
         index_type: indexType,
         estate_id: estateId,
-        gps_bounds: { lat: userCoords.lat, lng: userCoords.lng, span_lat: 0.006, span_lng: 0.006 }
+        gps_bounds: { lat: selectedCoords.lat, lng: selectedCoords.lng, span_lat: 0.005, span_lng: 0.005 }
       };
 
       const response = await pathologyApi.processAerialSpectral(payload);
@@ -277,9 +294,38 @@ export default function PathologyPage() {
           setSelectedHotspot(response.hotspots[0]);
         }
 
+        const surveyId = `survey-${new Date().toISOString().split("T")[0]}-${Date.now().toString(36).slice(-4)}`;
+        const effectiveEstateName = user?.estate_id || (estateId === "estate_001" ? "Green Valley Estate (Kurunegala)" : estateId === "estate_002" ? "Puttalam Coastal Plantation" : "Gampaha Research Grove");
+
+        // Format and calibrate detected stressed tree hotspots
+        const formattedHotspots: CanopyHotspotRecord[] = (response.hotspots || []).map((hs: any, idx: number) => ({
+          id: hs.id || `hs-${Date.now().toString(36)}-${idx}`,
+          location: { lat: hs.location.lat, lng: hs.location.lng },
+          pixel_coordinates: hs.pixel_coordinates,
+          mean_index_value: hs.mean_index_value,
+          severity: hs.severity || "high",
+          area_sq_pixels: hs.area_sq_pixels,
+          radius_meters: hs.radius_meters || 12,
+          recommended_action: hs.recommended_action || "Dispatch field officer for immediate ground-level leaf inspection.",
+          z_score: hs.z_score,
+          relative_drop_pct: hs.relative_drop_pct,
+          estate_name: effectiveEstateName,
+          survey_id: surveyId,
+          captured_at: new Date().toISOString(),
+          user_id: String(user?.id || "usr_cri_001"),
+          user_email: user?.email,
+          source: "aerial_uav",
+        }));
+
+        // Persist detected tree hotspots
+        if (formattedHotspots.length > 0) {
+          const updatedHotspots = saveUserHotspots(formattedHotspots, user?.id);
+          setHotspotsList(updatedHotspots);
+        }
+
         const newSurveyRecord: UserAerialSurveyRecord = {
-          id: `survey-${new Date().toISOString().split("T")[0]}-${Date.now().toString(36).slice(-4)}`,
-          estate_name: user?.estate_id || (estateId === "estate_001" ? "Green Valley Estate (Kurunegala)" : "Puttalam Coastal Plantation"),
+          id: surveyId,
+          estate_name: effectiveEstateName,
           date: new Date().toISOString(),
           index_type: indexType,
           mean_index: response.statistics.mean_index || (indexType === "NDVI" ? 0.654 : 0.401),
@@ -289,6 +335,7 @@ export default function PathologyPage() {
           status: "Completed",
           user_id: String(user?.id || "usr_cri_001"),
           user_email: user?.email,
+          hotspots: formattedHotspots,
         };
         const updatedSurveys = saveUserAerialSurvey(newSurveyRecord);
         setAerialSurveysList(updatedSurveys);
@@ -718,9 +765,9 @@ export default function PathologyPage() {
 
               {/* KPI Stat Cards */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <StatCard icon={<ClipboardList />} label={t.pathology.overview.totalDiagnostics} value={stats.total} subtitle="Across all estates" trend={{ value: "+18%", positive: true }} accentColor="#00E5FF" />
+                <StatCard icon={<ClipboardList />} label={t.pathology.overview.totalDiagnostics} value={diagnosticsList.length + hotspotsList.length} subtitle="Aerial + Ground Telemetry" trend={{ value: "+24%", positive: true }} accentColor="#00E5FF" />
                 <StatCard icon={<ShieldCheck />} label={t.pathology.overview.verifiedHealthy} value={stats.healthy} subtitle="Optimal foliage" accentColor="#00FF9D" />
-                <StatCard icon={<AlertTriangle />} label={t.pathology.overview.activePathogens} value={stats.diseased} subtitle="Require attention" accentColor="#FF4C4C" />
+                <StatCard icon={<AlertTriangle />} label="Stressed Canopy Trees" value={hotspotsList.length + stats.diseased} subtitle={`${hotspotsList.length} UAV Hotspots Flagged`} accentColor="#FF4C4C" />
                 <StatCard icon={<Camera />} label={t.pathology.overview.avgConfidence} value={`${(stats.avgConf*100).toFixed(0)}%`} subtitle="MobileNetV2-INT8" accentColor="#A78BFA" />
               </div>
 
@@ -2024,8 +2071,8 @@ export default function PathologyPage() {
           {tab === "history" && (
             <motion.div key="history" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-6">
               
-              <div className="flex justify-between items-center mb-2">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
+                <div className="flex flex-wrap items-center gap-3">
                   <span className="text-xs font-mono uppercase font-medium" style={{ color: "var(--text-muted)" }}>{t.pathology.history.filterLabel}</span>
                   <select 
                     value={filterDisease} 
@@ -2044,6 +2091,7 @@ export default function PathologyPage() {
                       return <option key={d} value={d}>{label || d}</option>;
                     })}
                   </select>
+                  
                   <span className="px-2.5 py-1 text-[10px] rounded-lg font-mono border font-bold"
                     style={{
                       background: "rgba(0, 255, 157, 0.12)",
@@ -2051,9 +2099,10 @@ export default function PathologyPage() {
                       borderColor: "rgba(0, 255, 157, 0.3)",
                     }}
                   >
-                    {filteredHistory.length} Records
+                    {filteredHistory.length + hotspotsList.length} Total Telemetry Items
                   </span>
                 </div>
+
                 <div className="flex gap-2 p-1 rounded-lg border"
                   style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
                 >
@@ -2067,61 +2116,154 @@ export default function PathologyPage() {
                   >{t.pathology.history.tabularView}</button>
                   <button 
                     onClick={() => setHistoryView("map")} 
-                    className="px-4 py-1.5 rounded-md text-xs font-mono transition-all font-medium"
+                    className="px-4 py-1.5 rounded-md text-xs font-mono transition-all font-medium flex items-center gap-1.5"
                     style={{
                       background: historyView === "map" ? "rgba(0, 255, 157, 0.15)" : "transparent",
                       color: historyView === "map" ? (theme === "dark" ? "#00FF9D" : "#00875A") : "var(--text-muted)"
                     }}
-                  >{t.pathology.history.spatialGisView}</button>
+                  >
+                    <Compass className="w-3.5 h-3.5" />
+                    <span>{t.pathology.history.spatialGisView}</span>
+                  </button>
                 </div>
               </div>
 
               {historyView === "table" ? (
-                <div className="glass-card p-2 overflow-x-auto rounded-2xl">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b text-[10px] uppercase font-mono"
-                        style={{ borderColor: "var(--table-border)", color: "var(--text-muted)", background: "var(--table-header-bg)" }}
-                      >
-                        <th className="p-4">{t.pathology.history.colDate}</th>
-                        <th className="p-4">{t.pathology.history.colLesion}</th>
-                        <th className="p-4">{t.pathology.history.colConfidence}</th>
-                        <th className="p-4">{t.pathology.history.colGeoGps}</th>
-                        <th className="p-4 text-right">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredHistory.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="p-8 text-center text-xs font-mono" style={{ color: "var(--text-muted)" }}>
-                            No pathology telemetry records found for this filter criteria.
-                          </td>
+                <div className="space-y-6">
+                  {/* System A Aerial Stressed Trees Table */}
+                  <div className="glass-card p-4 rounded-2xl overflow-x-auto space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b" style={{ borderColor: "var(--table-border)" }}>
+                      <h4 className="text-xs font-mono font-bold flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
+                        <Plane className="w-4 h-4 text-red-400" />
+                        <span>System A Aerial Stressed Tree Hotspots ({hotspotsList.length})</span>
+                      </h4>
+                      <span className="text-[10px] text-gray-400 font-mono">Calibrated GPS Extraction (WGS 84)</span>
+                    </div>
+
+                    {hotspotsList.length === 0 ? (
+                      <div className="p-6 text-center text-xs font-mono" style={{ color: "var(--text-muted)" }}>
+                        No aerial stressed tree anomalies recorded. Run a System A UAV orthomosaic to extract hotspots.
+                      </div>
+                    ) : (
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="border-b text-[10px] uppercase font-mono"
+                            style={{ borderColor: "var(--table-border)", color: "var(--text-muted)", background: "var(--table-header-bg)" }}
+                          >
+                            <th className="p-3">Hotspot ID</th>
+                            <th className="p-3">Severity</th>
+                            <th className="p-3">Spectral Index</th>
+                            <th className="p-3">Outlier Z-Score</th>
+                            <th className="p-3">Exact GPS Coordinates</th>
+                            <th className="p-3">Recommended Field Action</th>
+                            <th className="p-3 text-right">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {hotspotsList.map(hs => (
+                            <tr key={hs.id} className="border-b hover:bg-black/5 dark:hover:bg-white/5 transition-colors font-mono text-xs" style={{ borderColor: "var(--table-border)" }}>
+                              <td className="p-3 font-bold text-white flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full" style={{ background: hs.severity === "critical" ? "#FF4C4C" : hs.severity === "high" ? "#E6AF2E" : "#00E5FF" }} />
+                                <span>{hs.id}</span>
+                              </td>
+                              <td className="p-3">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+                                  style={{
+                                    background: hs.severity === "critical" ? "rgba(255,76,76,0.15)" : hs.severity === "high" ? "rgba(230,175,46,0.15)" : "rgba(0,229,255,0.15)",
+                                    color: hs.severity === "critical" ? "#FF4C4C" : hs.severity === "high" ? "#E6AF2E" : "#00E5FF",
+                                    border: `1px solid ${hs.severity === "critical" ? "#FF4C4C40" : hs.severity === "high" ? "#E6AF2E40" : "#00E5FF40"}`
+                                  }}
+                                >
+                                  {hs.severity}
+                                </span>
+                              </td>
+                              <td className="p-3 font-mono font-bold" style={{ color: hs.severity === "critical" ? "#FF4C4C" : hs.severity === "high" ? "#E6AF2E" : "#00E5FF" }}>
+                                {typeof hs.mean_index_value === "number" ? hs.mean_index_value.toFixed(3) : "—"}
+                              </td>
+                              <td className="p-3 font-mono text-red-400">
+                                {hs.z_score ? `${hs.z_score}σ` : "—"}
+                              </td>
+                              <td className="p-3 font-mono text-cyan-400">
+                                {hs.location.lat.toFixed(5)}, {hs.location.lng.toFixed(5)}
+                              </td>
+                              <td className="p-3 text-[11px] max-w-xs truncate text-gray-300" title={hs.recommended_action}>
+                                {hs.recommended_action}
+                              </td>
+                              <td className="p-3 text-right">
+                                <button
+                                  onClick={() => handleDeleteHotspot(hs.id)}
+                                  className="p-1.5 rounded hover:bg-red-500/15 text-red-400 hover:text-red-300 transition-colors"
+                                  title="Delete hotspot record"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+
+                  {/* System B Ground Leaf Diagnostics Table */}
+                  <div className="glass-card p-4 rounded-2xl overflow-x-auto space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b" style={{ borderColor: "var(--table-border)" }}>
+                      <h4 className="text-xs font-mono font-bold flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
+                        <Microscope className="w-4 h-4 text-emerald-400" />
+                        <span>System B Mobile Leaf Diagnostics ({filteredHistory.length})</span>
+                      </h4>
+                      <span className="text-[10px] text-gray-400 font-mono">MobileNetV2 Edge Inferences</span>
+                    </div>
+
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="border-b text-[10px] uppercase font-mono"
+                          style={{ borderColor: "var(--table-border)", color: "var(--text-muted)", background: "var(--table-header-bg)" }}
+                        >
+                          <th className="p-3">{t.pathology.history.colDate}</th>
+                          <th className="p-3">{t.pathology.history.colLesion}</th>
+                          <th className="p-3">{t.pathology.history.colConfidence}</th>
+                          <th className="p-3">{t.pathology.history.colGeoGps}</th>
+                          <th className="p-3 text-right">Action</th>
                         </tr>
-                      ) : (
-                        filteredHistory.map(d => (
-                          <tr key={d.id} className="border-b hover:bg-black/5 dark:hover:bg-white/5 transition-colors font-mono" style={{ borderColor: "var(--table-border)" }}>
-                            <td className="p-4 text-xs font-medium" style={{ color: "var(--text-primary)" }}>{new Date(d.captured_at).toLocaleString()}</td>
-                            <td className="p-4"><DiseaseBadge disease={d.disease_class} size="sm" /></td>
-                            <td className="p-4 w-44"><ConfidenceBar value={d.confidence} /></td>
-                            <td className="p-4 text-xs font-mono" style={{ color: "var(--text-secondary)" }}>{d.location.lat.toFixed(4)}, {d.location.lng.toFixed(4)}</td>
-                            <td className="p-4 text-right">
-                              <button
-                                onClick={() => handleDeleteDiagnostic(d.id)}
-                                className="p-1.5 rounded hover:bg-red-500/15 text-red-400 hover:text-red-300 transition-colors"
-                                title="Delete diagnostic record"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                      </thead>
+                      <tbody>
+                        {filteredHistory.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="p-8 text-center text-xs font-mono" style={{ color: "var(--text-muted)" }}>
+                              No pathology telemetry records found for this filter criteria.
                             </td>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                        ) : (
+                          filteredHistory.map(d => (
+                            <tr key={d.id} className="border-b hover:bg-black/5 dark:hover:bg-white/5 transition-colors font-mono text-xs" style={{ borderColor: "var(--table-border)" }}>
+                              <td className="p-3 font-medium" style={{ color: "var(--text-primary)" }}>{new Date(d.captured_at).toLocaleString()}</td>
+                              <td className="p-3"><DiseaseBadge disease={d.disease_class} size="sm" /></td>
+                              <td className="p-3 w-44"><ConfidenceBar value={d.confidence} /></td>
+                              <td className="p-3 font-mono" style={{ color: "var(--text-secondary)" }}>{d.location.lat.toFixed(5)}, {d.location.lng.toFixed(5)}</td>
+                              <td className="p-3 text-right">
+                                <button
+                                  onClick={() => handleDeleteDiagnostic(d.id)}
+                                  className="p-1.5 rounded hover:bg-red-500/15 text-red-400 hover:text-red-300 transition-colors"
+                                  title="Delete diagnostic record"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               ) : (
-                <div className="glass-card p-4 rounded-2xl overflow-hidden min-h-[450px]">
-                  <DiagnosticMapInner diagnostics={filteredHistory} defaultCenter={getEstateCoordinates(user?.estate_id)} />
+                <div className="glass-card p-4 rounded-2xl overflow-hidden min-h-[480px]">
+                  <DiagnosticMapInner 
+                    diagnostics={filteredHistory} 
+                    hotspots={hotspotsList}
+                    defaultCenter={ESTATE_COORDINATES[estateId] || getEstateCoordinates(user?.estate_id)} 
+                  />
                 </div>
               )}
 

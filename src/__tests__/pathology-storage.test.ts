@@ -25,7 +25,11 @@ import {
   saveUserAerialSurvey,
   deleteUserAerialSurvey,
   clearAllUserAerialSurveys,
-  getEstateCoordinates
+  getUserHotspots,
+  saveUserHotspots,
+  deleteUserHotspot,
+  getEstateCoordinates,
+  ESTATE_COORDINATES
 } from "../lib/pathology-storage";
 
 describe("Pathology Telemetry Storage & CRUD", () => {
@@ -116,9 +120,48 @@ describe("Pathology Telemetry Storage & CRUD", () => {
     expect(afterDelete.length).toBe(0);
   });
 
-  it("should return correct estate coordinates", () => {
-    const coords = getEstateCoordinates("Kurunegala Commercial Block (Intermediate Zone)");
-    expect(coords.lat).toBeCloseTo(7.4863, 3);
-    expect(coords.lng).toBeCloseTo(80.3623, 3);
+  it("should save, retrieve, and delete System A stressed tree hotspots with calibrated GPS", () => {
+    const hotspot = {
+      id: "hs_uav_test_01",
+      location: { lat: 7.4878, lng: 80.3638 },
+      mean_index_value: -0.045,
+      severity: "critical" as const,
+      recommended_action: "Dispatch field officer for immediate fungicide paste application.",
+      z_score: -2.85,
+      relative_drop_pct: 42.5,
+      estate_name: "Green Valley Estate (Kurunegala)",
+      captured_at: new Date().toISOString(),
+      user_id: "usr_custom_101",
+      source: "aerial_uav" as const
+    };
+
+    saveUserHotspots([hotspot], "usr_custom_101");
+    const retrieved = getUserHotspots("usr_custom_101");
+    expect(retrieved.length).toBe(1);
+    expect(retrieved[0].id).toBe("hs_uav_test_01");
+    expect(retrieved[0].location.lat).toBeCloseTo(7.4878, 4);
+    expect(retrieved[0].location.lng).toBeCloseTo(80.3638, 4);
+    expect(retrieved[0].severity).toBe("critical");
+
+    const afterDelete = deleteUserHotspot("hs_uav_test_01", "usr_custom_101");
+    expect(afterDelete.length).toBe(0);
+  });
+
+  it("should return correct non-random estate coordinates for all Sri Lankan agro-climatic zones", () => {
+    const kurunegala = getEstateCoordinates("estate_001");
+    expect(kurunegala.lat).toBeCloseTo(7.4863, 4);
+    expect(kurunegala.lng).toBeCloseTo(80.3623, 4);
+
+    const puttalam = getEstateCoordinates("estate_002");
+    expect(puttalam.lat).toBeCloseTo(8.0362, 4);
+    expect(puttalam.lng).toBeCloseTo(79.8283, 4);
+
+    const lunuwila = getEstateCoordinates("Lunuwila CRI Headquarters (Wet Zone)");
+    expect(lunuwila.lat).toBeCloseTo(7.3414, 4);
+    expect(lunuwila.lng).toBeCloseTo(79.8656, 4);
+
+    const makandura = getEstateCoordinates("Makandura Experimental Estate (Intermediate Zone)");
+    expect(makandura.lat).toBeCloseTo(7.3275, 4);
+    expect(makandura.lng).toBeCloseTo(79.9880, 4);
   });
 });
