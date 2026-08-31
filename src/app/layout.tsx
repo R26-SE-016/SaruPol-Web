@@ -27,7 +27,7 @@ const jetbrains = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://saru-pol-web.vercel.app"),
-  title: "සරුපොල් (SaruPol) | Coconut Research Intelligence Platform",
+  title: "සරුපොල් | Coconut Research Intelligence Platform",
   description:
     "AI & IoT-driven Decision Support for Sri Lankan Coconut Plantations. Unified soil intelligence, pathology diagnostics, yield forecasting, and CRI-grounded agronomist advisory.",
   icons: {

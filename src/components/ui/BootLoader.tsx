@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { Cpu, Database, Wifi, Leaf, Activity, ShieldCheck } from "lucide-react";
+import { useTheme } from "@/lib/theme/ThemeContext";
 
 interface BootStep {
   label: string;
@@ -21,6 +22,7 @@ const BOOT_STEPS: BootStep[] = [
 ];
 
 export default function BootLoader() {
+  const { theme } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
@@ -107,7 +109,12 @@ export default function BootLoader() {
                 alt="සරුපොල් (SaruPol)"
                 width={600}
                 height={165}
-                className="w-auto h-24 sm:h-28 md:h-32 object-contain drop-shadow-[0_12px_36px_rgba(212,175,55,0.6)]"
+                className="w-auto h-24 sm:h-28 md:h-32 object-contain"
+                style={{
+                  filter: theme === "dark"
+                    ? "drop-shadow(0 12px 36px rgba(212,175,55,0.6))"
+                    : "drop-shadow(0 8px 24px rgba(10,27,16,0.22)) drop-shadow(0 2px 5px rgba(197,155,39,0.35))"
+                }}
                 priority
               />
             </div>

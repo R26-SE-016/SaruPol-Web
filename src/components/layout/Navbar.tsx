@@ -70,7 +70,12 @@ export default function Navbar() {
                 alt="සරුපොල් (SaruPol)"
                 width={200}
                 height={56}
-                className="h-11 sm:h-12 md:h-13 w-auto object-contain drop-shadow-[0_4px_18px_rgba(212,175,55,0.55)] transition-transform duration-300 group-hover:scale-105"
+                className="h-11 sm:h-12 md:h-13 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                style={{
+                  filter: theme === "dark"
+                    ? "drop-shadow(0 4px 18px rgba(212,175,55,0.55))"
+                    : "drop-shadow(0 4px 12px rgba(10,27,16,0.2)) drop-shadow(0 1px 3px rgba(197,155,39,0.35))"
+                }}
                 priority
               />
             </div>
@@ -273,7 +278,12 @@ export default function Navbar() {
                 alt="සරුපොල් (SaruPol)"
                 width={220}
                 height={60}
-                className="h-12 w-auto object-contain drop-shadow-[0_4px_20px_rgba(212,175,55,0.55)]"
+                className="h-12 w-auto object-contain"
+                style={{
+                  filter: theme === "dark"
+                    ? "drop-shadow(0 4px 20px rgba(212,175,55,0.55))"
+                    : "drop-shadow(0 4px 12px rgba(10,27,16,0.2)) drop-shadow(0 1px 3px rgba(197,155,39,0.35))"
+                }}
               />
             </div>
 

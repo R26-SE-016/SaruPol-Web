@@ -9,9 +9,11 @@ import {
   ArrowRight, Activity, Cpu, Database, Wifi, TrendingUp
 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
+import { useTheme } from "@/lib/theme/ThemeContext";
 
 export default function DashboardPage() {
   const { t } = useTranslation();
+  const { theme } = useTheme();
 
   const modules = [
     {
@@ -128,7 +130,12 @@ export default function DashboardPage() {
             alt="සරුපොල් (SaruPol)"
             width={680}
             height={180}
-            className="w-full h-auto object-contain drop-shadow-[0_12px_36px_rgba(212,175,55,0.55)]"
+            className="w-full h-auto object-contain"
+            style={{
+              filter: theme === "dark"
+                ? "drop-shadow(0 12px 36px rgba(212,175,55,0.55))"
+                : "drop-shadow(0 8px 24px rgba(10,27,16,0.22)) drop-shadow(0 2px 5px rgba(197,155,39,0.35))"
+            }}
             priority
           />
         </motion.div>
@@ -325,7 +332,12 @@ export default function DashboardPage() {
             alt="සරුපොල් (SaruPol)"
             width={130}
             height={36}
-            className="h-7 w-auto object-contain drop-shadow-[0_2px_10px_rgba(212,175,55,0.45)]"
+            className="h-7 w-auto object-contain"
+            style={{
+              filter: theme === "dark"
+                ? "drop-shadow(0 2px 10px rgba(212,175,55,0.45))"
+                : "drop-shadow(0 2px 8px rgba(10,27,16,0.18)) drop-shadow(0 1px 2px rgba(197,155,39,0.3))"
+            }}
           />
         </div>
         <p className="text-[10px] tracking-[0.3em] uppercase font-mono" style={{ color: "var(--text-muted)" }}>
