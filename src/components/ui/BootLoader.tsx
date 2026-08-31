@@ -69,55 +69,49 @@ export default function BootLoader() {
           {/* Telemetry grid background */}
           <div className="absolute inset-0 telemetry-grid opacity-30" />
 
-          {/* Brand Icon Mark with Breathing Halo */}
+          {/* Brand Icon Mark with Breathing Halo (Substantially Enlarged & Radiant) */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.7, y: -10 }}
+            initial={{ opacity: 0, scale: 0.75, y: -15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="relative mb-6"
+            className="relative mb-3.5"
           >
             <div
-              className="relative w-20 h-20 rounded-2xl p-2.5 flex items-center justify-center overflow-hidden shadow-2xl"
+              className="relative w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-3xl p-3 sm:p-4 flex items-center justify-center overflow-hidden shadow-2xl"
               style={{
-                background: "linear-gradient(145deg, rgba(24,28,24,0.9), rgba(8,12,9,0.95))",
-                border: "1px solid rgba(212,175,55,0.35)",
-                boxShadow: "0 0 50px rgba(212,175,55,0.2), 0 0 80px rgba(0,255,157,0.1)",
+                background: "linear-gradient(145deg, rgba(28,34,28,0.95), rgba(8,12,9,0.98))",
+                border: "1.5px solid rgba(212,175,55,0.45)",
+                boxShadow: "0 0 60px rgba(212,175,55,0.35), 0 0 100px rgba(0,255,157,0.18)",
               }}
             >
               <Image
                 src="/brand/logo-icon.png"
                 alt="SaruPol Brand Icon"
-                width={70}
-                height={70}
-                className="object-contain drop-shadow-[0_4px_12px_rgba(212,175,55,0.4)]"
+                width={150}
+                height={150}
+                className="w-full h-full object-contain drop-shadow-[0_8px_20px_rgba(212,175,55,0.5)]"
                 priority
               />
             </div>
           </motion.div>
 
-          {/* 3D Embossed Text Logo Brand Reveal */}
+          {/* 3D Embossed Text Logo Brand Reveal (Significantly Enlarged & Prominent) */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25, duration: 0.7 }}
-            className="flex flex-col items-center text-center mb-8 px-4"
+            className="flex flex-col items-center text-center mb-6 px-4"
           >
-            <div className="relative mb-2 max-w-[280px] sm:max-w-[340px]">
+            <div className="relative max-w-[360px] sm:max-w-[480px] md:max-w-[540px]">
               <Image
                 src="/brand/logo-text.png"
                 alt="සරුපොල් (SaruPol)"
-                width={340}
-                height={90}
-                className="w-auto h-14 sm:h-16 object-contain drop-shadow-[0_8px_24px_rgba(212,175,55,0.35)]"
+                width={540}
+                height={150}
+                className="w-auto h-20 sm:h-24 md:h-28 object-contain drop-shadow-[0_10px_32px_rgba(212,175,55,0.55)]"
                 priority
               />
             </div>
-            <p
-              className="text-[10px] sm:text-[11px] tracking-[0.45em] uppercase font-mono font-medium"
-              style={{ color: "rgba(212,175,55,0.75)" }}
-            >
-              PRECISION COCONUT RESEARCH INTELLIGENCE
-            </p>
           </motion.div>
 
           {/* Boot Steps Progress */}
