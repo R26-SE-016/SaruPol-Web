@@ -961,9 +961,10 @@ export default function PathologyPage() {
                         borderColor: "rgba(0, 229, 255, 0.35)",
                         color: "#00E5FF",
                       }}
-                      title="Learn how System A works and output explanations"
+                      title={language === "si" ? "පද්ධතිය A ක්‍රියාකාරිත්වය සහ ප්‍රතිඵල විස්තරය" : language === "ta" ? "அமைப்பு A செயல்முறை & முடிவுகள் விளக்கம்" : "Learn how System A works and output explanations"}
                     >
-                      <HelpCircle className="w-3.5 h-3.5" /> How it Works & Results
+                      <HelpCircle className="w-3.5 h-3.5" /> 
+                      <span>{language === "si" ? "ක්‍රියාකාරිත්වය සහ ප්‍රතිඵල" : language === "ta" ? "செயல்முறை & முடிவுகள்" : "How it Works & Results"}</span>
                     </button>
                   </div>
 
@@ -1568,9 +1569,10 @@ export default function PathologyPage() {
                       borderColor: "rgba(255, 76, 76, 0.35)",
                       color: "#FF4C4C",
                     }}
-                    title="Learn how System B works and output explanations"
+                    title={language === "si" ? "පද්ධතිය B ක්‍රියාකාරිත්වය සහ ප්‍රතිඵල විස්තරය" : language === "ta" ? "அமைப்பு B செயல்முறை & முடிவுகள் விளக்கம்" : "Learn how System B works and output explanations"}
                   >
-                    <HelpCircle className="w-3.5 h-3.5" /> How it Works & Results
+                    <HelpCircle className="w-3.5 h-3.5" /> 
+                    <span>{language === "si" ? "ක්‍රියාකාරිත්වය සහ ප්‍රතිඵල" : language === "ta" ? "செயல்முறை & முடிவுகள்" : "How it Works & Results"}</span>
                   </button>
                 </div>
 
