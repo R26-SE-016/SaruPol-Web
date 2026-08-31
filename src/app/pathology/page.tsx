@@ -13,12 +13,14 @@ import {
   ClipboardList, ShieldCheck, Camera, Sparkles, Map, RefreshCw,
   BookOpen, Search, Layers, Radio, Send, ChevronRight,
   Sliders, Info, Compass, ArrowRight, FileText, CheckCircle,
-  Lock, ShieldAlert, Trash2
+  Lock, ShieldAlert, Trash2, HelpCircle
 } from "lucide-react";
 import StatCard from "@/components/pathology/StatCard";
 import DiseaseChart from "@/components/pathology/DiseaseChart";
 import DiseaseBadge from "@/components/pathology/DiseaseBadge";
 import ConfidenceBar from "@/components/pathology/ConfidenceBar";
+import HelpTooltip from "@/components/pathology/HelpTooltip";
+import PathologyHelpModal from "@/components/pathology/PathologyHelpModal";
 import { saveDiagnosticLocally } from "@/lib/offline-sync";
 import { runEdgeInference, loadEdgeModel } from "@/lib/edge-inference";
 import { DEMO_DIAGNOSTICS, DISEASE_COLORS, DEMO_KNOWLEDGE, KnowledgeItem } from "@/lib/demo-data";
@@ -56,6 +58,7 @@ export default function PathologyPage() {
   // Default to Overview / Gateway Dashboard
   const [tab, setTab] = useState<TabType>("overview");
   const [modelReady, setModelReady] = useState(false);
+  const [helpModalSystem, setHelpModalSystem] = useState<"A" | "B" | null>(null);
 
   // User-scoped telemetry state
   const [diagnosticsList, setDiagnosticsList] = useState<UserDiagnosticRecord[]>([]);
@@ -927,7 +930,7 @@ export default function PathologyPage() {
                 
                 {/* Sub-navigation: Active Scan vs Flight History */}
                 <div className="flex justify-between items-center border-b pb-4" style={{ borderColor: "var(--card-border)" }}>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <button 
                       onClick={() => setAerialSubTab("scan")}
                       className="px-4 py-2 rounded-xl text-xs font-mono transition-all flex items-center gap-2"
@@ -949,6 +952,18 @@ export default function PathologyPage() {
                       }}
                     >
                       <FileText className="w-3.5 h-3.5" /> Past Aerial Surveys ({aerialSurveysList.length})
+                    </button>
+                    <button
+                      onClick={() => setHelpModalSystem("A")}
+                      className="px-3 py-2 rounded-xl text-xs font-mono transition-all flex items-center gap-1.5 border hover:scale-105 font-medium"
+                      style={{
+                        background: "rgba(0, 229, 255, 0.1)",
+                        borderColor: "rgba(0, 229, 255, 0.35)",
+                        color: "#00E5FF",
+                      }}
+                      title="Learn how System A works and output explanations"
+                    >
+                      <HelpCircle className="w-3.5 h-3.5" /> How it Works & Results
                     </button>
                   </div>
 
@@ -980,6 +995,12 @@ export default function PathologyPage() {
                     <div className="flex items-center gap-3">
                       <span className="text-xs font-mono uppercase tracking-wider flex items-center gap-1.5 font-medium" style={{ color: "var(--text-muted)" }}>
                         <Sliders className="w-3.5 h-3.5" style={{ color: "#00E5FF" }} /> Spectral Algorithm:
+                        <HelpTooltip 
+                          title="Spectral Index Selection"
+                          content="VARI uses RGB visible bands to minimize atmospheric scattering. NDVI requires companion Near-Infrared (NIR) for deeper cellular mesophyll absorption."
+                          formula="VARI = (G - R) / (G + R - B) | NDVI = (NIR - R) / (NIR + R)"
+                          color="#00E5FF"
+                        />
                       </span>
                       <div className="flex gap-2">
                         {[
@@ -1014,7 +1035,12 @@ export default function PathologyPage() {
                           <span className="w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-bold"
                             style={{ background: "rgba(0, 229, 255, 0.15)", color: "#00E5FF" }}
                           >1</span>
-                          Drone Imagery Input
+                          <span>Drone Imagery Input</span>
+                          <HelpTooltip
+                            title="Drone Imagery Input"
+                            content="Upload high-resolution orthomosaic stitched from UAV flights at 50-80m altitude. Supports TIFF, GeoTIFF, PNG, and JPEG formats up to 50MB."
+                            color="#00E5FF"
+                          />
                         </h2>
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background: "var(--card-bg)", color: "var(--text-muted)", border: "1px solid var(--card-border)" }}>
                           {indexType === "VARI" ? "RGB Orthomosaic" : "4-Band GeoTIFF / Dual RGB+NIR"}
@@ -1243,7 +1269,10 @@ export default function PathologyPage() {
                   {uavResult && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                       <div className="glass-card p-4 rounded-xl">
-                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium" style={{ color: "var(--text-muted)" }}>MEAN {uavResult.index_type} INDEX</div>
+                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium flex items-center justify-between" style={{ color: "var(--text-muted)" }}>
+                          <span>MEAN {uavResult.index_type} INDEX</span>
+                          <HelpTooltip title={`Mean ${uavResult.index_type} Index`} content={`Average photosynthetic vegetative vigor across all surveyed palms. Healthy coconut canopy scores ${uavResult.index_type === 'VARI' ? '0.05 to 0.25' : '0.45 to 0.85'}.`} color="#00E5FF" />
+                        </div>
                         <div className="text-2xl font-light mt-1 font-mono text-cyan-500">{uavResult.statistics.mean_index?.toFixed(3)}</div>
                         <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>
                           Range: {uavResult.statistics.min_index?.toFixed(2)} to {uavResult.statistics.max_index?.toFixed(2)}
@@ -1251,19 +1280,28 @@ export default function PathologyPage() {
                       </div>
 
                       <div className="glass-card p-4 rounded-xl">
-                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium" style={{ color: "var(--text-muted)" }}>CANOPY PURITY VIGOR</div>
+                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium flex items-center justify-between" style={{ color: "var(--text-muted)" }}>
+                          <span>CANOPY PURITY VIGOR</span>
+                          <HelpTooltip title="Canopy Purity Vigor" content="Proportion of segmented crown pixels exhibiting active vegetative index values vs chlorotic or damaged fronds." color="#00FF9D" />
+                        </div>
                         <div className="text-2xl font-light mt-1 font-mono text-emerald-500">{uavResult.statistics.healthy_canopy_pct?.toFixed(1)}%</div>
                         <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>ExG Crown Chlorophyll</div>
                       </div>
 
                       <div className="glass-card p-4 rounded-xl">
-                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium" style={{ color: "var(--text-muted)" }}>ESTATE GRADE</div>
+                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium flex items-center justify-between" style={{ color: "var(--text-muted)" }}>
+                          <span>ESTATE GRADE</span>
+                          <HelpTooltip title="Estate Health Grade" content="Aggregated biosecurity classification based on mean index, canopy purity, and tree anomaly density." color="#A78BFA" />
+                        </div>
                         <div className="text-2xl font-light mt-1 font-mono text-purple-500">{uavResult.statistics.estate_health_grade || "B (Good)"}</div>
                         <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>Risk: {uavResult.statistics.pathology_risk_index || "Stable"}</div>
                       </div>
 
                       <div className="glass-card p-4 rounded-xl">
-                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium" style={{ color: "var(--text-muted)" }}>DETECTED PALMS</div>
+                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium flex items-center justify-between" style={{ color: "var(--text-muted)" }}>
+                          <span>DETECTED PALMS</span>
+                          <HelpTooltip title="Discrete Palm Crowns" content="Total discrete coconut palm tree crowns identified via watershed local maxima peak segmentation." color="#00E5FF" />
+                        </div>
                         <div className="text-2xl font-light mt-1 font-mono text-cyan-500">{uavResult.statistics.estimated_palms_count} Palms</div>
                         <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>
                           {uavResult.statistics.healthy_palms_count || 224} Healthy / {uavResult.statistics.at_risk_palms_count || 12} At-Risk
@@ -1271,7 +1309,10 @@ export default function PathologyPage() {
                       </div>
 
                       <div className="glass-card p-4 rounded-xl">
-                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium" style={{ color: "var(--text-muted)" }}>{t.pathology.systemA.canopyVsGround}</div>
+                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium flex items-center justify-between" style={{ color: "var(--text-muted)" }}>
+                          <span>{t.pathology.systemA.canopyVsGround}</span>
+                          <HelpTooltip title="Canopy vs Ground Exposure" content="Ratio of active canopy foliage coverage to bare inter-row soil exposure across the estate block." color="#E6AF2E" />
+                        </div>
                         <div className="text-2xl font-light mt-1 font-mono text-amber-500">{uavResult.statistics.canopy_coverage_pct?.toFixed(1)}%</div>
                         <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>
                           {(uavResult.statistics.ground_exposure_pct || (100 - uavResult.statistics.canopy_coverage_pct)).toFixed(1)}% Inter-row Soil
@@ -1279,7 +1320,10 @@ export default function PathologyPage() {
                       </div>
 
                       <div className="glass-card p-4 rounded-xl">
-                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium" style={{ color: "var(--text-muted)" }}>{t.pathology.systemA.flaggedAnomalies}</div>
+                        <div className="text-[10px] font-mono uppercase tracking-wider font-medium flex items-center justify-between" style={{ color: "var(--text-muted)" }}>
+                          <span>{t.pathology.systemA.flaggedAnomalies}</span>
+                          <HelpTooltip title="Flagged Stress Hotspots" content="Individual palms displaying acute spectral drop, severe chlorosis, or frond dieback that require ground-level inspection." color="#FF4C4C" />
+                        </div>
                         <div className="text-2xl font-light mt-1 font-mono text-red-500">{uavResult.hotspots?.length || 0} Trees</div>
                         <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>{t.pathology.systemA.zScoreOutliers}</div>
                       </div>
@@ -1492,8 +1536,8 @@ export default function PathologyPage() {
             <motion.div key="mobile" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="space-y-6">
               
               {/* Sub-navigation: Active Scan vs Scan History */}
-              <div className="flex justify-between items-center border-b pb-4" style={{ borderColor: "var(--card-border)" }}>
-                <div className="flex gap-2">
+              <div className="flex flex-wrap justify-between items-center gap-3 border-b pb-4" style={{ borderColor: "var(--card-border)" }}>
+                <div className="flex flex-wrap items-center gap-2">
                   <button 
                     onClick={() => setMobileSubTab("scan")}
                     className="px-4 py-2 rounded-xl text-xs font-mono transition-all flex items-center gap-2"
@@ -1516,12 +1560,25 @@ export default function PathologyPage() {
                   >
                     <FileText className="w-3.5 h-3.5" /> {t.pathology.systemB.recentScansTab} ({diagnosticsList.length})
                   </button>
+                  <button
+                    onClick={() => setHelpModalSystem("B")}
+                    className="px-3 py-2 rounded-xl text-xs font-mono transition-all flex items-center gap-1.5 border hover:scale-105 font-medium"
+                    style={{
+                      background: "rgba(255, 76, 76, 0.1)",
+                      borderColor: "rgba(255, 76, 76, 0.35)",
+                      color: "#FF4C4C",
+                    }}
+                    title="Learn how System B works and output explanations"
+                  >
+                    <HelpCircle className="w-3.5 h-3.5" /> How it Works & Results
+                  </button>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono px-2 py-1 rounded" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)", color: "var(--text-muted)" }}>
-                      {t.pathology.systemB.oodGatingBadge}
+                    <span className="text-[10px] font-mono px-2 py-1 rounded flex items-center gap-1" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)", color: "var(--text-muted)" }}>
+                      <span>{t.pathology.systemB.oodGatingBadge}</span>
+                      <HelpTooltip title="OOD Gating & MobileNetV2" content="Evaluates input image authenticity to reject non-coconut photos before running INT8 neural classification." color="#FF4C4C" />
                     </span>
                     {syncStatus === "synced" && (
                       <span className="text-[10px] font-mono px-2 py-1 rounded flex items-center gap-1 font-bold" style={{ background: "rgba(0,255,157,0.12)", color: theme === "dark" ? "#00FF9D" : "#00875A", border: "1px solid rgba(0,255,157,0.3)" }}>
@@ -1614,10 +1671,24 @@ export default function PathologyPage() {
                           {/* Primary Badge & Confidence */}
                           <div className="p-4 rounded-xl border" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
                             <div className="flex justify-between items-start mb-3">
-                              <DiseaseBadge disease={mobileResult.disease} />
-                              <span className="text-xs font-mono font-bold" style={{ color: theme === "dark" ? "#00FF9D" : "#00875A" }}>
-                                {(mobileResult.confidence * 100).toFixed(1)}% {t.pathology.systemB.match}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <DiseaseBadge disease={mobileResult.disease} />
+                                <HelpTooltip
+                                  title={mobileResult.disease}
+                                  content="Diagnosed pathogen condition. Corresponds to official CRI Coconut Pathology classification."
+                                  color="#FF4C4C"
+                                />
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-mono font-bold" style={{ color: theme === "dark" ? "#00FF9D" : "#00875A" }}>
+                                  {(mobileResult.confidence * 100).toFixed(1)}% {t.pathology.systemB.match}
+                                </span>
+                                <HelpTooltip
+                                  title="Diagnostic Certainty"
+                                  content="Neural network softmax probability certainty. Scores over 85% denote high reliability."
+                                  color="#00FF9D"
+                                />
+                              </div>
                             </div>
                             <ConfidenceBar value={mobileResult.confidence} />
                           </div>
@@ -2056,6 +2127,9 @@ export default function PathologyPage() {
           )}
 
         </AnimatePresence>
+
+        {/* Dedicated Interactive Pipeline & Output Results Help Modal */}
+        <PathologyHelpModal system={helpModalSystem} onClose={() => setHelpModalSystem(null)} />
       </div>
     </main>
     </AuthGuard>
