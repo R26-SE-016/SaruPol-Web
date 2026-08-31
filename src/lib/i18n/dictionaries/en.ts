@@ -46,7 +46,7 @@ export const en: TranslationSchema = {
       criTitle: "CRI Research Grade",
       criDesc: "Validated against Coconut Research Institute Sri Lanka guidelines",
     },
-    footer: "සරුපොල් (SaruPol) Precision Coconut Research Initiative · 2026",
+    footer: "සරුපොල් · Precision Coconut Research Initiative · 2026",
   },
   pathology: {
     title: "Multiscale Coconut Pathology Diagnostic Suite",
