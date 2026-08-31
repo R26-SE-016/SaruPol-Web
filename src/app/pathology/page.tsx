@@ -452,7 +452,7 @@ export default function PathologyPage() {
   return (
     <AuthGuard>
       <main className="min-h-screen relative overflow-hidden" style={{ background: "var(--background)" }}>
-        <Script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js" strategy="afterInteractive" />
+        <Script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js" strategy="afterInteractive" />
         <Script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-tflite@0.0.1-alpha.9/dist/tf-tflite.min.js" strategy="afterInteractive" />
         
         <Navbar />
