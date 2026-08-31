@@ -32,12 +32,35 @@ interface AuthContextType {
   }) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   updateProfile: (patch: Partial<User>) => Promise<boolean>;
+  changePassword: (oldPass: string, newPass: string) => Promise<{ success: boolean; error?: string }>;
+  deleteAccount: () => Promise<boolean>;
 }
 
 const STORAGE_KEYS = {
   TOKEN: "sarupol_auth_token",
   USER: "sarupol_auth_user",
 };
+
+// Fixed CRI Research Trial Stations (Reserved exclusively for CRI Research Officers)
+export const CRI_FIXED_ESTATES = [
+  "Makandura Experimental Estate (Intermediate Zone)",
+  "Lunuwila CRI Headquarters (Wet Zone)",
+  "Puttalam Seed Garden (Dry Zone)",
+  "Ratnapura High-Rainfall Estate (Wet Zone)",
+  "Batticaloa Coastal Research Station (Dry Zone)",
+];
+
+// Commercial Plantations and Private Holdings (For Planters & Estate Managers)
+export const COMMERCIAL_ESTATES = [
+  "Kurunegala Commercial Block (Intermediate Zone)",
+  "Gampaha / Negombo Smallholding (Wet Zone)",
+  "Chilaw Coconut Holding (Intermediate Zone)",
+  "Kuliyapitiya Commercial Plantation (Intermediate Zone)",
+  "Madampe Coconut Grove (Intermediate Zone)",
+  "Puttalam Commercial Holding (Dry Zone)",
+  "Kalutara Coastal Smallholding (Wet Zone)",
+  "Other / Private Coconut Plantation",
+];
 
 // Built-in Demo Accounts for instant research validation
 export const DEMO_ACCOUNTS = {
@@ -254,6 +277,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
+  const changePassword = async (oldPass: string, newPass: string): Promise<{ success: boolean; error?: string }> => {
+    if (!user) return { success: false, error: "User not authenticated." };
+    if (!newPass || newPass.length < 6) {
+      return { success: false, error: "New password must be at least 6 characters long." };
+    }
+
+    try {
+      // In local/standalone mode, update registered user password
+      const localRegistered = localStorage.getItem("sarupol_registered_users");
+      if (localRegistered) {
+        const list: any[] = JSON.parse(localRegistered);
+        const idx = list.findIndex((u) => u.email.toLowerCase() === user.email.toLowerCase());
+        if (idx !== -1) {
+          list[idx].password = newPass;
+          localStorage.setItem("sarupol_registered_users", JSON.stringify(list));
+        }
+      }
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message || "Failed to update password." };
+    }
+  };
+
+  const deleteAccount = async (): Promise<boolean> => {
+    if (!user) return false;
+
+    try {
+      // Clean up from registered users list
+      const localRegistered = localStorage.getItem("sarupol_registered_users");
+      if (localRegistered) {
+        const list: any[] = JSON.parse(localRegistered);
+        const filtered = list.filter((u) => u.email.toLowerCase() !== user.email.toLowerCase());
+        localStorage.setItem("sarupol_registered_users", JSON.stringify(filtered));
+      }
+
+      // Clear sessions, tokens, and active logs
+      logout();
+      return true;
+    } catch (e) {
+      console.warn("Account deletion failed:", e);
+      return false;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -265,6 +332,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         register,
         logout,
         updateProfile,
+        changePassword,
+        deleteAccount,
       }}
     >
       {children}

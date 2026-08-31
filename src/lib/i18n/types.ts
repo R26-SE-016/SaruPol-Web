@@ -386,6 +386,24 @@ export interface TranslationSchema {
     advisoryQueriesCount: string;
     userId: string;
     joinedDate: string;
+    editProfile: string;
+    cancelEdit: string;
+    changePasswordTitle: string;
+    currentPassword: string;
+    newPassword: string;
+    confirmNewPassword: string;
+    updatePasswordBtn: string;
+    passwordSuccess: string;
+    passwordMismatch: string;
+    deleteAccountTitle: string;
+    deleteAccountDesc: string;
+    deleteAccountBtn: string;
+    confirmDeleteTitle: string;
+    confirmDeleteMsg: string;
+    typeDeleteToConfirm: string;
+    confirmDeleteBtn: string;
+    criFixedNotice: string;
+    privateEstateNotice: string;
   };
   common: {
     loading: string;

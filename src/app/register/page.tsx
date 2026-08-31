@@ -20,20 +20,9 @@ import {
   EyeOff
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
-import { useAuth } from "@/lib/auth/AuthContext";
+import { useAuth, CRI_FIXED_ESTATES, COMMERCIAL_ESTATES } from "@/lib/auth/AuthContext";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
 import { useTheme } from "@/lib/theme/ThemeContext";
-
-const ESTATES_LIST = [
-  "Makandura Experimental Estate (Intermediate Zone)",
-  "Lunuwila CRI Headquarters (Wet Zone)",
-  "Puttalam Seed Garden (Dry Zone)",
-  "Kurunegala Commercial Block (Intermediate Zone)",
-  "Ratnapura High-Rainfall Estate (Wet Zone)",
-  "Batticaloa Coastal Plantation (Dry Zone)",
-  "Gampaha / Negombo Smallholding",
-  "Other / Private Plantation",
-];
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -46,7 +35,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState<"planter" | "manager" | "officer">("planter");
-  const [estate, setEstate] = useState(ESTATES_LIST[0]);
+  const [estate, setEstate] = useState(COMMERCIAL_ESTATES[0]);
   const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -206,7 +195,15 @@ export default function RegisterPage() {
                 </label>
                 <select
                   value={role}
-                  onChange={(e) => setRole(e.target.value as any)}
+                  onChange={(e) => {
+                    const newRole = e.target.value as "planter" | "manager" | "officer";
+                    setRole(newRole);
+                    if (newRole === "officer") {
+                      setEstate(CRI_FIXED_ESTATES[0]);
+                    } else {
+                      setEstate(COMMERCIAL_ESTATES[0]);
+                    }
+                  }}
                   className="w-full p-3 rounded-xl border text-xs font-mono outline-none smooth-transition cursor-pointer"
                   style={{ background: "var(--background)", borderColor: "var(--card-border)", color: "var(--text-primary)" }}
                 >
@@ -227,11 +224,23 @@ export default function RegisterPage() {
                   className="w-full p-3 rounded-xl border text-xs font-mono outline-none smooth-transition cursor-pointer"
                   style={{ background: "var(--background)", borderColor: "var(--card-border)", color: "var(--text-primary)" }}
                 >
-                  {ESTATES_LIST.map((est) => (
-                    <option key={est} value={est}>
-                      {est}
-                    </option>
-                  ))}
+                  {role === "officer" ? (
+                    <optgroup label="Official CRI Research Stations">
+                      {CRI_FIXED_ESTATES.map((est) => (
+                        <option key={est} value={est}>
+                          {est}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ) : (
+                    <optgroup label="Commercial & Private Coconut Holdings">
+                      {COMMERCIAL_ESTATES.map((est) => (
+                        <option key={est} value={est}>
+                          {est}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
                 </select>
               </div>
             </div>

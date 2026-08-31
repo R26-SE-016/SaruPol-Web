@@ -72,9 +72,8 @@ export default function DashboardPage() {
   ];
 
   return (
-    <AuthGuard>
-      <main className="min-h-screen flex flex-col items-center relative overflow-hidden">
-        <Navbar />
+    <main className="min-h-screen flex flex-col items-center relative overflow-hidden">
+      <Navbar />
 
       {/* Background luxury gold & emerald glow */}
       <div
@@ -347,6 +346,5 @@ export default function DashboardPage() {
         </p>
       </footer>
     </main>
-    </AuthGuard>
   );
 }
