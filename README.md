@@ -1,6 +1,8 @@
 <div align="center">
 
-<img src="./docs/brand/logo-icon.png" alt="SaruPol Icon" width="90" /> <img src="./docs/brand/logo-text.png" alt="සරුපොල් (SaruPol)" width="400" />
+<img src="./docs/brand/logo-icon.png" alt="SaruPol Icon" width="90" />
+<br/>
+<img src="./docs/brand/logo-text.png" alt="සරුපොල් (SaruPol)" width="400" />
 
 ### 🌴 සරුපොල් (SaruPol) — Unified Web & Research Intelligence Platform
 **Enterprise Multi-Tier AI & IoT Decision Support Dashboard for Sri Lankan Coconut Plantations**
