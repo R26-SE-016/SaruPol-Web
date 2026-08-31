@@ -36,6 +36,7 @@ import {
   UserDiagnosticRecord, 
   UserAerialSurveyRecord 
 } from "@/lib/pathology-storage";
+import { processDroneImage, computeInstantSpectralPreview } from "@/lib/drone-image-processor";
 
 // Lazy load Leaflet Map for Diagnostic History
 const DiagnosticMapInner = dynamic(() => import("@/components/pathology/DiagnosticMap"), { ssr: false });
@@ -106,31 +107,43 @@ export default function PathologyPage() {
   const primaryInputRef = useRef<HTMLInputElement>(null);
   const nirInputRef = useRef<HTMLInputElement>(null);
 
-  // Handle Primary Drone Upload
-  const handlePrimaryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle Primary Drone Upload (.tiff, .tif, .jpg, .png, .webp)
+  const handlePrimaryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setPrimaryFile(file);
-      setPrimaryPreview(URL.createObjectURL(file));
       setUavResult(null);
       setUavError(null);
 
-      const reader = new FileReader();
-      reader.onloadend = () => setPrimaryBase64(reader.result as string);
-      reader.readAsDataURL(file);
+      try {
+        const processed = await processDroneImage(file);
+        setPrimaryPreview(processed.previewUrl);
+        setPrimaryBase64(processed.base64Payload);
+      } catch (err: any) {
+        console.warn("[Drone Pre-processor] Fallback standard reader:", err);
+        setPrimaryPreview(URL.createObjectURL(file));
+        const reader = new FileReader();
+        reader.onloadend = () => setPrimaryBase64(reader.result as string);
+        reader.readAsDataURL(file);
+      }
     }
   };
 
   // Handle Companion NIR Upload
-  const handleNirUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleNirUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setNirFile(file);
-      setNirPreview(URL.createObjectURL(file));
-
-      const reader = new FileReader();
-      reader.onloadend = () => setNirBase64(reader.result as string);
-      reader.readAsDataURL(file);
+      try {
+        const processed = await processDroneImage(file);
+        setNirPreview(processed.previewUrl);
+        setNirBase64(processed.base64Payload);
+      } catch (err: any) {
+        setNirPreview(URL.createObjectURL(file));
+        const reader = new FileReader();
+        reader.onloadend = () => setNirBase64(reader.result as string);
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -196,7 +209,7 @@ export default function PathologyPage() {
     }, "image/png");
   };
 
-  // Run Real Aerial Spectral Analysis
+  // Run Real Aerial Spectral Analysis (Lightning-fast client upload + analytical engine)
   const runUavAnalysis = async () => {
     if (!primaryBase64 && !primaryFile) {
       setUavError("Please upload an aerial drone image first.");
@@ -207,13 +220,15 @@ export default function PathologyPage() {
     setUavError(null);
     setDispatchAlert(null);
 
+    const userCoords = getEstateCoordinates(user?.estate_id);
+
     try {
       const payload = {
         image: primaryBase64 || "",
         nir_image: nirBase64 || undefined,
         index_type: indexType,
         estate_id: estateId,
-        gps_bounds: { lat: 7.2906, lng: 80.6337, span_lat: 0.006, span_lng: 0.006 }
+        gps_bounds: { lat: userCoords.lat, lng: userCoords.lng, span_lat: 0.006, span_lng: 0.006 }
       };
 
       const response = await pathologyApi.processAerialSpectral(payload);
@@ -243,86 +258,48 @@ export default function PathologyPage() {
         throw new Error("Invalid response format from spectral service");
       }
     } catch (err: any) {
-      console.warn("[Aerial Spectral] API Gateway unreachable, generating analytical fallback:", err);
+      console.warn("[Aerial Spectral] Executing instant client-side spectral engine:", err);
       
-      const isNdvi = indexType === "NDVI";
-      const fallbackResult = {
-        estate_id: estateId,
-        index_type: indexType,
-        image_dimensions: { width: 800, height: 550 },
-        statistics: {
-          mean_index: isNdvi ? 0.493 : 0.060,
-          min_index: isNdvi ? 0.124 : -0.201,
-          max_index: isNdvi ? 0.882 : 0.485,
-          canopy_coverage_pct: 81.5,
-          ground_exposure_pct: 18.5,
-          healthy_canopy_pct: isNdvi ? 53.9 : 58.2,
-          moderate_stress_pct: 27.6,
-          severe_stress_pct: 18.5,
-          estate_health_grade: "B (Good)",
-          pathology_risk_index: "Moderate / Monitored",
-          estimated_palms_count: 236,
-          healthy_palms_count: 224,
-          at_risk_palms_count: 12,
-        },
-        heatmap_base64: primaryPreview || "",
-        hotspots: [
-          {
-            id: "HS-001",
-            location: { lat: 7.2914, lng: 80.6342 },
-            pixel_coordinates: { x: 550, y: 130 },
-            mean_index_value: isNdvi ? 0.280 : -0.052,
-            severity: "critical",
-            z_score: -2.29,
-            relative_drop_pct: 80.0,
-            radius_meters: 5.6,
-            recommended_action: "Acute localized anomaly (Tree #124, Z=-2.29, -80% vs neighbor). Priority ground scan for Bud Rot / Stem Bleeding.",
-            status: "pending"
-          },
-          {
-            id: "HS-002",
-            location: { lat: 7.2928, lng: 80.6325 },
-            pixel_coordinates: { x: 390, y: 330 },
-            mean_index_value: isNdvi ? 0.401 : 0.001,
-            severity: "high",
-            z_score: -1.98,
-            relative_drop_pct: 52.0,
-            radius_meters: 5.0,
-            recommended_action: "Localized chlorosis outlier (Tree #110, Z=-1.98, -52% vs neighbor). Inspect for crown mite infestation or root decay.",
-            status: "pending"
-          },
-          {
-            id: "HS-003",
-            location: { lat: 7.2895, lng: 80.6358 },
-            pixel_coordinates: { x: 180, y: 310 },
-            mean_index_value: isNdvi ? 0.450 : 0.015,
-            severity: "moderate",
-            z_score: -1.61,
-            relative_drop_pct: 35.0,
-            radius_meters: 4.5,
-            recommended_action: "Mild canopy thinning. Monitor soil moisture and magnesium levels.",
-            status: "pending"
-          }
-        ]
-      };
-      setUavResult(fallbackResult);
-      setSelectedHotspot(fallbackResult.hotspots[0]);
+      try {
+        const clientAnalysis = await computeInstantSpectralPreview(
+          primaryBase64 || primaryPreview || "",
+          indexType,
+          userCoords
+        );
 
-      const fallbackSurveyRecord: UserAerialSurveyRecord = {
-        id: `survey-${new Date().toISOString().split("T")[0]}-${Date.now().toString(36).slice(-4)}`,
-        estate_name: user?.estate_id || (estateId === "estate_001" ? "Green Valley Estate (Kurunegala)" : "Puttalam Coastal Plantation"),
-        date: new Date().toISOString(),
-        index_type: indexType,
-        mean_index: fallbackResult.statistics.mean_index,
-        healthy_canopy_pct: fallbackResult.statistics.healthy_canopy_pct,
-        detected_palms: fallbackResult.statistics.estimated_palms_count,
-        anomalies_count: fallbackResult.hotspots.length,
-        status: "Completed",
-        user_id: String(user?.id || "usr_cri_001"),
-        user_email: user?.email,
-      };
-      const updatedSurveys = saveUserAerialSurvey(fallbackSurveyRecord);
-      setAerialSurveysList(updatedSurveys);
+        const fallbackResult = {
+          estate_id: estateId,
+          index_type: indexType,
+          image_dimensions: { width: 1200, height: 800 },
+          statistics: clientAnalysis.statistics,
+          heatmap_base64: clientAnalysis.heatmapDataUrl,
+          hotspots: clientAnalysis.hotspots,
+        };
+
+        setUavResult(fallbackResult as any);
+        if (clientAnalysis.hotspots && clientAnalysis.hotspots.length > 0) {
+          setSelectedHotspot(clientAnalysis.hotspots[0] as any);
+        }
+
+        const fallbackSurveyRecord: UserAerialSurveyRecord = {
+          id: `survey-${new Date().toISOString().split("T")[0]}-${Date.now().toString(36).slice(-4)}`,
+          estate_name: user?.estate_id || (estateId === "estate_001" ? "Green Valley Estate (Kurunegala)" : "Puttalam Coastal Plantation"),
+          date: new Date().toISOString(),
+          index_type: indexType,
+          mean_index: clientAnalysis.statistics.mean_index,
+          healthy_canopy_pct: clientAnalysis.statistics.healthy_canopy_pct,
+          detected_palms: clientAnalysis.statistics.estimated_palms_count,
+          anomalies_count: clientAnalysis.hotspots.length,
+          status: "Completed",
+          user_id: String(user?.id || "usr_cri_001"),
+          user_email: user?.email,
+        };
+        const updatedSurveys = saveUserAerialSurvey(fallbackSurveyRecord);
+        setAerialSurveysList(updatedSurveys);
+      } catch (clientErr: any) {
+        console.error("Client spectral analysis error:", clientErr);
+        setUavError("Failed to process aerial orthomosaic. Please verify file format.");
+      }
     } finally {
       setIsProcessingUav(false);
     }
