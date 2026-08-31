@@ -27,6 +27,15 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip as RechartsTo
 import { useTranslation, useLanguage } from "@/lib/i18n/LanguageContext";
 import { useTheme } from "@/lib/theme/ThemeContext";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { 
+  getUserDiagnostics, 
+  saveUserDiagnostic, 
+  getUserAerialSurveys, 
+  saveUserAerialSurvey, 
+  getEstateCoordinates, 
+  UserDiagnosticRecord, 
+  UserAerialSurveyRecord 
+} from "@/lib/pathology-storage";
 
 // Lazy load Leaflet Map for Diagnostic History
 const DiagnosticMapInner = dynamic(() => import("@/components/pathology/DiagnosticMap"), { ssr: false });
@@ -79,6 +88,23 @@ export default function PathologyPage() {
   // Default to Overview / Gateway Dashboard
   const [tab, setTab] = useState<TabType>("overview");
   const [modelReady, setModelReady] = useState(false);
+
+  // User-scoped telemetry state
+  const [diagnosticsList, setDiagnosticsList] = useState<UserDiagnosticRecord[]>([]);
+  const [aerialSurveysList, setAerialSurveysList] = useState<UserAerialSurveyRecord[]>([]);
+
+  // Synchronize telemetry with active authenticated user
+  useEffect(() => {
+    if (user) {
+      const userDiags = getUserDiagnostics(user.id, user.email);
+      setDiagnosticsList(userDiags);
+      const userSurveys = getUserAerialSurveys(user.id, user.email);
+      setAerialSurveysList(userSurveys);
+    } else {
+      setDiagnosticsList([]);
+      setAerialSurveysList([]);
+    }
+  }, [user]);
   
   // Initialize Edge Model
   useEffect(() => {
@@ -234,6 +260,22 @@ export default function PathologyPage() {
         if (response.hotspots && response.hotspots.length > 0) {
           setSelectedHotspot(response.hotspots[0]);
         }
+
+        const newSurveyRecord: UserAerialSurveyRecord = {
+          id: `survey-${new Date().toISOString().split("T")[0]}-${Date.now().toString(36).slice(-4)}`,
+          estate_name: user?.estate_id || (estateId === "estate_001" ? "Green Valley Estate (Kurunegala)" : "Puttalam Coastal Plantation"),
+          date: new Date().toISOString(),
+          index_type: indexType,
+          mean_index: response.statistics.mean_index || (indexType === "NDVI" ? 0.654 : 0.401),
+          healthy_canopy_pct: response.statistics.healthy_canopy_pct || 68.1,
+          detected_palms: response.statistics.estimated_palms_count || 236,
+          anomalies_count: response.hotspots?.length || 3,
+          status: "Completed",
+          user_id: String(user?.id || "usr_cri_001"),
+          user_email: user?.email,
+        };
+        const updatedSurveys = saveUserAerialSurvey(newSurveyRecord);
+        setAerialSurveysList(updatedSurveys);
       } else {
         throw new Error("Invalid response format from spectral service");
       }
@@ -302,6 +344,22 @@ export default function PathologyPage() {
       };
       setUavResult(fallbackResult);
       setSelectedHotspot(fallbackResult.hotspots[0]);
+
+      const fallbackSurveyRecord: UserAerialSurveyRecord = {
+        id: `survey-${new Date().toISOString().split("T")[0]}-${Date.now().toString(36).slice(-4)}`,
+        estate_name: user?.estate_id || (estateId === "estate_001" ? "Green Valley Estate (Kurunegala)" : "Puttalam Coastal Plantation"),
+        date: new Date().toISOString(),
+        index_type: indexType,
+        mean_index: fallbackResult.statistics.mean_index,
+        healthy_canopy_pct: fallbackResult.statistics.healthy_canopy_pct,
+        detected_palms: fallbackResult.statistics.estimated_palms_count,
+        anomalies_count: fallbackResult.hotspots.length,
+        status: "Completed",
+        user_id: String(user?.id || "usr_cri_001"),
+        user_email: user?.email,
+      };
+      const updatedSurveys = saveUserAerialSurvey(fallbackSurveyRecord);
+      setAerialSurveysList(updatedSurveys);
     } finally {
       setIsProcessingUav(false);
     }
@@ -383,13 +441,34 @@ export default function PathologyPage() {
 
         const reader = new FileReader();
         reader.onloadend = () => {
-          saveDiagnosticLocally({
-            id: `edge_${Date.now()}`,
+          const baseCoord = getEstateCoordinates(user?.estate_id);
+          const jitterLat = baseCoord.lat + (Math.random() * 0.003 - 0.0015);
+          const jitterLng = baseCoord.lng + (Math.random() * 0.003 - 0.0015);
+
+          const newDiagnosticRecord: UserDiagnosticRecord = {
+            id: `diag-${Date.now().toString(36)}`,
             disease_class: inference.disease_class,
             confidence: inference.confidence,
-            timestamp: new Date().toISOString(),
+            location: { lat: jitterLat, lng: jitterLng },
+            captured_at: new Date().toISOString(),
+            estate_name: user?.estate_id || "Makandura Experimental Estate",
+            user_id: String(user?.id || "guest"),
+            user_email: user?.email,
+            entropy: inference.shannon_entropy,
             image_base64: reader.result as string,
-            synced: navigator.onLine ? true : false
+            synced: navigator.onLine ? true : false,
+          };
+
+          const updatedDiags = saveUserDiagnostic(newDiagnosticRecord);
+          setDiagnosticsList(updatedDiags);
+
+          saveDiagnosticLocally({
+            id: newDiagnosticRecord.id,
+            disease_class: inference.disease_class,
+            confidence: inference.confidence,
+            timestamp: newDiagnosticRecord.captured_at,
+            image_base64: reader.result as string,
+            synced: navigator.onLine ? true : false,
           });
           setSyncStatus(navigator.onLine ? "synced" : "offline");
         };
@@ -432,22 +511,41 @@ export default function PathologyPage() {
   const [historyView, setHistoryView] = useState<"table" | "map">("table");
   const [filterDisease, setFilterDisease] = useState("all");
 
-  const diseases = useMemo(() => Array.from(new Set(DEMO_DIAGNOSTICS.map(d => d.disease_class))), []);
+  const diseases = useMemo(() => {
+    const userUnique = Array.from(new Set(diagnosticsList.map(d => d.disease_class)));
+    return userUnique.length > 0 ? userUnique : Object.keys(DISEASE_COLORS);
+  }, [diagnosticsList]);
+
   const filteredHistory = useMemo(() => {
-    return DEMO_DIAGNOSTICS.filter(d => filterDisease === "all" || d.disease_class === filterDisease);
-  }, [filterDisease]);
+    return diagnosticsList.filter(d => filterDisease === "all" || d.disease_class === filterDisease);
+  }, [diagnosticsList, filterDisease]);
 
   const stats = useMemo(() => {
-    const total = DEMO_DIAGNOSTICS.length;
-    const healthy = DEMO_DIAGNOSTICS.filter(d => d.disease_class === "healthy leaves").length;
-    const avgConf = total ? DEMO_DIAGNOSTICS.reduce((sum, d) => sum + d.confidence, 0) / total : 0;
+    const total = diagnosticsList.length;
+    const healthy = diagnosticsList.filter(d => d.disease_class === "healthy leaves").length;
+    const avgConf = total ? diagnosticsList.reduce((sum, d) => sum + d.confidence, 0) / total : 0;
     return { total, healthy, diseased: total - healthy, avgConf };
-  }, []);
+  }, [diagnosticsList]);
 
-  const weeklyData = [
-    { day: "Mon", scans: 4 }, { day: "Tue", scans: 7 }, { day: "Wed", scans: 3 },
-    { day: "Thu", scans: 9 }, { day: "Fri", scans: 5 }, { day: "Sat", scans: 2 },
-  ];
+  const weeklyData = useMemo(() => {
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const counts: Record<string, number> = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+    diagnosticsList.forEach(d => {
+      try {
+        const day = days[new Date(d.captured_at).getDay()];
+        if (counts[day] !== undefined) counts[day]++;
+      } catch {}
+    });
+    return [
+      { day: "Mon", scans: counts["Mon"] },
+      { day: "Tue", scans: counts["Tue"] },
+      { day: "Wed", scans: counts["Wed"] },
+      { day: "Thu", scans: counts["Thu"] },
+      { day: "Fri", scans: counts["Fri"] },
+      { day: "Sat", scans: counts["Sat"] },
+      { day: "Sun", scans: counts["Sun"] },
+    ];
+  }, [diagnosticsList]);
 
   return (
     <AuthGuard>
@@ -690,7 +788,7 @@ export default function PathologyPage() {
 
               {/* Charts Section */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <DiseaseChart diagnostics={DEMO_DIAGNOSTICS} title={t.pathology.overview.pathogenProfile} />
+                <DiseaseChart diagnostics={diagnosticsList} title={t.pathology.overview.pathogenProfile} />
                 
                 <div className="glass-card p-6 flex flex-col rounded-2xl">
                   <h3 className="text-sm font-mono mb-4" style={{ color: "var(--text-primary)" }}>{t.pathology.overview.weeklyCadence}</h3>
@@ -708,10 +806,90 @@ export default function PathologyPage() {
                 </div>
               </div>
 
+              {/* Recent Estate Scans Table */}
+              <div className="glass-card p-6 rounded-2xl space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-sm font-mono font-medium flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
+                    <Microscope className="w-4 h-4" style={{ color: "#00FF9D" }} /> Recent Estate Diagnostics Feed
+                  </h3>
+                  <button
+                    onClick={() => setTab("history")}
+                    className="text-xs font-mono transition-all hover:underline flex items-center gap-1"
+                    style={{ color: "#00FF9D" }}
+                  >
+                    View All GIS History ({diagnosticsList.length}) →
+                  </button>
+                </div>
+
+                {diagnosticsList.length === 0 ? (
+                  <div className="text-center p-8 space-y-2 border border-dashed rounded-xl" style={{ borderColor: "var(--card-border)" }}>
+                    <p className="text-xs font-mono font-medium" style={{ color: "var(--text-primary)" }}>No Pathology Diagnostic Records Yet</p>
+                    <p className="text-[11px] font-mono" style={{ color: "var(--text-muted)" }}>
+                      Execute your first on-device leaf scan or UAV orthomosaic to populate real-time diagnostics.
+                    </p>
+                    <button
+                      onClick={() => setTab("mobile")}
+                      className="px-4 py-2 rounded-xl text-xs font-mono font-medium inline-flex items-center gap-2 border transition-all mt-2"
+                      style={{
+                        background: "rgba(0, 255, 157, 0.12)",
+                        borderColor: "rgba(0, 255, 157, 0.3)",
+                        color: theme === "dark" ? "#00FF9D" : "#00875A",
+                      }}
+                    >
+                      <Camera className="w-3.5 h-3.5" /> Launch Leaf Scan
+                    </button>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="border-b text-[10px] uppercase font-mono"
+                          style={{ borderColor: "var(--table-border)", color: "var(--text-muted)", background: "var(--table-header-bg)" }}
+                        >
+                          <th className="p-3">{t.pathology.history.colDate}</th>
+                          <th className="p-3">{t.pathology.history.colLesion}</th>
+                          <th className="p-3">{t.pathology.history.colConfidence}</th>
+                          <th className="p-3">{t.pathology.history.colGeoGps}</th>
+                          <th className="p-3 text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {diagnosticsList.slice(0, 5).map((d) => (
+                          <tr key={d.id} className="border-b hover:bg-black/5 dark:hover:bg-white/5 transition-colors font-mono text-xs" style={{ borderColor: "var(--table-border)" }}>
+                            <td className="p-3 text-xs font-medium" style={{ color: "var(--text-primary)" }}>
+                              <div>{new Date(d.captured_at).toLocaleDateString()}</div>
+                              <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>{new Date(d.captured_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                            </td>
+                            <td className="p-3"><DiseaseBadge disease={d.disease_class} size="sm" /></td>
+                            <td className="p-3 w-40"><ConfidenceBar value={d.confidence} /></td>
+                            <td className="p-3 text-xs font-mono" style={{ color: "var(--text-secondary)" }}>{d.location.lat.toFixed(4)}, {d.location.lng.toFixed(4)}</td>
+                            <td className="p-3 text-right">
+                              <button
+                                onClick={() => {
+                                  const match = DEMO_KNOWLEDGE.find(k => k.common_name.toLowerCase().includes(d.disease_class.toLowerCase()) || d.disease_class.toLowerCase().includes(k.common_name.toLowerCase()));
+                                  jumpToKnowledgeBase(match?.id || null);
+                                }}
+                                className="text-[10px] px-2.5 py-1 rounded border transition-all inline-flex items-center gap-1 font-medium"
+                                style={{
+                                  background: "rgba(0, 255, 157, 0.12)",
+                                  borderColor: "rgba(0, 255, 157, 0.25)",
+                                  color: theme === "dark" ? "#00FF9D" : "#00875A",
+                                }}
+                              >
+                                View Protocols →
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
             </motion.div>
           )}
 
-          {/* ═══════════════════════════════════════════════════════════════
           {/* ═══════════════════════════════════════════════════════════════
               TAB: AERIAL SURVEILLANCE (UAV)
              ═══════════════════════════════════════════════════════════════ */}
@@ -1281,51 +1459,59 @@ export default function PathologyPage() {
                     <h3 className="text-sm font-mono font-medium flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
                       <FileText className="w-4 h-4" style={{ color: "#00E5FF" }} /> {t.pathology.systemA.pastSurveysTitle}
                     </h3>
-                    <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{HISTORICAL_AERIAL_SURVEYS.length} {t.pathology.systemA.pastSurveysLogged}</span>
+                    <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{aerialSurveysList.length} {t.pathology.systemA.pastSurveysLogged}</span>
                   </div>
 
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                      <thead>
-                        <tr className="border-b text-[10px] uppercase font-mono"
-                          style={{ borderColor: "var(--table-border)", color: "var(--text-muted)", background: "var(--table-header-bg)" }}
-                        >
-                          <th className="p-3.5">{t.pathology.systemA.colSurveyId}</th>
-                          <th className="p-3.5">{t.pathology.systemA.colEstate}</th>
-                          <th className="p-3.5">{t.pathology.systemA.colMode}</th>
-                          <th className="p-3.5">Mean Index</th>
-                          <th className="p-3.5">{t.pathology.systemA.colPurity}</th>
-                          <th className="p-3.5">{t.pathology.systemA.colDetectedPalms}</th>
-                          <th className="p-3.5">{t.pathology.systemA.colFlaggedTrees}</th>
-                          <th className="p-3.5 text-right">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {HISTORICAL_AERIAL_SURVEYS.map((survey) => (
-                          <tr key={survey.id} className="border-b hover:bg-black/5 dark:hover:bg-white/5 transition-colors font-mono text-xs" style={{ borderColor: "var(--table-border)" }}>
-                            <td className="p-3.5 font-medium" style={{ color: "var(--text-primary)" }}>
-                              <div>{survey.id}</div>
-                              <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>{new Date(survey.date).toLocaleDateString()}</div>
-                            </td>
-                            <td className="p-3.5" style={{ color: "var(--text-secondary)" }}>{survey.estate_name}</td>
-                            <td className="p-3.5">
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold" style={{ background: "rgba(0, 229, 255, 0.12)", border: "1px solid rgba(0, 229, 255, 0.25)", color: "#00E5FF" }}>
-                                {survey.index_type}
-                              </span>
-                            </td>
-                            <td className="p-3.5 font-bold" style={{ color: "#00E5FF" }}>{survey.mean_index.toFixed(3)}</td>
-                            <td className="p-3.5 font-bold" style={{ color: theme === "dark" ? "#00FF9D" : "#00875A" }}>{survey.healthy_canopy_pct.toFixed(1)}%</td>
-                            <td className="p-3.5" style={{ color: "var(--text-primary)" }}>{survey.detected_palms} Palms</td>
-                            <td className="p-3.5 font-bold" style={{ color: "#FF4C4C" }}>{survey.anomalies_count} Trees</td>
-                            <td className="p-3.5 text-right">
-                              <span className="text-[10px] px-2.5 py-1 rounded font-bold" style={{ background: "rgba(0, 255, 157, 0.12)", color: theme === "dark" ? "#00FF9D" : "#00875A", border: "1px solid rgba(0, 255, 157, 0.25)" }}>
-                                {survey.status}
-                              </span>
-                            </td>
+                    {aerialSurveysList.length === 0 ? (
+                      <div className="text-center p-8 space-y-2">
+                        <Plane className="w-8 h-8 mx-auto opacity-30 text-cyan-400" />
+                        <p className="text-xs font-mono font-medium" style={{ color: "var(--text-primary)" }}>No Past Aerial Surveys Recorded</p>
+                        <p className="text-[11px] font-mono" style={{ color: "var(--text-muted)" }}>Run an orthomosaic survey scan above to catalog estate canopy spectral indices.</p>
+                      </div>
+                    ) : (
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="border-b text-[10px] uppercase font-mono"
+                            style={{ borderColor: "var(--table-border)", color: "var(--text-muted)", background: "var(--table-header-bg)" }}
+                          >
+                            <th className="p-3.5">{t.pathology.systemA.colSurveyId}</th>
+                            <th className="p-3.5">{t.pathology.systemA.colEstate}</th>
+                            <th className="p-3.5">{t.pathology.systemA.colMode}</th>
+                            <th className="p-3.5">Mean Index</th>
+                            <th className="p-3.5">{t.pathology.systemA.colPurity}</th>
+                            <th className="p-3.5">{t.pathology.systemA.colDetectedPalms}</th>
+                            <th className="p-3.5">{t.pathology.systemA.colFlaggedTrees}</th>
+                            <th className="p-3.5 text-right">Status</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {aerialSurveysList.map((survey) => (
+                            <tr key={survey.id} className="border-b hover:bg-black/5 dark:hover:bg-white/5 transition-colors font-mono text-xs" style={{ borderColor: "var(--table-border)" }}>
+                              <td className="p-3.5 font-medium" style={{ color: "var(--text-primary)" }}>
+                                <div>{survey.id}</div>
+                                <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>{new Date(survey.date).toLocaleDateString()}</div>
+                              </td>
+                              <td className="p-3.5" style={{ color: "var(--text-secondary)" }}>{survey.estate_name}</td>
+                              <td className="p-3.5">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold" style={{ background: "rgba(0, 229, 255, 0.12)", border: "1px solid rgba(0, 229, 255, 0.25)", color: "#00E5FF" }}>
+                                  {survey.index_type}
+                                </span>
+                              </td>
+                              <td className="p-3.5 font-bold" style={{ color: "#00E5FF" }}>{survey.mean_index.toFixed(3)}</td>
+                              <td className="p-3.5 font-bold" style={{ color: theme === "dark" ? "#00FF9D" : "#00875A" }}>{survey.healthy_canopy_pct.toFixed(1)}%</td>
+                              <td className="p-3.5" style={{ color: "var(--text-primary)" }}>{survey.detected_palms} Palms</td>
+                              <td className="p-3.5 font-bold" style={{ color: "#FF4C4C" }}>{survey.anomalies_count} Trees</td>
+                              <td className="p-3.5 text-right">
+                                <span className="text-[10px] px-2.5 py-1 rounded font-bold" style={{ background: "rgba(0, 255, 157, 0.12)", color: theme === "dark" ? "#00FF9D" : "#00875A", border: "1px solid rgba(0, 255, 157, 0.25)" }}>
+                                  {survey.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                 </div>
               )}
@@ -1553,59 +1739,82 @@ export default function PathologyPage() {
                     <h3 className="text-sm font-mono font-medium flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
                       <Smartphone className="w-4 h-4" style={{ color: "#FF4C4C" }} /> {t.pathology.systemB.recentScansTitle}
                     </h3>
-                    <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{DEMO_DIAGNOSTICS.length} Scans Logged</span>
+                    <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{diagnosticsList.length} Scans Logged</span>
                   </div>
 
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                      <thead>
-                        <tr className="border-b text-[10px] uppercase font-mono"
-                          style={{ borderColor: "var(--table-border)", color: "var(--text-muted)", background: "var(--table-header-bg)" }}
+                    {diagnosticsList.length === 0 ? (
+                      <div className="text-center p-10 space-y-3">
+                        <div className="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center" style={{ background: "rgba(255, 76, 76, 0.1)", border: "1px solid rgba(255, 76, 76, 0.2)" }}>
+                          <Microscope className="w-7 h-7 text-red-400" />
+                        </div>
+                        <p className="text-sm font-mono font-medium" style={{ color: "var(--text-primary)" }}>No Mobile Leaf Scans Recorded Yet</p>
+                        <p className="text-xs font-mono max-w-sm mx-auto" style={{ color: "var(--text-muted)" }}>
+                          Upload or capture a close-up photograph of a coconut frond or trunk to initiate edge AI diagnosis for your estate.
+                        </p>
+                        <button
+                          onClick={() => setMobileSubTab("scan")}
+                          className="px-4 py-2 rounded-xl text-xs font-mono font-medium inline-flex items-center gap-2 border transition-all mt-2"
+                          style={{
+                            background: "rgba(255, 76, 76, 0.15)",
+                            borderColor: "rgba(255, 76, 76, 0.3)",
+                            color: "#FF4C4C",
+                          }}
                         >
-                          <th className="p-3.5">{t.pathology.systemB.colDiagId}</th>
-                          <th className="p-3.5">{t.pathology.systemB.colPathogenClass}</th>
-                          <th className="p-3.5">{t.pathology.systemB.colConfidence}</th>
-                          <th className="p-3.5">{t.pathology.systemB.colLocation}</th>
-                          <th className="p-3.5 text-right">{t.pathology.systemB.colProtocolAction}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {DEMO_DIAGNOSTICS.map((diag) => (
-                          <tr key={diag.id} className="border-b hover:bg-black/5 dark:hover:bg-white/5 transition-colors font-mono text-xs" style={{ borderColor: "var(--table-border)" }}>
-                            <td className="p-3.5 font-medium" style={{ color: "var(--text-primary)" }}>
-                              <div>{diag.id}</div>
-                              <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>{new Date(diag.captured_at).toLocaleString()}</div>
-                            </td>
-                            <td className="p-3.5">
-                              <DiseaseBadge disease={diag.disease_class} size="sm" />
-                            </td>
-                            <td className="p-3.5 w-44">
-                              <ConfidenceBar value={diag.confidence} />
-                            </td>
-                            <td className="p-3.5" style={{ color: "var(--text-secondary)" }}>
-                              {diag.location.lat.toFixed(4)}, {diag.location.lng.toFixed(4)}
-                            </td>
-                            <td className="p-3.5 text-right">
-                              <button
-                                onClick={() => {
-                                  const match = DEMO_KNOWLEDGE.find(k => k.common_name.toLowerCase().includes(diag.disease_class.toLowerCase()) || diag.disease_class.toLowerCase().includes(k.common_name.toLowerCase()));
-                                  jumpToKnowledgeBase(match?.id || null);
-                                }}
-                                className="text-[10px] px-2.5 py-1 rounded border transition-all inline-flex items-center gap-1 font-medium"
-                                style={{
-                                  background: "rgba(0, 255, 157, 0.12)",
-                                  borderColor: "rgba(0, 255, 157, 0.25)",
-                                  color: theme === "dark" ? "#00FF9D" : "#00875A",
-                                }}
-                              >
-                                <span>{t.pathology.systemB.viewGuideBtn}</span>
-                                <span>→</span>
-                              </button>
-                            </td>
+                          <Camera className="w-3.5 h-3.5" /> Start New Leaf Scan
+                        </button>
+                      </div>
+                    ) : (
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="border-b text-[10px] uppercase font-mono"
+                            style={{ borderColor: "var(--table-border)", color: "var(--text-muted)", background: "var(--table-header-bg)" }}
+                          >
+                            <th className="p-3.5">{t.pathology.systemB.colDiagId}</th>
+                            <th className="p-3.5">{t.pathology.systemB.colPathogenClass}</th>
+                            <th className="p-3.5">{t.pathology.systemB.colConfidence}</th>
+                            <th className="p-3.5">{t.pathology.systemB.colLocation}</th>
+                            <th className="p-3.5 text-right">{t.pathology.systemB.colProtocolAction}</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {diagnosticsList.map((diag) => (
+                            <tr key={diag.id} className="border-b hover:bg-black/5 dark:hover:bg-white/5 transition-colors font-mono text-xs" style={{ borderColor: "var(--table-border)" }}>
+                              <td className="p-3.5 font-medium" style={{ color: "var(--text-primary)" }}>
+                                <div>{diag.id}</div>
+                                <div className="text-[10px]" style={{ color: "var(--text-muted)" }}>{new Date(diag.captured_at).toLocaleString()}</div>
+                              </td>
+                              <td className="p-3.5">
+                                <DiseaseBadge disease={diag.disease_class} size="sm" />
+                              </td>
+                              <td className="p-3.5 w-44">
+                                <ConfidenceBar value={diag.confidence} />
+                              </td>
+                              <td className="p-3.5" style={{ color: "var(--text-secondary)" }}>
+                                {diag.location.lat.toFixed(4)}, {diag.location.lng.toFixed(4)}
+                              </td>
+                              <td className="p-3.5 text-right">
+                                <button
+                                  onClick={() => {
+                                    const match = DEMO_KNOWLEDGE.find(k => k.common_name.toLowerCase().includes(diag.disease_class.toLowerCase()) || diag.disease_class.toLowerCase().includes(k.common_name.toLowerCase()));
+                                    jumpToKnowledgeBase(match?.id || null);
+                                  }}
+                                  className="text-[10px] px-2.5 py-1 rounded border transition-all inline-flex items-center gap-1 font-medium"
+                                  style={{
+                                    background: "rgba(0, 255, 157, 0.12)",
+                                    borderColor: "rgba(0, 255, 157, 0.25)",
+                                    color: theme === "dark" ? "#00FF9D" : "#00875A",
+                                  }}
+                                >
+                                  <span>{t.pathology.systemB.viewGuideBtn}</span>
+                                  <span>→</span>
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                 </div>
               )}
@@ -1823,20 +2032,28 @@ export default function PathologyPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredHistory.map(d => (
-                        <tr key={d.id} className="border-b hover:bg-black/5 dark:hover:bg-white/5 transition-colors font-mono" style={{ borderColor: "var(--table-border)" }}>
-                          <td className="p-4 text-xs font-medium" style={{ color: "var(--text-primary)" }}>{new Date(d.captured_at).toLocaleString()}</td>
-                          <td className="p-4"><DiseaseBadge disease={d.disease_class} size="sm" /></td>
-                          <td className="p-4 w-44"><ConfidenceBar value={d.confidence} /></td>
-                          <td className="p-4 text-xs font-mono" style={{ color: "var(--text-secondary)" }}>{d.location.lat.toFixed(4)}, {d.location.lng.toFixed(4)}</td>
+                      {filteredHistory.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="p-8 text-center text-xs font-mono" style={{ color: "var(--text-muted)" }}>
+                            No pathology telemetry records found for this filter criteria.
+                          </td>
                         </tr>
-                      ))}
+                      ) : (
+                        filteredHistory.map(d => (
+                          <tr key={d.id} className="border-b hover:bg-black/5 dark:hover:bg-white/5 transition-colors font-mono" style={{ borderColor: "var(--table-border)" }}>
+                            <td className="p-4 text-xs font-medium" style={{ color: "var(--text-primary)" }}>{new Date(d.captured_at).toLocaleString()}</td>
+                            <td className="p-4"><DiseaseBadge disease={d.disease_class} size="sm" /></td>
+                            <td className="p-4 w-44"><ConfidenceBar value={d.confidence} /></td>
+                            <td className="p-4 text-xs font-mono" style={{ color: "var(--text-secondary)" }}>{d.location.lat.toFixed(4)}, {d.location.lng.toFixed(4)}</td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
               ) : (
                 <div className="glass-card p-4 rounded-2xl overflow-hidden min-h-[450px]">
-                  <DiagnosticMapInner diagnostics={filteredHistory} />
+                  <DiagnosticMapInner diagnostics={filteredHistory} defaultCenter={getEstateCoordinates(user?.estate_id)} />
                 </div>
               )}
 

@@ -35,7 +35,13 @@ function ChangeView({ center }: { center: [number, number] }) {
   return null;
 }
 
-export default function DiagnosticMapInner({ diagnostics }: { diagnostics: any[] }) {
+export default function DiagnosticMapInner({ 
+  diagnostics,
+  defaultCenter = { lat: 7.3275, lng: 79.9880 }
+}: { 
+  diagnostics: any[];
+  defaultCenter?: { lat: number; lng: number };
+}) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -43,7 +49,7 @@ export default function DiagnosticMapInner({ diagnostics }: { diagnostics: any[]
 
   const center: [number, number] = diagnostics.length > 0 
     ? [diagnostics[0].location.lat, diagnostics[0].location.lng] 
-    : [7.2906, 80.6337];
+    : [defaultCenter.lat, defaultCenter.lng];
 
   return (
     <div className="w-full h-[400px] rounded-xl overflow-hidden border border-white/5 relative z-0">
