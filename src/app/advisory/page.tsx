@@ -420,131 +420,144 @@ export default function AdvisoryPage() {
   return (
     <main className="h-screen overflow-hidden flex flex-col relative" style={{ background: "var(--background)", color: "var(--text-primary)" }}>
       <Navbar />
-      <div className="absolute inset-0 telemetry-grid opacity-10 pointer-events-none" />
+      
+      {/* Unified SaruPol Background Ambience matching Pathology */}
+      <div className="absolute inset-0 telemetry-grid pointer-events-none opacity-20" />
+      <div className="absolute top-20 right-10 w-96 h-96 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(230, 175, 46, 0.05)" }} />
+      <div className="absolute top-80 left-10 w-96 h-96 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(0, 255, 157, 0.04)" }} />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-20 pb-4 relative z-10 flex-1 flex flex-col w-full min-h-0">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-24 pb-4 relative z-10 flex-1 flex flex-col w-full min-h-0">
         
-        {/* Header Bar & Control Panel */}
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="mb-3 flex-shrink-0">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            
-            {/* Title & Engine Mode Description */}
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-2xl flex items-center justify-center shadow-md" style={{ background: "rgba(230,175,46,0.15)", color: "#E6AF2E" }}>
-                <MessageCircle className="w-6 h-6" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl sm:text-2xl font-bold" style={{ fontFamily: "var(--font-outfit)", color: "var(--text-primary)" }}>
-                    {t.advisory.title}
-                  </h1>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border font-bold uppercase"
-                    style={{
-                      background: chatMode === "multi" ? "rgba(230,175,46,0.15)" : "rgba(0,255,157,0.15)",
-                      color: chatMode === "multi" ? (theme === "dark" ? "#E6AF2E" : "#B45309") : (theme === "dark" ? "#00FF9D" : "#00875A"),
-                      borderColor: chatMode === "multi" ? "rgba(230,175,46,0.3)" : "rgba(0,255,157,0.3)",
-                    }}
-                  >
-                    {chatMode === "multi" ? "3-LLM Consensus" : "Standard RAG"}
-                  </span>
-                </div>
-                <p className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
-                  {chatMode === "multi" ? t.advisory.multiDesc : t.advisory.standardDesc}
-                </p>
-              </div>
+        {/* Header Title Area — matching Pathology */}
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4 flex-shrink-0" style={{ borderColor: "var(--card-border)" }}>
+          <div className="flex items-center gap-4">
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center border flex-shrink-0 shadow-md"
+              style={{
+                background: "linear-gradient(135deg, rgba(230,175,46,0.18), rgba(230,175,46,0.06))",
+                borderColor: "rgba(230,175,46,0.3)",
+              }}
+            >
+              <MessageCircle className="w-6 h-6" style={{ color: "#E6AF2E" }} />
             </div>
-
-            {/* Right Controls: Engine Toggle, Context Pill, History Drawer & Language */}
-            <div className="flex flex-wrap items-center gap-2">
-              
-              {/* Dual Mode Switcher */}
-              <div className="flex items-center p-1 rounded-xl border smooth-transition" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
-                <button
-                  onClick={() => setChatMode("standard")}
-                  className="px-3 py-1 rounded-lg text-xs font-mono font-medium smooth-transition"
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl sm:text-2xl font-normal tracking-tight" style={{ fontFamily: "var(--font-outfit)", color: "var(--text-primary)" }}>
+                  {t.advisory.title}
+                </h1>
+                <span
+                  className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase font-bold"
                   style={{
-                    background: chatMode === "standard" ? "rgba(0,255,157,0.15)" : "transparent",
-                    color: chatMode === "standard" ? (theme === "dark" ? "#00FF9D" : "#00875A") : "var(--text-secondary)",
-                    fontWeight: chatMode === "standard" ? "700" : "400",
+                    background: "rgba(230,175,46,0.12)",
+                    border: "1px solid rgba(230,175,46,0.3)",
+                    color: theme === "dark" ? "#E6AF2E" : "#B45309",
                   }}
                 >
-                  {t.advisory.standardMode}
-                </button>
-                <button
-                  onClick={() => setChatMode("multi")}
-                  className="px-3 py-1 rounded-lg text-xs font-mono font-medium smooth-transition flex items-center gap-1.5"
-                  style={{
-                    background: chatMode === "multi" ? "rgba(230,175,46,0.2)" : "transparent",
-                    color: chatMode === "multi" ? (theme === "dark" ? "#E6AF2E" : "#B45309") : "var(--text-secondary)",
-                    fontWeight: chatMode === "multi" ? "700" : "400",
-                  }}
-                >
-                  <Cpu className="w-3.5 h-3.5 text-amber-500" />
-                  <span>{t.advisory.multiLlmMode}</span>
-                </button>
+                  CRI Consensus AI
+                </span>
               </div>
-
-              {/* Agro-Climatic Context Pill */}
-              <AgroContextPanel
-                zone={zone}
-                season={season}
-                isAutoGps={isAutoGps}
-                onZoneChange={setZone}
-                onSeasonChange={setSeason}
-                onToggleAutoGps={setIsAutoGps}
-              />
-
-              {/* Chat History Button */}
-              <button
-                onClick={() => setIsHistoryOpen(true)}
-                className="p-2 rounded-xl border smooth-transition hover:opacity-80"
-                style={{ background: "var(--card-bg)", borderColor: "var(--card-border)", color: "var(--text-primary)" }}
-                title={t.advisory.chatHistory}
-              >
-                <History className="w-4 h-4 text-amber-500" />
-              </button>
-
-              {/* Language Switcher */}
-              <div className="flex items-center gap-1 p-1 rounded-xl border smooth-transition" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
-                {SUPPORTED_LANGUAGES.map((lang) => (
-                  <button
-                    key={lang.code}
-                    onClick={() => handleLanguageChange(lang.code as Language)}
-                    className="px-2.5 py-1 rounded-lg text-xs font-mono smooth-transition"
-                    style={{
-                      background: language === lang.code ? "rgba(230,175,46,0.25)" : "transparent",
-                      color: language === lang.code ? (theme === "dark" ? "#E6AF2E" : "#B45309") : "var(--text-secondary)",
-                      fontWeight: language === lang.code ? "700" : "400",
-                    }}
-                  >
-                    {lang.nativeLabel}
-                  </button>
-                ))}
-              </div>
-
+              <p className="text-xs font-mono tracking-wide mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                {t.advisory.subtitle}
+              </p>
             </div>
           </div>
-        </motion.div>
+
+          {/* Right Header Action Pills: Agro-Climatic Context & Consultation History */}
+          <div className="flex items-center gap-2.5 self-start sm:self-auto">
+            <AgroContextPanel
+              zone={zone}
+              season={season}
+              isAutoGps={isAutoGps}
+              onZoneChange={setZone}
+              onSeasonChange={setSeason}
+              onToggleAutoGps={setIsAutoGps}
+            />
+
+            <button
+              onClick={() => setIsHistoryOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono smooth-transition hover:opacity-80 shadow-sm"
+              style={{
+                background: "var(--card-bg)",
+                borderColor: "var(--card-border)",
+                color: "var(--text-primary)",
+              }}
+              title={t.advisory.chatHistory}
+            >
+              <History className="w-3.5 h-3.5 text-amber-500" />
+              <span className="hidden sm:inline font-medium">{t.advisory.chatHistory}</span>
+              {sessions.length > 0 && (
+                <span
+                  className="px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold"
+                  style={{ background: "rgba(230,175,46,0.2)", color: "#E6AF2E" }}
+                >
+                  {sessions.length}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Full-Width Segmented Mode Navigation Bar — matching Pathology Tab Bar */}
+        <div
+          className="mb-4 p-1.5 rounded-2xl border backdrop-blur-xl grid grid-cols-2 gap-2 shadow-lg smooth-transition flex-shrink-0"
+          style={{
+            background: "var(--card-bg)",
+            borderColor: "var(--card-border)",
+          }}
+        >
+          <button
+            onClick={() => setChatMode("standard")}
+            className="flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl text-xs font-mono transition-all text-center"
+            style={{
+              background: chatMode === "standard" ? (theme === "dark" ? "rgba(0, 255, 157, 0.12)" : "rgba(0, 168, 107, 0.12)") : "transparent",
+              color: chatMode === "standard" ? (theme === "dark" ? "#00FF9D" : "#00875A") : "var(--text-secondary)",
+              border: chatMode === "standard" ? "1px solid var(--card-hover-border)" : "1px solid transparent",
+              boxShadow: chatMode === "standard" ? "var(--card-shadow)" : "none",
+            }}
+          >
+            <Sparkles className="w-4 h-4 flex-shrink-0" style={{ color: chatMode === "standard" ? "#00FF9D" : "inherit" }} />
+            <div className="text-left">
+              <span className="font-bold block">{t.advisory.standardMode}</span>
+              <span className="text-[10px] opacity-75 hidden sm:inline">{t.advisory.standardDesc}</span>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setChatMode("multi")}
+            className="flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl text-xs font-mono transition-all text-center"
+            style={{
+              background: chatMode === "multi" ? (theme === "dark" ? "rgba(230, 175, 46, 0.15)" : "rgba(230, 175, 46, 0.18)") : "transparent",
+              color: chatMode === "multi" ? (theme === "dark" ? "#E6AF2E" : "#B45309") : "var(--text-secondary)",
+              border: chatMode === "multi" ? "1px solid var(--card-hover-border)" : "1px solid transparent",
+              boxShadow: chatMode === "multi" ? "var(--card-shadow)" : "none",
+            }}
+          >
+            <Cpu className="w-4 h-4 flex-shrink-0" style={{ color: chatMode === "multi" ? "#E6AF2E" : "inherit" }} />
+            <div className="text-left">
+              <span className="font-bold block">{t.advisory.multiLlmMode}</span>
+              <span className="text-[10px] opacity-75 hidden sm:inline">{t.advisory.multiDesc}</span>
+            </div>
+          </button>
+        </div>
 
         {/* Chat Feed */}
-        <div
-          className="flex-1 overflow-y-auto space-y-4 mb-3 pr-1 sm:pr-2 min-h-0"
-        >
+        <div className="flex-1 overflow-y-auto space-y-4 mb-3 pr-1 sm:pr-2 min-h-0">
           {messages.length === 0 ? (
-            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center justify-center py-10 sm:py-16 text-center">
-              <div className="w-16 h-16 rounded-3xl flex items-center justify-center mb-4 shadow-xl"
+            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center justify-center py-8 sm:py-14 text-center">
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3 shadow-xl"
                 style={{
                   background: "linear-gradient(135deg, rgba(230,175,46,0.25), rgba(0,255,157,0.25))",
                   border: "1px solid rgba(230,175,46,0.4)",
                 }}
               >
-                <Sparkles className="w-8 h-8 text-amber-400" />
+                <Sparkles className="w-7 h-7 text-amber-400" />
               </div>
-              <h2 className="text-lg sm:text-xl font-mono font-bold mb-1" style={{ color: "var(--text-primary)" }}>
-                {t.advisory.title}
+              <h2 className="text-base sm:text-lg font-mono font-bold mb-1" style={{ color: "var(--text-primary)" }}>
+                CRI Diagnostic & Agronomic Consultation
               </h2>
-              <p className="text-xs sm:text-sm max-w-lg mb-8 font-mono leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                {t.advisory.subtitle}
+              <p className="text-xs max-w-lg mb-6 font-mono leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                Select a recommended inquiry below or speak directly to receive agronomist consensus recommendations.
               </p>
 
               {/* Starter Question Pills */}
