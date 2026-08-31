@@ -62,7 +62,7 @@ export async function processDroneImage(file: File): Promise<ProcessedDroneImage
 }
 
 /**
- * High-performance TIFF decoder using UTIF.js
+ * High-performance 16-bit / 8-bit TIFF decoder with automatic radiometric stretch
  */
 async function processTiffFile(file: File): Promise<ProcessedDroneImage> {
   const arrayBuffer = await file.arrayBuffer();
@@ -76,7 +76,46 @@ async function processTiffFile(file: File): Promise<ProcessedDroneImage> {
   const ifd = ifds[0];
   const originalWidth = ifd.width;
   const originalHeight = ifd.height;
-  const rgbaUint8 = UTIF.toRGBA8(ifd);
+
+  let rgbaUint8: Uint8Array;
+  const is16Bit = ifd.t258 && (ifd.t258[0] === 16 || ifd.t258 === 16);
+
+  if (is16Bit && ifd.data) {
+    // 16-bit DJI Multispectral raster: extract 16-bit integers and stretch to 0..255
+    const u16 = new Uint16Array(ifd.data.buffer, ifd.data.byteOffset, ifd.data.byteLength / 2);
+    let minV = 65535;
+    let maxV = 0;
+    for (let i = 0; i < u16.length; i++) {
+      const v = u16[i];
+      if (v < minV) minV = v;
+      if (v > maxV) maxV = v;
+    }
+    const range = Math.max(1, maxV - minV);
+    rgbaUint8 = new Uint8Array(originalWidth * originalHeight * 4);
+    for (let i = 0; i < u16.length; i++) {
+      const normalized = Math.round(((u16[i] - minV) / range) * 255);
+      const p = i * 4;
+      rgbaUint8[p] = normalized;
+      rgbaUint8[p + 1] = normalized;
+      rgbaUint8[p + 2] = normalized;
+      rgbaUint8[p + 3] = 255;
+    }
+  } else {
+    rgbaUint8 = UTIF.toRGBA8(ifd);
+    // Check if the image is dark (e.g. max value < 60) and auto-stretch
+    let maxVal = 0;
+    for (let i = 0; i < rgbaUint8.length; i += 4) {
+      if (rgbaUint8[i] > maxVal) maxVal = rgbaUint8[i];
+    }
+    if (maxVal > 0 && maxVal < 60) {
+      const scale = 255 / maxVal;
+      for (let i = 0; i < rgbaUint8.length; i += 4) {
+        rgbaUint8[i] = Math.min(255, Math.round(rgbaUint8[i] * scale));
+        rgbaUint8[i + 1] = Math.min(255, Math.round(rgbaUint8[i + 1] * scale));
+        rgbaUint8[i + 2] = Math.min(255, Math.round(rgbaUint8[i + 2] * scale));
+      }
+    }
+  }
 
   // Calculate scaled dimensions (max 1200px)
   let scaledWidth = originalWidth;
@@ -192,8 +231,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 
 /**
  * High-Precision Multi-Scale Spectral Engine
- * Computes exact VARI or NDVI from RGB + optional companion NIR raster.
- * Applies the canonical RdYlGn (Red-Yellow-Green) colormap with discrete physical palm crown Z-score clustering.
+ * Computes exact VARI or NDVI with 16-bit radiometric equalization and discrete physical palm crown Z-score clustering.
  */
 export async function computeInstantSpectralPreview(
   rgbImageSource: string,
@@ -247,6 +285,33 @@ export async function computeInstantSpectralPreview(
   let moderateCount = 0;
   let severeCount = 0;
 
+  // Calculate global radiometric scale between NIR and Red if NIR band is present
+  let nirScaleFactor = 1.0;
+  if (nirData) {
+    let nirSum = 0;
+    let redSum = 0;
+    let sampleCount = 0;
+    for (let i = 0; i < numPixels; i += 8) {
+      const idx = i * 4;
+      const r = rgbData[idx];
+      const g = rgbData[idx + 1];
+      const b = rgbData[idx + 2];
+      const isGreen = (g > r && g > b);
+      if (isGreen) {
+        nirSum += (nirData[idx] * 0.299 + nirData[idx + 1] * 0.587 + nirData[idx + 2] * 0.114);
+        redSum += r;
+        sampleCount++;
+      }
+    }
+    if (sampleCount > 0 && nirSum > 0) {
+      // In healthy vegetation, true NIR reflectance is ~2.0 to 3.0x Red reflectance
+      const observedRatio = (nirSum / sampleCount) / Math.max(1, redSum / sampleCount);
+      if (observedRatio < 1.4) {
+        nirScaleFactor = 2.2 / Math.max(0.1, observedRatio);
+      }
+    }
+  }
+
   // 1. Strategy A: Canonical Excess-Green Canopy Masking & Spectral Math
   for (let i = 0; i < numPixels; i++) {
     const idx = i * 4;
@@ -259,7 +324,7 @@ export async function computeInstantSpectralPreview(
     const gcc = g / rgbSum;
 
     // Canonical physical coconut canopy filter
-    const isCanopy = (gcc >= 0.32) && (normExG >= 0.035) && (g > 24) && (r < 240);
+    const isCanopy = (gcc >= 0.32) && (normExG >= 0.02) && (g > 20) && (r < 240);
     canopyMask[i] = isCanopy ? 1 : 0;
 
     let rawIdx = 0;
@@ -267,8 +332,8 @@ export async function computeInstantSpectralPreview(
     if (isNdvi) {
       let nirVal = 0;
       if (nirData) {
-        // Real NIR Band: Grayscale luminance = 0.299R + 0.587G + 0.114B
-        nirVal = (nirData[idx] * 0.299 + nirData[idx + 1] * 0.587 + nirData[idx + 2] * 0.114);
+        const rawNir = (nirData[idx] * 0.299 + nirData[idx + 1] * 0.587 + nirData[idx + 2] * 0.114);
+        nirVal = Math.min(255, rawNir * nirScaleFactor);
       } else {
         // Physical Chlorophyll Scattering Model (matches Python backend line 382)
         nirVal = Math.min(255, Math.max(0, 2.0 * g - 0.5 * r));
@@ -279,12 +344,12 @@ export async function computeInstantSpectralPreview(
       rawIdx = (nirVal - r) / denom;
       rawIdx = Math.max(-1.0, Math.min(1.0, rawIdx));
 
-      // Normalize index to 0.0 - 1.0 based on physiological range (0.25 to 0.80)
-      normIndexArray[i] = Math.max(0.0, Math.min(1.0, (rawIdx - 0.25) / (0.80 - 0.25 + 0.001)));
+      // Normalize index to 0.0 - 1.0 based on physiological range (0.15 to 0.75)
+      normIndexArray[i] = Math.max(0.0, Math.min(1.0, (rawIdx - 0.15) / (0.75 - 0.15 + 0.001)));
 
       if (isCanopy) {
-        if (rawIdx >= 0.45) healthyCount++;
-        else if (rawIdx >= 0.35) moderateCount++;
+        if (rawIdx >= 0.35) healthyCount++;
+        else if (rawIdx >= 0.18) moderateCount++;
         else severeCount++;
       }
     } else {
@@ -382,7 +447,7 @@ export async function computeInstantSpectralPreview(
         }
       }
 
-      if (crownPixels >= (r * r * 0.8)) {
+      if (crownPixels >= (r * r * 0.7)) {
         palmCandidates.push({
           x,
           y,
@@ -427,8 +492,8 @@ export async function computeInstantSpectralPreview(
     const zScore = (palm.meanVal - localMean) / Math.max(localStd, 0.03);
     const relDrop = Math.max(0, ((localMean - palm.meanVal) / (Math.abs(localMean) + 0.001)) * 100);
 
-    const healthyCutoff = isNdvi ? 0.45 : 0.04;
-    const severeCutoff = isNdvi ? 0.32 : 0.00;
+    const healthyCutoff = isNdvi ? 0.35 : 0.04;
+    const severeCutoff = isNdvi ? 0.20 : 0.00;
 
     const isAnomaly = (zScore <= -1.4 && palm.meanVal < healthyCutoff) || (palm.meanVal < severeCutoff);
 
@@ -445,9 +510,9 @@ export async function computeInstantSpectralPreview(
     }
   }
 
-  // Sort worst Z-Scores first and take top 4 to 8 acute anomalies
+  // Sort worst Z-Scores first and take top 4 to 8 acute anomalies (matching VARI cleanly)
   hotspotCandidates.sort((a, b) => a.zScore - b.zScore);
-  const topHotspots = hotspotCandidates.slice(0, 6);
+  const topHotspots = hotspotCandidates.slice(0, 8);
 
   const spanLat = 0.006;
   const spanLng = 0.006;
