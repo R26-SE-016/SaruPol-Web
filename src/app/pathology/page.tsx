@@ -13,7 +13,7 @@ import {
   ClipboardList, ShieldCheck, Camera, Sparkles, Map, RefreshCw,
   BookOpen, Search, Layers, Radio, Send, ChevronRight,
   Sliders, Info, Compass, ArrowRight, FileText, CheckCircle,
-  Lock, ShieldAlert
+  Lock, ShieldAlert, Trash2
 } from "lucide-react";
 import StatCard from "@/components/pathology/StatCard";
 import DiseaseChart from "@/components/pathology/DiseaseChart";
@@ -30,8 +30,12 @@ import { useAuth } from "@/lib/auth/AuthContext";
 import { 
   getUserDiagnostics, 
   saveUserDiagnostic, 
+  deleteUserDiagnostic,
+  clearAllUserDiagnostics,
   getUserAerialSurveys, 
   saveUserAerialSurvey, 
+  deleteUserAerialSurvey,
+  clearAllUserAerialSurveys,
   getEstateCoordinates, 
   UserDiagnosticRecord, 
   UserAerialSurveyRecord 
@@ -69,6 +73,35 @@ export default function PathologyPage() {
       setAerialSurveysList([]);
     }
   }, [user]);
+
+  // Telemetry Deletion Handlers
+  const handleDeleteDiagnostic = (id: string) => {
+    if (typeof window !== "undefined") {
+      const updated = deleteUserDiagnostic(id, user?.id, user?.email);
+      setDiagnosticsList(updated);
+    }
+  };
+
+  const handleClearAllDiagnostics = () => {
+    if (typeof window !== "undefined" && window.confirm("Are you sure you want to delete all leaf diagnostic records?")) {
+      const updated = clearAllUserDiagnostics(user?.id);
+      setDiagnosticsList(updated);
+    }
+  };
+
+  const handleDeleteAerialSurvey = (id: string) => {
+    if (typeof window !== "undefined") {
+      const updated = deleteUserAerialSurvey(id, user?.id, user?.email);
+      setAerialSurveysList(updated);
+    }
+  };
+
+  const handleClearAllAerialSurveys = () => {
+    if (typeof window !== "undefined" && window.confirm("Are you sure you want to delete all past aerial surveys?")) {
+      const updated = clearAllUserAerialSurveys(user?.id);
+      setAerialSurveysList(updated);
+    }
+  };
   
   // Initialize Edge Model
   useEffect(() => {
@@ -766,20 +799,29 @@ export default function PathologyPage() {
                             <td className="p-3 w-40"><ConfidenceBar value={d.confidence} /></td>
                             <td className="p-3 text-xs font-mono" style={{ color: "var(--text-secondary)" }}>{d.location.lat.toFixed(4)}, {d.location.lng.toFixed(4)}</td>
                             <td className="p-3 text-right">
-                              <button
-                                onClick={() => {
-                                  const match = DEMO_KNOWLEDGE.find(k => k.common_name.toLowerCase().includes(d.disease_class.toLowerCase()) || d.disease_class.toLowerCase().includes(k.common_name.toLowerCase()));
-                                  jumpToKnowledgeBase(match?.id || null);
-                                }}
-                                className="text-[10px] px-2.5 py-1 rounded border transition-all inline-flex items-center gap-1 font-medium"
-                                style={{
-                                  background: "rgba(0, 255, 157, 0.12)",
-                                  borderColor: "rgba(0, 255, 157, 0.25)",
-                                  color: theme === "dark" ? "#00FF9D" : "#00875A",
-                                }}
-                              >
-                                View Protocols →
-                              </button>
+                              <div className="flex items-center justify-end gap-2">
+                                <button
+                                  onClick={() => {
+                                    const match = DEMO_KNOWLEDGE.find(k => k.common_name.toLowerCase().includes(d.disease_class.toLowerCase()) || d.disease_class.toLowerCase().includes(k.common_name.toLowerCase()));
+                                    jumpToKnowledgeBase(match?.id || null);
+                                  }}
+                                  className="text-[10px] px-2.5 py-1 rounded border transition-all inline-flex items-center gap-1 font-medium"
+                                  style={{
+                                    background: "rgba(0, 255, 157, 0.12)",
+                                    borderColor: "rgba(0, 255, 157, 0.25)",
+                                    color: theme === "dark" ? "#00FF9D" : "#00875A",
+                                  }}
+                                >
+                                  View Protocols →
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteDiagnostic(d.id)}
+                                  className="p-1.5 rounded hover:bg-red-500/15 text-red-400 hover:text-red-300 transition-colors"
+                                  title="Delete diagnostic record"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -1361,7 +1403,18 @@ export default function PathologyPage() {
                     <h3 className="text-sm font-mono font-medium flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
                       <FileText className="w-4 h-4" style={{ color: "#00E5FF" }} /> {t.pathology.systemA.pastSurveysTitle}
                     </h3>
-                    <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{aerialSurveysList.length} {t.pathology.systemA.pastSurveysLogged}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{aerialSurveysList.length} {t.pathology.systemA.pastSurveysLogged}</span>
+                      {aerialSurveysList.length > 0 && (
+                        <button
+                          onClick={handleClearAllAerialSurveys}
+                          className="text-[10px] font-mono px-2.5 py-1 rounded border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all flex items-center gap-1"
+                          title="Delete all past aerial survey records"
+                        >
+                          <Trash2 className="w-3 h-3" /> Clear All
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="overflow-x-auto">
@@ -1384,7 +1437,8 @@ export default function PathologyPage() {
                             <th className="p-3.5">{t.pathology.systemA.colPurity}</th>
                             <th className="p-3.5">{t.pathology.systemA.colDetectedPalms}</th>
                             <th className="p-3.5">{t.pathology.systemA.colFlaggedTrees}</th>
-                            <th className="p-3.5 text-right">Status</th>
+                            <th className="p-3.5">Status</th>
+                            <th className="p-3.5 text-right">Action</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1404,10 +1458,19 @@ export default function PathologyPage() {
                               <td className="p-3.5 font-bold" style={{ color: theme === "dark" ? "#00FF9D" : "#00875A" }}>{survey.healthy_canopy_pct.toFixed(1)}%</td>
                               <td className="p-3.5" style={{ color: "var(--text-primary)" }}>{survey.detected_palms} Palms</td>
                               <td className="p-3.5 font-bold" style={{ color: "#FF4C4C" }}>{survey.anomalies_count} Trees</td>
-                              <td className="p-3.5 text-right">
+                              <td className="p-3.5">
                                 <span className="text-[10px] px-2.5 py-1 rounded font-bold" style={{ background: "rgba(0, 255, 157, 0.12)", color: theme === "dark" ? "#00FF9D" : "#00875A", border: "1px solid rgba(0, 255, 157, 0.25)" }}>
                                   {survey.status}
                                 </span>
+                              </td>
+                              <td className="p-3.5 text-right">
+                                <button
+                                  onClick={() => handleDeleteAerialSurvey(survey.id)}
+                                  className="p-1.5 rounded hover:bg-red-500/15 text-red-400 hover:text-red-300 transition-colors"
+                                  title="Delete survey record"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
                               </td>
                             </tr>
                           ))}
@@ -1641,7 +1704,18 @@ export default function PathologyPage() {
                     <h3 className="text-sm font-mono font-medium flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
                       <Smartphone className="w-4 h-4" style={{ color: "#FF4C4C" }} /> {t.pathology.systemB.recentScansTitle}
                     </h3>
-                    <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{diagnosticsList.length} Scans Logged</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{diagnosticsList.length} Scans Logged</span>
+                      {diagnosticsList.length > 0 && (
+                        <button
+                          onClick={handleClearAllDiagnostics}
+                          className="text-[10px] font-mono px-2.5 py-1 rounded border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all flex items-center gap-1"
+                          title="Delete all leaf diagnostic records"
+                        >
+                          <Trash2 className="w-3 h-3" /> Clear All
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="overflow-x-auto">
@@ -1676,7 +1750,7 @@ export default function PathologyPage() {
                             <th className="p-3.5">{t.pathology.systemB.colPathogenClass}</th>
                             <th className="p-3.5">{t.pathology.systemB.colConfidence}</th>
                             <th className="p-3.5">{t.pathology.systemB.colLocation}</th>
-                            <th className="p-3.5 text-right">{t.pathology.systemB.colProtocolAction}</th>
+                            <th className="p-3.5 text-right">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1696,21 +1770,30 @@ export default function PathologyPage() {
                                 {diag.location.lat.toFixed(4)}, {diag.location.lng.toFixed(4)}
                               </td>
                               <td className="p-3.5 text-right">
-                                <button
-                                  onClick={() => {
-                                    const match = DEMO_KNOWLEDGE.find(k => k.common_name.toLowerCase().includes(diag.disease_class.toLowerCase()) || diag.disease_class.toLowerCase().includes(k.common_name.toLowerCase()));
-                                    jumpToKnowledgeBase(match?.id || null);
-                                  }}
-                                  className="text-[10px] px-2.5 py-1 rounded border transition-all inline-flex items-center gap-1 font-medium"
-                                  style={{
-                                    background: "rgba(0, 255, 157, 0.12)",
-                                    borderColor: "rgba(0, 255, 157, 0.25)",
-                                    color: theme === "dark" ? "#00FF9D" : "#00875A",
-                                  }}
-                                >
-                                  <span>{t.pathology.systemB.viewGuideBtn}</span>
-                                  <span>→</span>
-                                </button>
+                                <div className="flex items-center justify-end gap-2">
+                                  <button
+                                    onClick={() => {
+                                      const match = DEMO_KNOWLEDGE.find(k => k.common_name.toLowerCase().includes(diag.disease_class.toLowerCase()) || diag.disease_class.toLowerCase().includes(k.common_name.toLowerCase()));
+                                      jumpToKnowledgeBase(match?.id || null);
+                                    }}
+                                    className="text-[10px] px-2.5 py-1 rounded border transition-all inline-flex items-center gap-1 font-medium"
+                                    style={{
+                                      background: "rgba(0, 255, 157, 0.12)",
+                                      borderColor: "rgba(0, 255, 157, 0.25)",
+                                      color: theme === "dark" ? "#00FF9D" : "#00875A",
+                                    }}
+                                  >
+                                    <span>{t.pathology.systemB.viewGuideBtn}</span>
+                                    <span>→</span>
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteDiagnostic(diag.id)}
+                                    className="p-1.5 rounded hover:bg-red-500/15 text-red-400 hover:text-red-300 transition-colors"
+                                    title="Delete diagnostic record"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -1931,12 +2014,13 @@ export default function PathologyPage() {
                         <th className="p-4">{t.pathology.history.colLesion}</th>
                         <th className="p-4">{t.pathology.history.colConfidence}</th>
                         <th className="p-4">{t.pathology.history.colGeoGps}</th>
+                        <th className="p-4 text-right">Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredHistory.length === 0 ? (
                         <tr>
-                          <td colSpan={4} className="p-8 text-center text-xs font-mono" style={{ color: "var(--text-muted)" }}>
+                          <td colSpan={5} className="p-8 text-center text-xs font-mono" style={{ color: "var(--text-muted)" }}>
                             No pathology telemetry records found for this filter criteria.
                           </td>
                         </tr>
@@ -1947,6 +2031,15 @@ export default function PathologyPage() {
                             <td className="p-4"><DiseaseBadge disease={d.disease_class} size="sm" /></td>
                             <td className="p-4 w-44"><ConfidenceBar value={d.confidence} /></td>
                             <td className="p-4 text-xs font-mono" style={{ color: "var(--text-secondary)" }}>{d.location.lat.toFixed(4)}, {d.location.lng.toFixed(4)}</td>
+                            <td className="p-4 text-right">
+                              <button
+                                onClick={() => handleDeleteDiagnostic(d.id)}
+                                className="p-1.5 rounded hover:bg-red-500/15 text-red-400 hover:text-red-300 transition-colors"
+                                title="Delete diagnostic record"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
                           </tr>
                         ))
                       )}

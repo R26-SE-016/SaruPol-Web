@@ -277,3 +277,80 @@ export function saveUserAerialSurvey(record: UserAerialSurveyRecord): UserAerial
     return [];
   }
 }
+
+/**
+ * Delete an individual leaf diagnostic record.
+ */
+export function deleteUserDiagnostic(id: string, userId?: string | number, userEmail?: string): UserDiagnosticRecord[] {
+  if (typeof window === "undefined") return [];
+
+  const effectiveId = String(userId || "guest");
+  const storageKey = `sarupol_user_diagnostics_${effectiveId}`;
+
+  try {
+    const current = getUserDiagnostics(userId, userEmail);
+    const updated = current.filter((item) => item.id !== id);
+    localStorage.setItem(storageKey, JSON.stringify(updated));
+    return updated;
+  } catch (e) {
+    console.warn("Failed to delete user diagnostic:", e);
+    return [];
+  }
+}
+
+/**
+ * Clear all diagnostic records for the user.
+ */
+export function clearAllUserDiagnostics(userId?: string | number): UserDiagnosticRecord[] {
+  if (typeof window === "undefined") return [];
+
+  const effectiveId = String(userId || "guest");
+  const storageKey = `sarupol_user_diagnostics_${effectiveId}`;
+
+  try {
+    localStorage.setItem(storageKey, JSON.stringify([]));
+    return [];
+  } catch (e) {
+    console.warn("Failed to clear user diagnostics:", e);
+    return [];
+  }
+}
+
+/**
+ * Delete an individual aerial UAV survey record.
+ */
+export function deleteUserAerialSurvey(id: string, userId?: string | number, userEmail?: string): UserAerialSurveyRecord[] {
+  if (typeof window === "undefined") return [];
+
+  const effectiveId = String(userId || "guest");
+  const storageKey = `sarupol_user_aerial_${effectiveId}`;
+
+  try {
+    const current = getUserAerialSurveys(userId, userEmail);
+    const updated = current.filter((item) => item.id !== id);
+    localStorage.setItem(storageKey, JSON.stringify(updated));
+    return updated;
+  } catch (e) {
+    console.warn("Failed to delete user aerial survey:", e);
+    return [];
+  }
+}
+
+/**
+ * Clear all aerial UAV survey records for the user.
+ */
+export function clearAllUserAerialSurveys(userId?: string | number): UserAerialSurveyRecord[] {
+  if (typeof window === "undefined") return [];
+
+  const effectiveId = String(userId || "guest");
+  const storageKey = `sarupol_user_aerial_${effectiveId}`;
+
+  try {
+    localStorage.setItem(storageKey, JSON.stringify([]));
+    return [];
+  } catch (e) {
+    console.warn("Failed to clear user aerial surveys:", e);
+    return [];
+  }
+}
+
