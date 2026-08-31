@@ -121,19 +121,132 @@ export const yield_ = {
     request('/api/predict', { method: 'POST', body: data }),
 };
 
-// ─── Advisory System ───
+// ─── Advisory System Types & API ───
+export interface AdvisorySource {
+  title: string;
+  content: string;
+  metadata?: Record<string, any>;
+}
+
+export interface AdvisoryImageRef {
+  url: string;
+  caption: string;
+  source: string;
+}
+
+export interface AdvisoryAnswerResponse {
+  success: boolean;
+  question: string;
+  answer: string;
+  sources: AdvisorySource[];
+  images?: AdvisoryImageRef[];
+  zone?: string;
+  season?: string;
+  confidence?: number;
+  retrieval_confidence: number;
+  combined_reliability: number;
+  reliability_level: 'High' | 'Moderate' | 'Low';
+  context_used?: string;
+  session_id?: string;
+  consensus_score?: number;
+  validated_by?: string;
+  early_exit?: boolean;
+}
+
+export interface MultiLLMAdvisoryResponse {
+  success: boolean;
+  best_answer: string;
+  best_model: string;
+  reason: string;
+  consensus_score: number;
+  retrieval_confidence: number;
+  combined_reliability: number;
+  reliability_level: 'High' | 'Moderate' | 'Low';
+  llama_answer?: string;
+  gpt4omini_answer?: string;
+  gemma_answer?: string;
+  qwen_answer?: string;
+  sources: AdvisorySource[];
+  images?: AdvisoryImageRef[];
+  zone?: string;
+  season?: string;
+  early_exit?: boolean;
+  similarity_score?: number;
+  latency_ms?: number;
+  session_id?: string;
+}
+
+export interface TranslateItem {
+  id: string;
+  text: string;
+}
+
+export interface TranslateBatchResponse {
+  success: boolean;
+  translations: { id: string; translated_text: string }[];
+}
+
+export interface TranscribeResponse {
+  success: boolean;
+  transcribed_text: string;
+  detected_language: string;
+  duration_ms: number;
+  error?: string;
+}
+
 export const advisory = {
-  ask: (question: string, language: string = 'en', sessionId?: string) =>
-    request('/api/advisory/ask', {
+  ask: (data: {
+    question: string;
+    context?: string | null;
+    language?: string;
+    session_id?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+  }) =>
+    request<AdvisoryAnswerResponse>('/api/advisory/ask', {
       method: 'POST',
-      body: { question, language, session_id: sessionId },
+      body: data,
     }),
 
-  askMulti: (question: string, language: string = 'en', sessionId?: string) =>
-    request('/api/advisory/ask-multi', {
+  askMulti: (data: {
+    question: string;
+    context?: string | null;
+    language?: string;
+    session_id?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+  }) =>
+    request<MultiLLMAdvisoryResponse>('/api/advisory/ask-multi', {
       method: 'POST',
-      body: { question, language, session_id: sessionId },
+      body: data,
     }),
+
+  translateBatch: (messages: TranslateItem[], targetLang: 'en' | 'si' | 'ta') =>
+    request<TranslateBatchResponse>('/api/advisory/translate-batch', {
+      method: 'POST',
+      body: { messages, target_lang: targetLang },
+    }),
+
+  transcribe: async (audioBlob: Blob, language: string = 'auto'): Promise<TranscribeResponse> => {
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'recording.wav');
+    formData.append('language', language);
+
+    const res = await fetch(`${GATEWAY_URL}/api/advisory/transcribe`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!res.ok) {
+      throw new Error(`Transcription failed with status ${res.status}`);
+    }
+    return res.json();
+  },
+
+  getTtsUrl: (text: string, lang: string = 'en') =>
+    `${GATEWAY_URL}/api/advisory/tts?text=${encodeURIComponent(text)}&lang=${lang}`,
+
+  getHealth: () =>
+    request<{ status: string; rag_loaded: boolean; retriever_loaded: boolean }>('/api/advisory/health'),
 };
 
 // ─── Health Check ───
