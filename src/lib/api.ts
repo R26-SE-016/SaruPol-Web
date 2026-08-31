@@ -77,18 +77,57 @@ export const auth = {
 // ─── Soil Intelligence ───
 export const soil = {
   predictTriangulated: (data: {
-    tree_no: number;
-    zone_id: string;
-    point_a: { N: number; P: number; K: number; pH: number };
-    point_b: { N: number; P: number; K: number; pH: number };
-    point_c: { N: number; P: number; K: number; pH: number };
-  }) => request('/api/v1/predict/triangulated', { method: 'POST', body: data }),
+    tree_no: number | string;
+    zone_id?: string;
+    point_a: { N: number; P: number; K: number; pH?: number; moisture?: number; temperature?: number; EC?: number };
+    point_b: { N: number; P: number; K: number; pH?: number; moisture?: number; temperature?: number; EC?: number };
+    point_c: { N: number; P: number; K: number; pH?: number; moisture?: number; temperature?: number; EC?: number };
+  }) => request<any>('/api/v1/predict/triangulated', { method: 'POST', body: data }),
 
   predictSingle: (data: {
-    tree_no: number;
-    zone_id: string;
-    reading: { N: number; P: number; K: number; pH: number };
-  }) => request('/api/v1/predict/single', { method: 'POST', body: data }),
+    tree_no: number | string;
+    zone_id?: string;
+    reading: { N: number; P: number; K: number; pH?: number; moisture?: number; temperature?: number; EC?: number };
+  }) => request<any>('/api/v1/predict/single', { method: 'POST', body: data }),
+
+  predictVisualNutrient: (formData: FormData) =>
+    request<any>('/api/v1/nutrient-analysis/predict', {
+      method: 'POST',
+      body: formData,
+    }),
+
+  recommendLab: (data: {
+    nitrogen: number;
+    phosphorus: number;
+    potassium: number;
+    magnesium?: number;
+    palm_age: number;
+    zone: string;
+  }) => request<any>('/api/v1/recommend/lab', { method: 'POST', body: data }),
+
+  getAgroZone: (latitude: number, longitude: number) =>
+    request<any>('/api/v1/location/agro-zone', {
+      method: 'POST',
+      body: { latitude, longitude },
+    }),
+
+  getTrees: () => request<any>('/api/v1/trees'),
+
+  startAnalysis: (treeNo: string) =>
+    request<any>('/api/v1/analysis/start', {
+      method: 'POST',
+      body: { tree_no: treeNo },
+    }),
+
+  recordReading: (data: {
+    analysis_id: string;
+    tree_no: string;
+    point_name: string;
+    reading: { N: number; P: number; K: number; pH?: number; moisture?: number; temperature?: number; EC?: number };
+  }) => request<any>('/api/v1/analysis/reading', { method: 'POST', body: data }),
+
+  completeAnalysis: (data: { analysis_id: string; tree_no: string }) =>
+    request<any>('/api/v1/analysis/complete', { method: 'POST', body: data }),
 };
 
 // ─── Pathology Detection ───
