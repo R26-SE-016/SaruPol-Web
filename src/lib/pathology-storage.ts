@@ -177,7 +177,7 @@ const DEMO_SEEDED_AERIAL_SURVEYS: UserAerialSurveyRecord[] = [
  * Retrieve user-specific leaf diagnostics from local storage.
  */
 export function getUserDiagnostics(userId?: string | number, userEmail?: string): UserDiagnosticRecord[] {
-  if (typeof window === "undefined") return [];
+  if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
   const effectiveId = String(userId || "guest");
   const storageKey = `sarupol_user_diagnostics_${effectiveId}`;
@@ -214,7 +214,7 @@ export function getUserDiagnostics(userId?: string | number, userEmail?: string)
  * Save a new diagnostic scan for the active user.
  */
 export function saveUserDiagnostic(record: UserDiagnosticRecord): UserDiagnosticRecord[] {
-  if (typeof window === "undefined") return [];
+  if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
   const effectiveId = String(record.user_id || "guest");
   const storageKey = `sarupol_user_diagnostics_${effectiveId}`;
@@ -234,7 +234,7 @@ export function saveUserDiagnostic(record: UserDiagnosticRecord): UserDiagnostic
  * Retrieve user-specific aerial UAV surveys.
  */
 export function getUserAerialSurveys(userId?: string | number, userEmail?: string): UserAerialSurveyRecord[] {
-  if (typeof window === "undefined") return [];
+  if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
   const effectiveId = String(userId || "guest");
   const storageKey = `sarupol_user_aerial_${effectiveId}`;
@@ -262,7 +262,7 @@ export function getUserAerialSurveys(userId?: string | number, userEmail?: strin
  * Save an aerial UAV survey record for the user.
  */
 export function saveUserAerialSurvey(record: UserAerialSurveyRecord): UserAerialSurveyRecord[] {
-  if (typeof window === "undefined") return [];
+  if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
   const effectiveId = String(record.user_id || "guest");
   const storageKey = `sarupol_user_aerial_${effectiveId}`;
@@ -282,7 +282,7 @@ export function saveUserAerialSurvey(record: UserAerialSurveyRecord): UserAerial
  * Delete an individual leaf diagnostic record.
  */
 export function deleteUserDiagnostic(id: string, userId?: string | number, userEmail?: string): UserDiagnosticRecord[] {
-  if (typeof window === "undefined") return [];
+  if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
   const effectiveId = String(userId || "guest");
   const storageKey = `sarupol_user_diagnostics_${effectiveId}`;
@@ -302,7 +302,7 @@ export function deleteUserDiagnostic(id: string, userId?: string | number, userE
  * Clear all diagnostic records for the user.
  */
 export function clearAllUserDiagnostics(userId?: string | number): UserDiagnosticRecord[] {
-  if (typeof window === "undefined") return [];
+  if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
   const effectiveId = String(userId || "guest");
   const storageKey = `sarupol_user_diagnostics_${effectiveId}`;
@@ -320,7 +320,7 @@ export function clearAllUserDiagnostics(userId?: string | number): UserDiagnosti
  * Delete an individual aerial UAV survey record.
  */
 export function deleteUserAerialSurvey(id: string, userId?: string | number, userEmail?: string): UserAerialSurveyRecord[] {
-  if (typeof window === "undefined") return [];
+  if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
   const effectiveId = String(userId || "guest");
   const storageKey = `sarupol_user_aerial_${effectiveId}`;
@@ -340,7 +340,7 @@ export function deleteUserAerialSurvey(id: string, userId?: string | number, use
  * Clear all aerial UAV survey records for the user.
  */
 export function clearAllUserAerialSurveys(userId?: string | number): UserAerialSurveyRecord[] {
-  if (typeof window === "undefined") return [];
+  if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
   const effectiveId = String(userId || "guest");
   const storageKey = `sarupol_user_aerial_${effectiveId}`;
