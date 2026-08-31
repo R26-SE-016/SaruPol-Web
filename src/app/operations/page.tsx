@@ -45,7 +45,7 @@ export default function OperationsPage() {
               <span className="text-xs uppercase font-mono text-white/70">{t.operations.treeInventory}</span>
             </div>
             <p className="text-2xl font-mono font-light text-purple-400">1,248</p>
-            <p className="text-[10px] text-white/40 font-mono mt-1">Tagged Palms across 3 Blocks</p>
+            <p className="text-[10px] text-white/40 font-mono mt-1">{t.operations.taggedPalmsSub}</p>
           </div>
           <div className="glass-card p-5">
             <div className="flex items-center gap-2 mb-2">
@@ -53,15 +53,15 @@ export default function OperationsPage() {
               <span className="text-xs uppercase font-mono text-white/70">{t.operations.droneSurvey}</span>
             </div>
             <p className="text-2xl font-mono font-light text-emerald-400">100%</p>
-            <p className="text-[10px] text-white/40 font-mono mt-1">Orthomosaic Coverage (Kurunegala)</p>
+            <p className="text-[10px] text-white/40 font-mono mt-1">{t.operations.orthoCoverageSub}</p>
           </div>
           <div className="glass-card p-5">
             <div className="flex items-center gap-2 mb-2">
               <Radio className="w-4 h-4 text-amber-400" />
               <span className="text-xs uppercase font-mono text-white/70">{t.operations.activeHotspots}</span>
             </div>
-            <p className="text-2xl font-mono font-light text-amber-400">2 Active</p>
-            <p className="text-[10px] text-white/40 font-mono mt-1">Field Dispatches In-Flight</p>
+            <p className="text-2xl font-mono font-light text-amber-400">2 {t.common.online}</p>
+            <p className="text-[10px] text-white/40 font-mono mt-1">{t.operations.activeDispatchesSub}</p>
           </div>
         </div>
 
@@ -71,8 +71,8 @@ export default function OperationsPage() {
             <table className="w-full">
               <thead>
                 <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                  {["Tree", "Zone", "Age (Yrs)", "Health Index", "Last Harvest Date"].map(h => (
-                    <th key={h} className="px-5 py-3 text-left text-[10px] uppercase tracking-wider font-mono"
+                  {[t.operations.colTree, t.operations.colZone, t.operations.colAge, t.operations.colHealth, t.operations.colLastHarvest].map((h, idx) => (
+                    <th key={idx} className="px-5 py-3 text-left text-[10px] uppercase tracking-wider font-mono"
                       style={{ color: "rgba(167,139,250,0.5)" }}
                     >{h}</th>
                   ))}

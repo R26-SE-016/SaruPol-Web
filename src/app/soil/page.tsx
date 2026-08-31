@@ -55,7 +55,7 @@ export default function SoilPage() {
 
   const InputField = ({ label, value, onChange, unit }: { label: string; value: string; onChange: (v: string) => void; unit: string }) => (
     <div>
-      <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>{label}</label>
+      <label className="text-[10px] uppercase tracking-wider block mb-1 font-mono" style={{ color: "rgba(255,255,255,0.4)" }}>{label}</label>
       <div className="flex items-center gap-1">
         <input
           type="number"
@@ -64,11 +64,11 @@ export default function SoilPage() {
           onChange={(e) => onChange(e.target.value)}
           className="w-full bg-transparent px-2 py-1.5 rounded-lg text-sm font-mono outline-none"
           style={{
-            border: "1px solid rgba(0,255,157,0.1)",
+            border: "1px solid rgba(0,255,157,0.15)",
             color: "#e8efe8",
           }}
         />
-        <span className="text-[10px] font-mono" style={{ color: "rgba(0,255,157,0.3)" }}>{unit}</span>
+        <span className="text-[10px] font-mono" style={{ color: "rgba(0,255,157,0.4)" }}>{unit}</span>
       </div>
     </div>
   );
@@ -78,13 +78,13 @@ export default function SoilPage() {
       <div className="flex items-center gap-2 mb-4">
         <div className="w-3 h-3 rounded-full" style={{ background: color }} />
         <h3 className="text-sm font-medium" style={{ color: "rgba(232,239,232,0.8)" }}>{title}</h3>
-        <span className="text-[9px] font-mono ml-auto" style={{ color: "rgba(255,255,255,0.15)" }}>120° Manure Circle</span>
+        <span className="text-[9px] font-mono ml-auto" style={{ color: "rgba(255,255,255,0.3)" }}>{t.soil.manureCircle}</span>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <InputField label="Nitrogen (N)" value={point.N} onChange={(v) => updatePoint(setter, "N", v)} unit="%" />
-        <InputField label="Phosphorus (P)" value={point.P} onChange={(v) => updatePoint(setter, "P", v)} unit="%" />
-        <InputField label="Potassium (K)" value={point.K} onChange={(v) => updatePoint(setter, "K", v)} unit="%" />
-        <InputField label="pH Level" value={point.pH} onChange={(v) => updatePoint(setter, "pH", v)} unit="" />
+        <InputField label={t.soil.nitrogen} value={point.N} onChange={(v) => updatePoint(setter, "N", v)} unit="%" />
+        <InputField label={t.soil.phosphorus} value={point.P} onChange={(v) => updatePoint(setter, "P", v)} unit="%" />
+        <InputField label={t.soil.potassium} value={point.K} onChange={(v) => updatePoint(setter, "K", v)} unit="%" />
+        <InputField label={t.soil.phLevel} value={point.pH} onChange={(v) => updatePoint(setter, "pH", v)} unit="" />
       </div>
     </div>
   );
@@ -103,13 +103,13 @@ export default function SoilPage() {
             </div>
             <div>
               <h1 className="text-2xl font-light" style={{ fontFamily: "var(--font-outfit)" }}>{t.soil.title}</h1>
-              <p className="text-[10px] uppercase tracking-[0.3em] font-mono" style={{ color: "rgba(0,255,157,0.4)" }}>
+              <p className="text-[10px] uppercase tracking-[0.3em] font-mono" style={{ color: "rgba(0,255,157,0.5)" }}>
                 {t.soil.subtitle}
               </p>
             </div>
           </div>
-          <p className="text-sm max-w-2xl" style={{ color: "rgba(232,239,232,0.35)" }}>
-            3-point spatial triangulation around the 1.8m manure circle (120° apart) converts real-time IoT soil NPK readings to 14th Frond Leaf NPK using CRI regression models.
+          <p className="text-sm max-w-2xl leading-relaxed" style={{ color: "rgba(232,239,232,0.6)" }}>
+            {t.soil.description}
           </p>
         </motion.div>
 
@@ -118,17 +118,17 @@ export default function SoilPage() {
           className="glass-panel p-5 mb-6 flex flex-wrap gap-6"
         >
           <div>
-            <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Tree No.</label>
+            <label className="text-[10px] uppercase tracking-wider block mb-1 font-mono" style={{ color: "rgba(255,255,255,0.4)" }}>{t.soil.treeNo}</label>
             <input type="number" value={treeNo} onChange={(e) => setTreeNo(e.target.value)}
               className="bg-transparent px-3 py-1.5 rounded-lg text-sm font-mono outline-none w-24"
-              style={{ border: "1px solid rgba(0,255,157,0.1)", color: "#e8efe8" }}
+              style={{ border: "1px solid rgba(0,255,157,0.15)", color: "#e8efe8" }}
             />
           </div>
           <div>
-            <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>Zone ID</label>
+            <label className="text-[10px] uppercase tracking-wider block mb-1 font-mono" style={{ color: "rgba(255,255,255,0.4)" }}>{t.soil.zoneId}</label>
             <input type="text" value={zoneId} onChange={(e) => setZoneId(e.target.value)}
               className="bg-transparent px-3 py-1.5 rounded-lg text-sm font-mono outline-none w-40"
-              style={{ border: "1px solid rgba(0,255,157,0.1)", color: "#e8efe8" }}
+              style={{ border: "1px solid rgba(0,255,157,0.15)", color: "#e8efe8" }}
             />
           </div>
         </motion.div>
@@ -183,18 +183,18 @@ export default function SoilPage() {
               <div className="grid grid-cols-3 gap-4">
                 <div className="p-4 rounded-lg bg-black/40 text-center">
                   <p className="text-2xl font-mono font-light text-emerald-400">{result.leafN.toFixed(2)}%</p>
-                  <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Leaf Nitrogen (N)</p>
-                  <span className="text-[9px] font-mono text-emerald-400/60">Optimum: 1.9 - 2.1%</span>
+                  <p className="text-[10px] uppercase tracking-wider mt-1 font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>{t.soil.leafN}</p>
+                  <span className="text-[9px] font-mono text-emerald-400/80">{t.soil.optimalN}</span>
                 </div>
                 <div className="p-4 rounded-lg bg-black/40 text-center">
                   <p className="text-2xl font-mono font-light text-cyan-400">{result.leafP.toFixed(3)}%</p>
-                  <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Leaf Phosphorus (P)</p>
-                  <span className="text-[9px] font-mono text-cyan-400/60">Optimum: 0.12 - 0.14%</span>
+                  <p className="text-[10px] uppercase tracking-wider mt-1 font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>{t.soil.leafP}</p>
+                  <span className="text-[9px] font-mono text-cyan-400/80">{t.soil.optimalP}</span>
                 </div>
                 <div className="p-4 rounded-lg bg-black/40 text-center">
                   <p className="text-2xl font-mono font-light text-amber-400">{result.leafK.toFixed(2)}%</p>
-                  <p className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Leaf Potassium (K)</p>
-                  <span className="text-[9px] font-mono text-amber-400/60">Optimum: 1.2 - 1.5%</span>
+                  <p className="text-[10px] uppercase tracking-wider mt-1 font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>{t.soil.leafK}</p>
+                  <span className="text-[9px] font-mono text-amber-400/80">{t.soil.optimalK}</span>
                 </div>
               </div>
             </div>
@@ -206,19 +206,19 @@ export default function SoilPage() {
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="p-4 rounded-lg bg-black/40">
-                  <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>{t.soil.urea}</p>
+                  <p className="text-[10px] uppercase tracking-wider mb-1 font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>{t.soil.urea}</p>
                   <p className="text-xl font-mono text-emerald-400">{result.urea} <span className="text-xs">g</span></p>
                 </div>
                 <div className="p-4 rounded-lg bg-black/40">
-                  <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>{t.soil.erp}</p>
+                  <p className="text-[10px] uppercase tracking-wider mb-1 font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>{t.soil.erp}</p>
                   <p className="text-xl font-mono text-cyan-400">{result.erp} <span className="text-xs">g</span></p>
                 </div>
                 <div className="p-4 rounded-lg bg-black/40">
-                  <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>{t.soil.mop}</p>
+                  <p className="text-[10px] uppercase tracking-wider mb-1 font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>{t.soil.mop}</p>
                   <p className="text-xl font-mono text-amber-400">{result.mop} <span className="text-xs">g</span></p>
                 </div>
                 <div className="p-4 rounded-lg bg-black/40">
-                  <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>{t.soil.dolomite}</p>
+                  <p className="text-[10px] uppercase tracking-wider mb-1 font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>{t.soil.dolomite}</p>
                   <p className="text-xl font-mono text-purple-400">{result.dolomite} <span className="text-xs">g</span></p>
                 </div>
               </div>
