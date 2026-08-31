@@ -74,7 +74,7 @@ export default function Navbar() {
                 style={{
                   filter: theme === "dark"
                     ? "drop-shadow(0 4px 18px rgba(212,175,55,0.55))"
-                    : "drop-shadow(0 4px 12px rgba(10,27,16,0.2)) drop-shadow(0 1px 3px rgba(197,155,39,0.35))"
+                    : "drop-shadow(0 0 8px rgba(0,0,0,0.85)) drop-shadow(0 4px 14px rgba(0,0,0,0.6))"
                 }}
                 priority
               />
@@ -282,7 +282,7 @@ export default function Navbar() {
                 style={{
                   filter: theme === "dark"
                     ? "drop-shadow(0 4px 20px rgba(212,175,55,0.55))"
-                    : "drop-shadow(0 4px 12px rgba(10,27,16,0.2)) drop-shadow(0 1px 3px rgba(197,155,39,0.35))"
+                    : "drop-shadow(0 0 8px rgba(0,0,0,0.85)) drop-shadow(0 4px 14px rgba(0,0,0,0.6))"
                 }}
               />
             </div>

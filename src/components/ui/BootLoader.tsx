@@ -57,19 +57,20 @@ export default function BootLoader() {
           exit={{ opacity: 0, scale: 1.02 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="fixed inset-0 z-[200] flex flex-col items-center justify-center select-none"
-          style={{ backgroundColor: "#030705" }}
+          style={{ backgroundColor: theme === "dark" ? "#030705" : "#F2F6F3" }}
         >
           {/* Ambient luxury gold & emerald glow */}
           <div
             className="absolute w-[600px] h-[600px] rounded-full pointer-events-none"
             style={{
-              background:
-                "radial-gradient(circle, rgba(212,175,55,0.12) 0%, rgba(0,255,157,0.06) 40%, transparent 70%)",
+              background: theme === "dark"
+                ? "radial-gradient(circle, rgba(212,175,55,0.12) 0%, rgba(0,255,157,0.06) 40%, transparent 70%)"
+                : "radial-gradient(circle, rgba(212,175,55,0.18) 0%, rgba(0,135,90,0.08) 40%, transparent 70%)",
             }}
           />
 
           {/* Telemetry grid background */}
-          <div className="absolute inset-0 telemetry-grid opacity-30" />
+          <div className="absolute inset-0 telemetry-grid" style={{ opacity: theme === "dark" ? 0.3 : 0.15 }} />
 
           {/* Pure Brand Icon Mark with Magnificent Ambient Glow (No Outer Box/Border) */}
           <motion.div
@@ -82,7 +83,9 @@ export default function BootLoader() {
             <div
               className="absolute inset-0 rounded-full blur-2xl pointer-events-none"
               style={{
-                background: "radial-gradient(circle, rgba(212,175,55,0.45) 0%, rgba(0,255,157,0.2) 50%, transparent 80%)",
+                background: theme === "dark"
+                  ? "radial-gradient(circle, rgba(212,175,55,0.45) 0%, rgba(0,255,157,0.2) 50%, transparent 80%)"
+                  : "radial-gradient(circle, rgba(212,175,55,0.3) 0%, rgba(0,135,90,0.15) 50%, transparent 80%)",
                 transform: "scale(1.25)",
               }}
             />
@@ -91,12 +94,17 @@ export default function BootLoader() {
               alt="SaruPol Brand Icon"
               width={200}
               height={200}
-              className="relative z-10 w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 object-contain drop-shadow-[0_0_35px_rgba(212,175,55,0.55)]"
+              className="relative z-10 w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 object-contain"
+              style={{
+                filter: theme === "dark"
+                  ? "drop-shadow(0 0 35px rgba(212,175,55,0.55))"
+                  : "drop-shadow(0 8px 24px rgba(0,0,0,0.35)) drop-shadow(0 0 15px rgba(212,175,55,0.35))"
+              }}
               priority
             />
           </motion.div>
 
-          {/* 3D Embossed Text Logo Brand Reveal (Enlarged & Perfectly Balanced) */}
+          {/* 3D Embossed Text Logo Brand Reveal with Strong Dark Shadow in Light Mode */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -113,7 +121,7 @@ export default function BootLoader() {
                 style={{
                   filter: theme === "dark"
                     ? "drop-shadow(0 12px 36px rgba(212,175,55,0.6))"
-                    : "drop-shadow(0 8px 24px rgba(10,27,16,0.22)) drop-shadow(0 2px 5px rgba(197,155,39,0.35))"
+                    : "drop-shadow(0 0 12px rgba(0,0,0,0.85)) drop-shadow(0 6px 22px rgba(0,0,0,0.6))"
                 }}
                 priority
               />
@@ -133,35 +141,35 @@ export default function BootLoader() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.6 + i * 0.08 }}
-                className="flex items-center gap-3 px-3.5 py-1.5 rounded-lg border transition-all duration-300"
+                className="flex items-center gap-3 px-3.5 py-1.5 rounded-lg border transition-all duration-300 shadow-sm"
                 style={{
-                  background: completedSteps.includes(i)
-                    ? "rgba(212,175,55,0.06)"
-                    : "rgba(255,255,255,0.02)",
-                  borderColor: completedSteps.includes(i)
-                    ? "rgba(212,175,55,0.2)"
-                    : "rgba(255,255,255,0.04)",
+                  background: theme === "dark"
+                    ? (completedSteps.includes(i) ? "rgba(212,175,55,0.06)" : "rgba(255,255,255,0.02)")
+                    : (completedSteps.includes(i) ? "rgba(212,175,55,0.12)" : "rgba(255,255,255,0.7)"),
+                  borderColor: theme === "dark"
+                    ? (completedSteps.includes(i) ? "rgba(212,175,55,0.2)" : "rgba(255,255,255,0.04)")
+                    : (completedSteps.includes(i) ? "rgba(212,175,55,0.35)" : "rgba(16,40,24,0.08)"),
                 }}
               >
                 <span
                   style={{
                     color: completedSteps.includes(i)
-                      ? "#E6AF2E"
+                      ? (theme === "dark" ? "#E6AF2E" : "#B45309")
                       : currentStep === i
-                      ? "rgba(0,255,157,0.8)"
-                      : "rgba(255,255,255,0.2)",
+                      ? (theme === "dark" ? "rgba(0,255,157,0.8)" : "#00875A")
+                      : (theme === "dark" ? "rgba(255,255,255,0.2)" : "rgba(16,40,24,0.3)"),
                   }}
                 >
                   {step.icon}
                 </span>
                 <span
-                  className="text-xs font-mono tracking-wide flex-1"
+                  className="text-xs font-mono tracking-wide flex-1 font-medium"
                   style={{
                     color: completedSteps.includes(i)
-                      ? "rgba(232,239,232,0.9)"
+                      ? (theme === "dark" ? "rgba(232,239,232,0.9)" : "#0A1B10")
                       : currentStep === i
-                      ? "rgba(255,255,255,0.7)"
-                      : "rgba(255,255,255,0.2)",
+                      ? (theme === "dark" ? "rgba(255,255,255,0.7)" : "#243B2B")
+                      : (theme === "dark" ? "rgba(255,255,255,0.2)" : "#73887B"),
                   }}
                 >
                   {step.label}
@@ -170,10 +178,10 @@ export default function BootLoader() {
                   className="text-[10px] font-mono font-bold"
                   style={{
                     color: completedSteps.includes(i)
-                      ? "#00FF9D"
+                      ? (theme === "dark" ? "#00FF9D" : "#00875A")
                       : currentStep === i
-                      ? "#E6AF2E"
-                      : "rgba(255,255,255,0.15)",
+                      ? (theme === "dark" ? "#E6AF2E" : "#D97706")
+                      : (theme === "dark" ? "rgba(255,255,255,0.15)" : "rgba(16,40,24,0.2)"),
                   }}
                 >
                   {completedSteps.includes(i) ? "READY" : currentStep === i ? "SYNC..." : "—"}
@@ -188,7 +196,7 @@ export default function BootLoader() {
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2 }}
             className="absolute bottom-7 text-[10px] tracking-[0.35em] uppercase font-mono"
-            style={{ color: "rgba(212,175,55,0.4)" }}
+            style={{ color: theme === "dark" ? "rgba(212,175,55,0.4)" : "rgba(180,130,20,0.7)" }}
           >
             CRI RESEARCH PROTOCOL v2.4 · 2026
           </motion.p>

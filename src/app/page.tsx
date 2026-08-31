@@ -134,7 +134,7 @@ export default function DashboardPage() {
             style={{
               filter: theme === "dark"
                 ? "drop-shadow(0 12px 36px rgba(212,175,55,0.55))"
-                : "drop-shadow(0 8px 24px rgba(10,27,16,0.22)) drop-shadow(0 2px 5px rgba(197,155,39,0.35))"
+                : "drop-shadow(0 0 12px rgba(0,0,0,0.85)) drop-shadow(0 6px 22px rgba(0,0,0,0.6))"
             }}
             priority
           />
@@ -336,7 +336,7 @@ export default function DashboardPage() {
             style={{
               filter: theme === "dark"
                 ? "drop-shadow(0 2px 10px rgba(212,175,55,0.45))"
-                : "drop-shadow(0 2px 8px rgba(10,27,16,0.18)) drop-shadow(0 1px 2px rgba(197,155,39,0.3))"
+                : "drop-shadow(0 0 6px rgba(0,0,0,0.85)) drop-shadow(0 2px 8px rgba(0,0,0,0.55))"
             }}
           />
         </div>
