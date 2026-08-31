@@ -36,17 +36,17 @@ export default function AgroContextPanel({
   const { theme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Localized zone & season labels
-  const getLocalizedZone = (z: string) => {
-    if (z.includes("Wet")) return t.advisory.wetZone;
-    if (z.includes("Intermediate")) return t.advisory.intermediateZone;
-    if (z.includes("Dry")) return t.advisory.dryZone;
+  // Concise localized labels for the top pill
+  const getShortZone = (z: string) => {
+    if (z.includes("Wet")) return language === "si" ? "තෙත් කලාපය" : language === "ta" ? "ஈர மண்டலம்" : "Wet Zone";
+    if (z.includes("Intermediate")) return language === "si" ? "අතරමැදි කලාපය" : language === "ta" ? "இடைநிலை மண்டலம்" : "Intermediate Zone";
+    if (z.includes("Dry")) return language === "si" ? "වියළි කලාපය" : language === "ta" ? "உலர் மண்டலம்" : "Dry Zone";
     return z;
   };
 
-  const getLocalizedSeason = (s: string) => {
-    if (s.includes("Yala")) return t.advisory.yalaSeason;
-    if (s.includes("Maha")) return t.advisory.mahaSeason;
+  const getShortSeason = (s: string) => {
+    if (s.includes("Yala")) return language === "si" ? "යල කන්නය" : language === "ta" ? "யால பருவம்" : "Yala Season";
+    if (s.includes("Maha")) return language === "si" ? "මහ කන්නය" : language === "ta" ? "மகா பருவம்" : "Maha Season";
     return s;
   };
 
@@ -55,7 +55,7 @@ export default function AgroContextPanel({
       {/* Top Context Pill Trigger */}
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono smooth-transition hover:opacity-90 shadow-sm"
+        className="flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-mono smooth-transition hover:opacity-90 shadow-sm whitespace-nowrap flex-shrink-0"
         style={{
           background: "var(--card-bg)",
           borderColor: "var(--card-border)",
@@ -63,15 +63,15 @@ export default function AgroContextPanel({
         }}
       >
         <div className="flex items-center gap-1.5 font-bold" style={{ color: theme === "dark" ? "#00FF9D" : "#00875A" }}>
-          <Compass className="w-3.5 h-3.5" />
-          <span>{getLocalizedZone(zone)}</span>
+          <Compass className="w-3.5 h-3.5 flex-shrink-0" />
+          <span>{getShortZone(zone)}</span>
         </div>
-        <span style={{ color: "var(--card-border)" }}>|</span>
+        <span className="opacity-40" style={{ color: "var(--text-muted)" }}>•</span>
         <div className="flex items-center gap-1.5 font-medium" style={{ color: theme === "dark" ? "#E6AF2E" : "#B45309" }}>
-          <Sun className="w-3.5 h-3.5" />
-          <span>{getLocalizedSeason(season)}</span>
+          <Sun className="w-3.5 h-3.5 flex-shrink-0" />
+          <span>{getShortSeason(season)}</span>
         </div>
-        <Settings2 className="w-3.5 h-3.5 ml-1 opacity-60 text-muted" />
+        <Settings2 className="w-3.5 h-3.5 ml-0.5 opacity-60 flex-shrink-0" style={{ color: "var(--text-muted)" }} />
       </button>
 
       {/* Settings Modal */}

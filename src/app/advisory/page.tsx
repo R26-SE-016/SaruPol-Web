@@ -429,24 +429,24 @@ export default function AdvisoryPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-24 pb-4 relative z-10 flex-1 flex flex-col w-full min-h-0">
         
         {/* Header Title Area — matching Pathology */}
-        <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4 flex-shrink-0" style={{ borderColor: "var(--card-border)" }}>
-          <div className="flex items-center gap-4">
+        <div className="mb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3 flex-shrink-0" style={{ borderColor: "var(--card-border)" }}>
+          <div className="flex items-center gap-3">
             <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center border flex-shrink-0 shadow-md"
+              className="w-11 h-11 rounded-xl flex items-center justify-center border flex-shrink-0 shadow-md"
               style={{
                 background: "linear-gradient(135deg, rgba(230,175,46,0.18), rgba(230,175,46,0.06))",
                 borderColor: "rgba(230,175,46,0.3)",
               }}
             >
-              <MessageCircle className="w-6 h-6" style={{ color: "#E6AF2E" }} />
+              <MessageCircle className="w-5 h-5" style={{ color: "#E6AF2E" }} />
             </div>
             <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-xl sm:text-2xl font-normal tracking-tight" style={{ fontFamily: "var(--font-outfit)", color: "var(--text-primary)" }}>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-normal tracking-tight whitespace-nowrap" style={{ fontFamily: "var(--font-outfit)", color: "var(--text-primary)" }}>
                   {t.advisory.title}
                 </h1>
                 <span
-                  className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase font-bold"
+                  className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase font-bold whitespace-nowrap"
                   style={{
                     background: "rgba(230,175,46,0.12)",
                     border: "1px solid rgba(230,175,46,0.3)",
@@ -463,7 +463,7 @@ export default function AdvisoryPage() {
           </div>
 
           {/* Right Header Action Pills: Agro-Climatic Context & Consultation History */}
-          <div className="flex items-center gap-2.5 self-start sm:self-auto">
+          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
             <AgroContextPanel
               zone={zone}
               season={season}
@@ -475,7 +475,7 @@ export default function AdvisoryPage() {
 
             <button
               onClick={() => setIsHistoryOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono smooth-transition hover:opacity-80 shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-mono smooth-transition hover:opacity-80 shadow-sm whitespace-nowrap"
               style={{
                 background: "var(--card-bg)",
                 borderColor: "var(--card-border)",
@@ -484,10 +484,10 @@ export default function AdvisoryPage() {
               title={t.advisory.chatHistory}
             >
               <History className="w-3.5 h-3.5 text-amber-500" />
-              <span className="hidden sm:inline font-medium">{t.advisory.chatHistory}</span>
+              <span className="font-medium">{t.advisory.chatHistory}</span>
               {sessions.length > 0 && (
                 <span
-                  className="px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold"
+                  className="px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold ml-0.5"
                   style={{ background: "rgba(230,175,46,0.2)", color: "#E6AF2E" }}
                 >
                   {sessions.length}
@@ -499,7 +499,7 @@ export default function AdvisoryPage() {
 
         {/* Full-Width Segmented Mode Navigation Bar — matching Pathology Tab Bar */}
         <div
-          className="mb-4 p-1.5 rounded-2xl border backdrop-blur-xl grid grid-cols-2 gap-2 shadow-lg smooth-transition flex-shrink-0"
+          className="mb-3 p-1 rounded-2xl border backdrop-blur-xl grid grid-cols-2 gap-1.5 shadow-md smooth-transition flex-shrink-0"
           style={{
             background: "var(--card-bg)",
             borderColor: "var(--card-border)",
@@ -507,7 +507,7 @@ export default function AdvisoryPage() {
         >
           <button
             onClick={() => setChatMode("standard")}
-            className="flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl text-xs font-mono transition-all text-center"
+            className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-mono transition-all text-center"
             style={{
               background: chatMode === "standard" ? (theme === "dark" ? "rgba(0, 255, 157, 0.12)" : "rgba(0, 168, 107, 0.12)") : "transparent",
               color: chatMode === "standard" ? (theme === "dark" ? "#00FF9D" : "#00875A") : "var(--text-secondary)",
@@ -515,16 +515,14 @@ export default function AdvisoryPage() {
               boxShadow: chatMode === "standard" ? "var(--card-shadow)" : "none",
             }}
           >
-            <Sparkles className="w-4 h-4 flex-shrink-0" style={{ color: chatMode === "standard" ? "#00FF9D" : "inherit" }} />
-            <div className="text-left">
-              <span className="font-bold block">{t.advisory.standardMode}</span>
-              <span className="text-[10px] opacity-75 hidden sm:inline">{t.advisory.standardDesc}</span>
-            </div>
+            <Sparkles className="w-3.5 h-3.5 flex-shrink-0" style={{ color: chatMode === "standard" ? "#00FF9D" : "inherit" }} />
+            <span className="font-bold">{t.advisory.standardMode}</span>
+            <span className="text-[10px] opacity-60 hidden md:inline">• Fast Single-LLM RAG</span>
           </button>
 
           <button
             onClick={() => setChatMode("multi")}
-            className="flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl text-xs font-mono transition-all text-center"
+            className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-mono transition-all text-center"
             style={{
               background: chatMode === "multi" ? (theme === "dark" ? "rgba(230, 175, 46, 0.15)" : "rgba(230, 175, 46, 0.18)") : "transparent",
               color: chatMode === "multi" ? (theme === "dark" ? "#E6AF2E" : "#B45309") : "var(--text-secondary)",
@@ -532,32 +530,27 @@ export default function AdvisoryPage() {
               boxShadow: chatMode === "multi" ? "var(--card-shadow)" : "none",
             }}
           >
-            <Cpu className="w-4 h-4 flex-shrink-0" style={{ color: chatMode === "multi" ? "#E6AF2E" : "inherit" }} />
-            <div className="text-left">
-              <span className="font-bold block">{t.advisory.multiLlmMode}</span>
-              <span className="text-[10px] opacity-75 hidden sm:inline">{t.advisory.multiDesc}</span>
-            </div>
+            <Cpu className="w-3.5 h-3.5 flex-shrink-0" style={{ color: chatMode === "multi" ? "#E6AF2E" : "inherit" }} />
+            <span className="font-bold">{t.advisory.multiLlmMode}</span>
+            <span className="text-[10px] opacity-60 hidden md:inline">• 3-Model Consensus Ensemble</span>
           </button>
         </div>
 
         {/* Chat Feed */}
         <div className="flex-1 overflow-y-auto space-y-4 mb-3 pr-1 sm:pr-2 min-h-0">
           {messages.length === 0 ? (
-            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center justify-center py-8 sm:py-14 text-center">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center justify-center py-4 sm:py-8 text-center">
               <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3 shadow-xl"
+                className="w-12 h-12 rounded-2xl flex items-center justify-center mb-2.5 shadow-lg"
                 style={{
                   background: "linear-gradient(135deg, rgba(230,175,46,0.25), rgba(0,255,157,0.25))",
                   border: "1px solid rgba(230,175,46,0.4)",
                 }}
               >
-                <Sparkles className="w-7 h-7 text-amber-400" />
+                <Sparkles className="w-6 h-6 text-amber-400" />
               </div>
-              <h2 className="text-base sm:text-lg font-mono font-bold mb-1" style={{ color: "var(--text-primary)" }}>
-                CRI Diagnostic & Agronomic Consultation
-              </h2>
-              <p className="text-xs max-w-lg mb-6 font-mono leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                Select a recommended inquiry below or speak directly to receive agronomist consensus recommendations.
+              <p className="text-xs max-w-md mb-4 font-mono leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                {t.advisory.chatPlaceholder}
               </p>
 
               {/* Starter Question Pills */}
@@ -566,7 +559,7 @@ export default function AdvisoryPage() {
                   <button
                     key={i}
                     onClick={() => sendMessage(q)}
-                    className="p-3.5 rounded-2xl text-xs font-mono smooth-transition hover:scale-[1.02] border glass-card shadow-sm group flex items-center justify-between"
+                    className="p-3 rounded-2xl text-xs font-mono smooth-transition hover:scale-[1.01] border glass-card shadow-sm group flex items-center justify-between"
                     style={{
                       borderColor: "var(--card-border)",
                       color: "var(--text-primary)",
