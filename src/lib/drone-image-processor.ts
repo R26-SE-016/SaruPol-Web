@@ -43,7 +43,8 @@ async function processTiffPreview(file: File): Promise<ProcessedDroneImage> {
   const originalHeight = ifd.height;
 
   let rgbaUint8: Uint8Array;
-  const is16Bit = ifd.t258 && (ifd.t258[0] === 16 || ifd.t258 === 16);
+  const t258 = (ifd as any).t258;
+  const is16Bit = Boolean(t258 && (t258[0] === 16 || t258 === 16));
 
   if (is16Bit && ifd.data) {
     const u16 = new Uint16Array(ifd.data.buffer, ifd.data.byteOffset, ifd.data.byteLength / 2);
