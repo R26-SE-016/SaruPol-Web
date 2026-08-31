@@ -258,12 +258,13 @@ export default function PathologyPage() {
         throw new Error("Invalid response format from spectral service");
       }
     } catch (err: any) {
-      console.warn("[Aerial Spectral] Executing instant client-side spectral engine:", err);
+      console.warn("[Aerial Spectral] Executing high-precision client-side spectral engine:", err);
       
       try {
         const clientAnalysis = await computeInstantSpectralPreview(
           primaryBase64 || primaryPreview || "",
           indexType,
+          nirBase64 || nirPreview || undefined,
           userCoords
         );
 
