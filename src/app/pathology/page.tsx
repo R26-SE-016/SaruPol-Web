@@ -159,6 +159,77 @@ export default function PathologyPage() {
   const primaryInputRef = useRef<HTMLInputElement>(null);
   const nirInputRef = useRef<HTMLInputElement>(null);
 
+  /**
+   * Downscales a large drone image to a gateway-friendly JPEG base64 string.
+   * Cloud Run has a ~32MB request body limit and the gateway JSON serializes
+   * the entire base64 payload. Full-resolution DJI images (4000×3000) inflate
+   * to 30-50MB base64 — causing timeouts and mock fallback responses.
+   * Downscaling to 1600px max dimension produces ~200KB JPEG which is perfectly
+   * sufficient for VARI/NDVI spectral index computation.
+   */
+  const downscaleForBackend = (file: File, maxDim: number = 1600, quality: number = 0.88): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const isTiff = file.name.toLowerCase().endsWith('.tif') || file.name.toLowerCase().endsWith('.tiff');
+
+      if (isTiff) {
+        // For TIFF files, use the drone-image-processor to get decoded pixels, then downscale
+        processDroneImage(file).then((processed) => {
+          resolve(processed.previewUrl); // Already downscaled by processDroneImage
+        }).catch(() => {
+          // Fallback: read raw base64 for TIFF (backend can handle decoding)
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = () => reject(new Error('Failed to read TIFF file'));
+          reader.readAsDataURL(file);
+        });
+        return;
+      }
+
+      // Standard image (JPG, PNG, WebP) — decode then downscale via canvas
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        let w = img.naturalWidth || img.width;
+        let h = img.naturalHeight || img.height;
+
+        // Only downscale if larger than maxDim
+        if (Math.max(w, h) > maxDim) {
+          const scale = maxDim / Math.max(w, h);
+          w = Math.round(w * scale);
+          h = Math.round(h * scale);
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          // Fallback to raw read
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(file);
+          return;
+        }
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(objectUrl);
+
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        // Fallback to raw read
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      };
+      img.src = objectUrl;
+    });
+  };
+
   // Handle Primary Drone Upload (.tiff, .tif, .jpg, .png, .webp)
   const handlePrimaryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -175,10 +246,15 @@ export default function PathologyPage() {
         setPrimaryPreview(URL.createObjectURL(file));
       }
 
-      // Read exact raw uncompressed binary base64 for backend Python processing
-      const reader = new FileReader();
-      reader.onloadend = () => setPrimaryBase64(reader.result as string);
-      reader.readAsDataURL(file);
+      // Downscale for backend transmission (prevents Cloud Run payload limits)
+      try {
+        const downscaled = await downscaleForBackend(file);
+        setPrimaryBase64(downscaled);
+      } catch {
+        const reader = new FileReader();
+        reader.onloadend = () => setPrimaryBase64(reader.result as string);
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -194,10 +270,15 @@ export default function PathologyPage() {
         setNirPreview(URL.createObjectURL(file));
       }
 
-      // Read exact raw uncompressed binary base64 for backend Python processing
-      const reader = new FileReader();
-      reader.onloadend = () => setNirBase64(reader.result as string);
-      reader.readAsDataURL(file);
+      // Downscale for backend transmission
+      try {
+        const downscaled = await downscaleForBackend(file);
+        setNirBase64(downscaled);
+      } catch {
+        const reader = new FileReader();
+        reader.onloadend = () => setNirBase64(reader.result as string);
+        reader.readAsDataURL(file);
+      }
     }
   };
 
