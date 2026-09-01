@@ -44,34 +44,36 @@ function loadScript(src: string): Promise<void> {
 }
 
 /**
- * Ensures TensorFlow.js (pinned to 3.18.0) and tfjs-tflite runtime are loaded
- * strictly in sequential order so tf is defined when tflite initialises.
+ * Waits for TensorFlow.js and tfjs-tflite to be available on window.
+ * These are loaded by Next.js <Script strategy="afterInteractive"> in pathology/page.tsx.
+ * We NEVER inject duplicate script tags — just poll until the globals appear.
  */
 async function ensureScriptsLoaded(): Promise<void> {
   if (typeof window === "undefined") return;
 
-  // 1. Ensure TensorFlow.js Core
-  if (!(window as any).tf || !(window as any).tf.Tensor) {
-    await loadScript("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js");
-  }
-
-  // Wait for window.tf to be fully ready
+  // 1. Wait for window.tf (loaded by Next.js <Script> tag)
   let attempts = 0;
-  while ((!(window as any).tf || !(window as any).tf.Tensor) && attempts < 25) {
-    await new Promise((r) => setTimeout(r, 100));
+  while (
+    (!(window as any).tf || !(window as any).tf.Tensor || !(window as any).tf.browser) &&
+    attempts < 50
+  ) {
+    await new Promise((r) => setTimeout(r, 200));
     attempts++;
   }
 
-  // 2. Ensure TFLite runtime is loaded only AFTER tf is guaranteed in global scope
-  if (!(window as any).tflite) {
-    await loadScript("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-tflite@0.0.1-alpha.9/dist/tf-tflite.min.js");
+  if (!(window as any).tf?.Tensor) {
+    throw new Error("TensorFlow.js failed to load from CDN Script tag.");
   }
 
-  // Wait for window.tflite to be ready
+  // 2. Wait for window.tflite (loaded by Next.js <Script> tag, after tf)
   attempts = 0;
-  while (!(window as any).tflite && attempts < 25) {
-    await new Promise((r) => setTimeout(r, 100));
+  while (!(window as any).tflite && attempts < 50) {
+    await new Promise((r) => setTimeout(r, 200));
     attempts++;
+  }
+
+  if (!(window as any).tflite) {
+    throw new Error("TFLite runtime failed to load from CDN Script tag.");
   }
 }
 
