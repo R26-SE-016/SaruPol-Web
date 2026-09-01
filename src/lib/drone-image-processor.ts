@@ -374,7 +374,7 @@ export async function computeInstantSpectralPreview(
       canopyPixelCount++;
       sumIndex += rawIdx;
       if (rawIdx < minIndex) minIndex = rawIdx;
-      if (rawIdx > maxIndex) maxIdx = rawIdx;
+      if (rawIdx > maxIndex) maxIndex = rawIdx;
     }
   }
 
