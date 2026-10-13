@@ -904,8 +904,8 @@ function generateMockStandardResponse(
     { url: "Spreading of fertilizer in the manure circle.png", caption: "Correct circular spreading of fertilizer in the 1.8m manure ring.", source: "CRI Advisory Circular A1" }
   ];
 
-  if (lower.includes("rot") || lower.includes("කුණු") || lower.includes("அழுகல்")) {
-    answer = `**Bud Rot (Phytophthora palmivora) Control Protocol for ${zone}:**\n\n1. **Immediate Sanitation:** Sever and incinerate all infected spear leaves and rotting crown tissue down to healthy white cabbage.\n2. **Protective Dressing:** Paint the exposed tissue with Bordeaux Paste (100g Copper Sulphate + 100g Quicklime in 1L water) or Copper Oxychloride paste (50g/L).\n3. **Prophylactic Spray:** Spray neighboring asymptomatic palms with Mancozeb 80% WP (4g/L water) or Captan.\n4. **Drainage:** Deepen contour drainage channels to eliminate standing water during the ${season} monsoon season.\n\n*Reference: CRI Advisory Leaflet No. 4 & Plant Pathology Bulletin 2026*`;
+  if (lower.includes("rot") || lower.includes("කුණු") || lower.includes("ගොබය") || lower.includes("அழுகல்")) {
+    answer = `**Bud Rot / ගොබය කුණුවීමේ රෝගය (Phytophthora palmivora) Control Protocol for ${zone}:**\n\n1. **Immediate Sanitation:** Sever and incinerate all infected spear leaves and rotting crown tissue down to healthy white cabbage.\n2. **Protective Dressing:** Paint the exposed tissue with Bordeaux Paste (100g Copper Sulphate + 100g Quicklime in 1L water) or Copper Oxychloride paste (50g/L).\n3. **Prophylactic Spray:** Spray neighboring asymptomatic palms with Mancozeb 80% WP (4g/L water) or Copper Oxychloride.\n4. **Drainage:** Deepen contour drainage channels to eliminate standing water during the ${season} monsoon season.\n\n*Reference: CRI Advisory Leaflet No. 4 & Plant Pathology Bulletin 2026*`;
     sources = [
       { title: "CRI Advisory Leaflet No. 4 — Management of Bud Rot in Coconut", content: "Phytophthora palmivora disease protocol." },
       { title: "CRI Plant Pathology Bulletin 2026", content: "Fungicidal dosage and prophylactic crown spray schedules." }
@@ -913,6 +913,23 @@ function generateMockStandardResponse(
     images = [
       { url: "Bud rot damage in mature coconut.png", caption: "Severe bud rot necrosis showing collapsed central spear leaf.", source: "CRI Advisory Leaflet No. 4" },
       { url: "Coconut palm affected by leaf rot disease.png", caption: "Leaf rot and necrotic frond lesions requiring copper fungicide.", source: "CRI Advisory Leaflet No. 4" }
+    ];
+  } else if (lower.includes("bleed") || lower.includes("යුෂ") || lower.includes("ලේ") || lower.includes("தண்டு") || lower.includes("stem")) {
+    answer = `**Stem Bleeding / කඳෙන් යුෂ ගැලීමේ රෝගය (Ceratocystis paradoxa) Management Protocol:**\n\n1. **Surgical Chiseled Clearing:** Chisel out all discolored vascular wood until clean white fibrous tissue is exposed; collect and burn excised bark fragments.\n2. **Wound Sealing:** Paint the clean excavated cavity immediately with hot coal tar or 10% concentrated Bordeaux paste.\n3. **Cavity Packing:** For deeper hollows, pack with Copper Oxychloride paste (1:1 with water) to suppress internal mycelial growth.\n4. **Regulatory & Cultural Note:** Tridemorph (Calixin) root feeding is phased out / restricted under Sri Lanka Registrar of Pesticides regulations. Maintain clean weed-free trunk bases to avoid physical injury from implements.\n\n*Reference: CRI Advisory Circular No. 19 & Pathology Division Circulars*`;
+    sources = [
+      { title: "CRI Advisory Circular No. 19 — Stem Bleeding Disease of Coconut", content: "Surgical wound chiseling, coal tar application, and cavity treatment." },
+      { title: "CRI Plant Pathology Division Circular", content: "Current pesticide compliance and physical barrier protection." }
+    ];
+    images = [
+      { url: "Coconut palm affected by leaf rot disease.png", caption: "Stem lesion inspection and trunk pathology assessment.", source: "CRI Advisory Circular No. 19" }
+    ];
+  } else if (lower.includes("blight") || lower.includes("spot") || lower.includes("අංගමාර") || lower.includes("ලප") || lower.includes("சாம்பல்")) {
+    answer = `**Gray Leaf Spot / කොළ අංගමාරය (Pestalotiopsis palmarum) Integrated Protocol:**\n\n1. **Nutritional Correction:** Apply targeted MOP (Muriate of Potash, 60% K₂O) and Dolomite to address Potassium/Magnesium deficiencies which predispose palms to leaf blight.\n2. **Foliar Treatment:** Spray with Copper Oxychloride (2-3g/L) or Mancozeb (2.5g/L) across lower and middle canopy fronds at symptom onset. *(Note: Carbendazim is banned/restricted in Sri Lanka)*.\n3. **Sanitation:** Prune and incinerate dried, heavily infected lower fronds (පිති) to minimize secondary spore loads.\n\n*Reference: CRI Advisory Circular No. 42 & Foliar Nutrition Guidelines*`;
+    sources = [
+      { title: "CRI Advisory Circular No. 42 — Leaf Blight & Gray Spot Management", content: "NPK+Mg nutrition and compliant copper fungicide sprays." }
+    ];
+    images = [
+      { url: "Coconut palm affected by leaf rot disease.png", caption: "Foliar blight necrosis on outer fronds.", source: "CRI Advisory Circular No. 42" }
     ];
   } else if (lower.includes("weevil") || lower.includes("කුරුමිණි") || lower.includes("வண்டு") || lower.includes("beetle")) {
     answer = `**Red Palm Weevil (Rhynchophorus ferrugineus) & Black Beetle Integrated Protocol:**\n\n1. **Pheromone Trapping:** Install Ferrugineol aggregation pheromone traps with food attractant (fresh sugarcane or coconut water) at 1 trap per hectare.\n2. **Trunk Wound Sealing:** Paint all fresh harvesting injuries or machete cuts with coal tar to prevent adult female oviposition.\n3. **Biological Control:** Release predatory earwigs and apply Metarhizium anisopliae fungal spores to cattle dung breeding pits.\n4. **Emergency Curative Action:** Inject Monocrotophos 600g/L SL (10ml in 10ml water) into the trunk 1 meter below the lowest frond if chewing sounds are heard.\n\n*Reference: CRI Crop Protection Circular CP-12*`;
