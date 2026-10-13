@@ -52,35 +52,35 @@ export interface UserAerialSurveyRecord {
   hotspots?: CanopyHotspotRecord[];
 }
 
-// Exact, calibrated Agro-Climatic GPS coordinates for Sri Lankan coconut estates
+// Exact, calibrated Agro-Climatic GPS coordinates for Sri Lankan coconut estates & CRI Research Stations
 export const ESTATE_COORDINATES: Record<string, { lat: number; lng: number }> = {
   // Key ID mappings
-  "estate_001": { lat: 7.4863, lng: 80.3623 },
-  "estate_002": { lat: 8.0362, lng: 79.8283 },
-  "estate_003": { lat: 7.0840, lng: 79.9939 },
+  "estate_001": { lat: 7.3275, lng: 79.9880 }, // Makandura Experimental Coconut Research Station (Intermediate Zone)
+  "estate_002": { lat: 8.0362, lng: 79.8283 }, // Puttalam Coconut Seed Garden & Coastal Plantation (Dry Zone)
+  "estate_003": { lat: 7.3414, lng: 79.8656 }, // Lunuwila CRI Bandirippuwa Estate Headquarters (Wet/Intermediate Zone)
 
-  // Named estates
-  "Green Valley Estate (Kurunegala)": { lat: 7.4863, lng: 80.3623 },
+  // Named estates (Rural plantation lands)
+  "Green Valley Estate (Kurunegala)": { lat: 7.3275, lng: 79.9880 }, // Makandura Coconut Triangle belt
   "Puttalam Coastal Plantation": { lat: 8.0362, lng: 79.8283 },
-  "Gampaha Research Grove": { lat: 7.0840, lng: 79.9939 },
+  "Gampaha Research Grove": { lat: 7.1425, lng: 80.0125 },
   "Makandura Experimental Estate (Intermediate Zone)": { lat: 7.3275, lng: 79.9880 },
   "Lunuwila CRI Headquarters (Wet Zone)": { lat: 7.3414, lng: 79.8656 },
   "Puttalam Seed Garden (Dry Zone)": { lat: 8.0362, lng: 79.8283 },
   "Ratnapura High-Rainfall Estate (Wet Zone)": { lat: 6.6828, lng: 80.4034 },
   "Batticaloa Coastal Research Station (Dry Zone)": { lat: 7.7170, lng: 81.7000 },
-  "Kurunegala Commercial Block (Intermediate Zone)": { lat: 7.4863, lng: 80.3623 },
-  "Gampaha / Negombo Smallholding (Wet Zone)": { lat: 7.0840, lng: 79.9939 },
+  "Kurunegala Commercial Block (Intermediate Zone)": { lat: 7.3275, lng: 79.9880 },
+  "Gampaha / Negombo Smallholding (Wet Zone)": { lat: 7.1425, lng: 80.0125 },
   "Chilaw Coconut Holding (Intermediate Zone)": { lat: 7.5758, lng: 79.7953 },
   "Kuliyapitiya Commercial Plantation (Intermediate Zone)": { lat: 7.4689, lng: 80.0401 },
   "Madampe Coconut Grove (Intermediate Zone)": { lat: 7.5021, lng: 79.8450 },
   "Puttalam Commercial Holding (Dry Zone)": { lat: 8.0362, lng: 79.8283 },
   "Kalutara Coastal Smallholding (Wet Zone)": { lat: 6.5854, lng: 79.9607 },
-  "Other / Private Coconut Plantation": { lat: 7.3000, lng: 80.0000 },
+  "Other / Private Coconut Plantation": { lat: 7.3414, lng: 79.8656 },
 };
 
 export function getEstateCoordinates(estateName?: string): { lat: number; lng: number } {
-  if (!estateName) return { lat: 7.4863, lng: 80.3623 };
-  return ESTATE_COORDINATES[estateName] || { lat: 7.4863, lng: 80.3623 };
+  if (!estateName) return { lat: 7.3275, lng: 79.9880 };
+  return ESTATE_COORDINATES[estateName] || { lat: 7.3275, lng: 79.9880 };
 }
 
 // Initial seed diagnostics for demo research accounts
@@ -176,7 +176,7 @@ const DEMO_SEEDED_HOTSPOTS: CanopyHotspotRecord[] = [
   {
     id: "hs-uav-001",
     estate_name: "Green Valley Estate (Kurunegala)",
-    location: { lat: 7.4878, lng: 80.3638 },
+    location: { lat: 7.3288, lng: 79.9892 },
     pixel_coordinates: { x: 340, y: 512 },
     mean_index_value: -0.045,
     severity: "critical",
@@ -191,7 +191,7 @@ const DEMO_SEEDED_HOTSPOTS: CanopyHotspotRecord[] = [
   {
     id: "hs-uav-002",
     estate_name: "Green Valley Estate (Kurunegala)",
-    location: { lat: 7.4850, lng: 80.3610 },
+    location: { lat: 7.3262, lng: 79.9868 },
     pixel_coordinates: { x: 720, y: 280 },
     mean_index_value: 0.012,
     severity: "high",
@@ -206,7 +206,7 @@ const DEMO_SEEDED_HOTSPOTS: CanopyHotspotRecord[] = [
   {
     id: "hs-uav-003",
     estate_name: "Green Valley Estate (Kurunegala)",
-    location: { lat: 7.4868, lng: 80.3629 },
+    location: { lat: 7.3279, lng: 79.9885 },
     pixel_coordinates: { x: 510, y: 640 },
     mean_index_value: 0.038,
     severity: "moderate",

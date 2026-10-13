@@ -148,9 +148,9 @@ describe("Pathology Telemetry Storage & CRUD", () => {
   });
 
   it("should return correct non-random estate coordinates for all Sri Lankan agro-climatic zones", () => {
-    const kurunegala = getEstateCoordinates("estate_001");
-    expect(kurunegala.lat).toBeCloseTo(7.4863, 4);
-    expect(kurunegala.lng).toBeCloseTo(80.3623, 4);
+    const makanduraCRI = getEstateCoordinates("estate_001");
+    expect(makanduraCRI.lat).toBeCloseTo(7.3275, 4);
+    expect(makanduraCRI.lng).toBeCloseTo(79.9880, 4);
 
     const puttalam = getEstateCoordinates("estate_002");
     expect(puttalam.lat).toBeCloseTo(8.0362, 4);

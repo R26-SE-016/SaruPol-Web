@@ -1,4 +1,12 @@
 import UTIF from 'utif';
+import exifr from 'exifr';
+
+export interface DroneGeoLocation {
+  lat: number;
+  lng: number;
+  altitude?: number;
+  source: 'drone_exif' | 'geotiff' | 'estate_fallback';
+}
 
 export interface ProcessedDroneImage {
   previewUrl: string;
@@ -6,6 +14,55 @@ export interface ProcessedDroneImage {
   originalHeight: number;
   isTiff: boolean;
   base64Payload?: string;
+  detectedGps?: DroneGeoLocation | null;
+}
+
+/**
+ * Ultra-lightweight in-browser EXIF & GeoTIFF metadata reader.
+ * Parses only the first few kilobytes of the file directly on the client side in <20ms,
+ * avoiding any memory overhead or server payload limits on deployed Cloud Run containers.
+ */
+export async function extractImageGeolocation(file: File): Promise<DroneGeoLocation | null> {
+  try {
+    // 1. Try exifr GPS extraction (works for JPEG, PNG, HEIC, TIFF headers)
+    const gps = await exifr.gps(file);
+    if (gps && typeof gps.latitude === 'number' && typeof gps.longitude === 'number') {
+      // Validate valid latitude and longitude
+      if (!isNaN(gps.latitude) && !isNaN(gps.longitude) && Math.abs(gps.latitude) <= 90 && Math.abs(gps.longitude) <= 180) {
+        return {
+          lat: Number(gps.latitude.toFixed(6)),
+          lng: Number(gps.longitude.toFixed(6)),
+          altitude: typeof gps.altitude === 'number' ? Number(gps.altitude.toFixed(1)) : undefined,
+          source: file.name.toLowerCase().endsWith('.tif') || file.name.toLowerCase().endsWith('.tiff') ? 'geotiff' : 'drone_exif',
+        };
+      }
+    }
+
+    // 2. Try raw EXIF/TIFF ModelTiepointTag if GeoTIFF without standard EXIF GPS tags
+    const isTiff = file.name.toLowerCase().endsWith('.tif') || file.name.toLowerCase().endsWith('.tiff');
+    if (isTiff) {
+      const parsed = await exifr.parse(file, { tiff: true, xmp: true }).catch(() => null);
+      if (parsed) {
+        // Check for ModelTiepointTag [I, J, K, X, Y, Z] (where X, Y are projected or geographic coords)
+        const tiepoint = parsed.ModelTiepointTag || (parsed as any).ModelTiepoint;
+        if (Array.isArray(tiepoint) && tiepoint.length >= 6) {
+          const x = tiepoint[3];
+          const y = tiepoint[4];
+          // Check if coordinates are in WGS84 decimal degrees (Sri Lanka roughly lat 5-10, lng 79-82)
+          if (x > 75 && x < 85 && y > 5 && y < 12) {
+            return {
+              lat: Number(y.toFixed(6)),
+              lng: Number(x.toFixed(6)),
+              source: 'geotiff',
+            };
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[Drone Image Processor] GPS metadata extraction skipped:', err);
+  }
+  return null;
 }
 
 export interface SpectralAnalysisResult {
@@ -50,11 +107,15 @@ export async function processDroneImage(file: File): Promise<ProcessedDroneImage
                  file.name.toLowerCase().endsWith('.tiff') || 
                  file.type === 'image/tiff';
 
-  if (isTiff) {
-    return processTiffFile(file);
-  } else {
-    return processStandardFile(file);
-  }
+  const [processed, detectedGps] = await Promise.all([
+    isTiff ? processTiffFile(file) : processStandardFile(file),
+    extractImageGeolocation(file),
+  ]);
+
+  return {
+    ...processed,
+    detectedGps,
+  };
 }
 
 /**

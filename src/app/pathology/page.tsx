@@ -47,7 +47,7 @@ import {
   UserAerialSurveyRecord, 
   CanopyHotspotRecord 
 } from "@/lib/pathology-storage";
-import { processDroneImage, computeInstantSpectralPreview } from "@/lib/drone-image-processor";
+import { processDroneImage, computeInstantSpectralPreview, DroneGeoLocation } from "@/lib/drone-image-processor";
 
 // Lazy load Leaflet Map for Diagnostic History
 const DiagnosticMapInner = dynamic(() => import("@/components/pathology/DiagnosticMap"), { ssr: false });
@@ -141,6 +141,7 @@ export default function PathologyPage() {
   const [aerialSubTab, setAerialSubTab] = useState<"scan" | "history">("scan");
   const [indexType, setIndexType] = useState<"VARI" | "NDVI">("VARI");
   const [estateId, setEstateId] = useState("estate_001");
+  const [detectedDroneGps, setDetectedDroneGps] = useState<DroneGeoLocation | null>(null);
   const [primaryFile, setPrimaryFile] = useState<File | null>(null);
   const [primaryPreview, setPrimaryPreview] = useState<string | null>(null);
   const [primaryBase64, setPrimaryBase64] = useState<string | null>(null);
@@ -238,12 +239,14 @@ export default function PathologyPage() {
       setUavResult(null);
       setUavError(null);
 
-      // UI Thumbnail preview (UTIF decoder for .tiff, object URL for jpg/png)
+      // UI Thumbnail preview (UTIF decoder for .tiff, object URL for jpg/png) + Fast Client-Side GPS extraction
       try {
         const processed = await processDroneImage(file);
         setPrimaryPreview(processed.previewUrl);
+        setDetectedDroneGps(processed.detectedGps || null);
       } catch (err: any) {
         setPrimaryPreview(URL.createObjectURL(file));
+        setDetectedDroneGps(null);
       }
 
       // Downscale for backend transmission (prevents Cloud Run payload limits)
@@ -355,8 +358,11 @@ export default function PathologyPage() {
     setUavError(null);
     setDispatchAlert(null);
 
-    // Exact calibrated GPS coordinates for the selected estate
-    const selectedCoords = ESTATE_COORDINATES[estateId] || getEstateCoordinates(user?.estate_id);
+    // Hybrid GPS Strategy: Prioritize real EXIF/GeoTIFF metadata extracted directly from drone image,
+    // otherwise fall back gracefully to real CRI plantation centroid coordinates.
+    const selectedCoords = detectedDroneGps
+      ? { lat: detectedDroneGps.lat, lng: detectedDroneGps.lng }
+      : (ESTATE_COORDINATES[estateId] || getEstateCoordinates(user?.estate_id));
 
     try {
       // 1. High-precision radiometric spectral analysis with 16-bit NIR equalization
@@ -367,7 +373,9 @@ export default function PathologyPage() {
         selectedCoords
       );
 
-      const effectiveEstateName = user?.estate_id || (estateId === "estate_001" ? "Green Valley Estate (Kurunegala)" : estateId === "estate_002" ? "Puttalam Coastal Plantation" : "Gampaha Research Grove");
+      const effectiveEstateName = detectedDroneGps
+        ? (detectedDroneGps.source === 'geotiff' ? "Real GeoTIFF Survey Block" : "Real Aerial Drone Survey Block")
+        : (user?.estate_id || (estateId === "estate_001" ? "Makandura Coconut Triangle Block" : estateId === "estate_002" ? "Puttalam Coastal Plantation" : "Lunuwila CRI Headquarters"));
       const surveyId = `survey-${new Date().toISOString().split("T")[0]}-${Date.now().toString(36).slice(-4)}`;
 
       // 2. Format calibrated detected stressed tree hotspots
@@ -1218,10 +1226,17 @@ export default function PathologyPage() {
                         {primaryPreview ? (
                           <div className="relative w-full h-full">
                             <img src={primaryPreview} alt="Primary Aerial" className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-3">
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-3 gap-1">
                               <span className="text-[11px] font-mono flex items-center gap-1.5" style={{ color: "#00FF9D" }}>
                                 <CheckCircle2 className="w-3.5 h-3.5" /> {primaryFile?.name || "Sample Drone Orthomosaic"}
                               </span>
+                              {detectedDroneGps && (
+                                <span className="text-[10px] font-mono flex items-center gap-1.5 px-2 py-0.5 rounded w-fit"
+                                  style={{ background: "rgba(0, 229, 255, 0.2)", color: "#00E5FF", border: "1px solid rgba(0, 229, 255, 0.4)" }}
+                                >
+                                  📍 Real Drone GPS: {detectedDroneGps.lat.toFixed(5)}° N, {detectedDroneGps.lng.toFixed(5)}° E ({detectedDroneGps.source === 'geotiff' ? 'GeoTIFF' : 'EXIF'})
+                                </span>
+                              )}
                             </div>
                           </div>
                         ) : (
