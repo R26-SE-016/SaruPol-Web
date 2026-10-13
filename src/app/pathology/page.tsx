@@ -581,10 +581,16 @@ export default function PathologyPage() {
   const [expandedKb, setExpandedKb] = useState<string | null>("kb_001");
 
   const filteredKnowledge = useMemo(() => {
+    const query = kbSearch.trim().toLowerCase();
+    if (!query) return DEMO_KNOWLEDGE;
     return DEMO_KNOWLEDGE.filter(k => 
-      k.common_name.toLowerCase().includes(kbSearch.toLowerCase()) ||
-      k.scientific_name.toLowerCase().includes(kbSearch.toLowerCase()) ||
-      k.symptoms.some(s => s.toLowerCase().includes(kbSearch.toLowerCase()))
+      k.common_name.toLowerCase().includes(query) ||
+      k.common_name_si.toLowerCase().includes(query) ||
+      k.common_name_ta.toLowerCase().includes(query) ||
+      k.scientific_name.toLowerCase().includes(query) ||
+      k.symptoms.some(s => s.toLowerCase().includes(query)) ||
+      k.symptoms_si.some(s => s.toLowerCase().includes(query)) ||
+      k.symptoms_ta.some(s => s.toLowerCase().includes(query))
     );
   }, [kbSearch]);
 
