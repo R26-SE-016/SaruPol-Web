@@ -72,22 +72,22 @@ export const DISEASE_COLORS: Record<string, {
   },
   "bud rot": { 
     label: "Bud Rot", 
-    label_si: "අග කුණු වීම",
+    label_si: "ගොබය කුණුවීම",
     label_ta: "குருத்து அழுகல்",
     color: "#FF4C4C", 
     bg: "rgba(255, 76, 76, 0.15)",
     description: "Fatal fungal disease (Phytophthora palmivora) attacking terminal bud.",
-    description_si: "අග්‍රස්ථ අංකුරයට හානි කරන මාරාන්තික දිලීර රෝගයකි (Phytophthora palmivora).",
+    description_si: "අග්‍රස්ථ අංකුරයට (ගොබයට) හානි කරන මාරාන්තික දිලීර රෝගයකි (Phytophthora palmivora).",
     description_ta: "முனைய குருத்தைத் தாக்கும் ஆபத்தான பூஞ்சை நோய் (Phytophthora palmivora)."
   },
   "gray leaf spot": { 
     label: "Gray Leaf Spot", 
-    label_si: "අළු ලප රෝගය",
+    label_si: "කොළ අංගමාරය",
     label_ta: "சாம்பல் இலை புள்ளி",
     color: "#FF8C00", 
     bg: "rgba(255, 140, 0, 0.15)",
     description: "Foliar disease (Pestalotiopsis palmarum) with greyish-white necrotic spots.",
-    description_si: "අළු-සුදු පැහැති ලප සහිත පත්‍ර ආසාදනය (Pestalotiopsis palmarum).",
+    description_si: "අළු-සුදු පැහැති පත්‍ර ලප සහ අංගමාරය ඇති කරන ආසාදනය (Pestalotiopsis palmarum).",
     description_ta: "சாம்பல்-வெள்ளை புள்ளிகளுடன் கூடிய இலை நோய் (Pestalotiopsis palmarum)."
   },
   "leaf rot": { 
@@ -97,7 +97,7 @@ export const DISEASE_COLORS: Record<string, {
     color: "#E6AF2E", 
     bg: "rgba(230, 175, 46, 0.15)",
     description: "Fungal infection causing necrosis of younger fronds.",
-    description_si: "ළපටි පොල් මට්ටු කුණු වීමට ලක්වන දිලීර ආසාදනයකි.",
+    description_si: "ළපටි පොල් පිති කුණු වීමට ලක්වන දිලීර ආසාදනයකි.",
     description_ta: "இளம் ஓலைகளை அழுகச் செய்யும் பூஞ்சை தொற்று."
   },
   "bud root dropping": { 
@@ -107,12 +107,12 @@ export const DISEASE_COLORS: Record<string, {
     color: "#A78BFA", 
     bg: "rgba(167, 139, 250, 0.15)",
     description: "Critical advanced spindle collapse and drooping due to bud decay.",
-    description_si: "කරටිය දිරාපත් වීම නිසා ඇතිවන දරුණු මට්ටේ කඩා වැටීම.",
+    description_si: "කරටිය දිරාපත් වීම නිසා ඇතිවන දරුණු පිති කඩා වැටීම.",
     description_ta: "குருத்து அழுகலால் ஏற்படும் தீவிர ஓலை வீழ்ச்சி."
   },
   "stembleeding": { 
     label: "Stem Bleeding", 
-    label_si: "කඳෙන් ලේ වැගිරීම",
+    label_si: "කඳෙන් යුෂ ගැලීම",
     label_ta: "தண்டு வடியல்",
     color: "#F472B6", 
     bg: "rgba(244, 114, 182, 0.15)",
@@ -153,7 +153,7 @@ export const DEMO_KNOWLEDGE: KnowledgeItem[] = [
   {
     id: "kb_001",
     common_name: "Bud Rot",
-    common_name_si: "අග කුණු වීම",
+    common_name_si: "ගොබය කුණුවීමේ රෝගය (අංකුර කුණු වීම)",
     common_name_ta: "குருத்து அழுகல்",
     scientific_name: "Phytophthora palmivora",
     symptoms: [
@@ -165,7 +165,7 @@ export const DEMO_KNOWLEDGE: KnowledgeItem[] = [
     symptoms_si: [
       "මධ්‍යම කරටි පත්‍රය (ගොබය) කහ වීම සහ කුණු වී යාම",
       "කරටියෙන් දුගඳ හමන තද දුඹුරු-කළු පැහැති දියරයක් ගලා ඒම",
-      "පිටත මට්ටු අකාලයේ පහතට එල්ලා වැටීම හා හැලී යාම",
+      "පහළ පිති අකාලයේ පහතට එල්ලා වැටීම හා හැලී යාම",
       "කරටි පත්‍රය ඉතා පහසුවෙන් සුළු ඇදීමකින් ගැලවී ඒම",
     ],
     symptoms_ta: [
@@ -219,7 +219,7 @@ export const DEMO_KNOWLEDGE: KnowledgeItem[] = [
       ]
     },
     vernacular_advice: "Bud Root Dropping indicates terminal stage necrosis. Prompt surgical excision of the infected crown is required within 48 hours to prevent complete tree loss.",
-    vernacular_advice_si: "අග කුණු වීම මාරාන්තික තත්ත්වයකි. ගස සම්පූර්ණයෙන්ම විනාශ වීම වැළැක්වීම සඳහා පැය 48ක් ඇතුළත කුණු වූ කොටස් කපා ප්‍රතිකාර කළ යුතුය.",
+    vernacular_advice_si: "ගොබය කුණුවීමේ රෝගය (අංකුර කුණුවීම) මාරාන්තික තත්ත්වයකි. ගස සම්පූර්ණයෙන්ම විනාශ වීම වැළැක්වීම සඳහා පැය 48ක් ඇතුළත කුණු වූ කොටස් කපා ප්‍රතිකාර කළ යුතුය.",
     vernacular_advice_ta: "குருத்து அழுகல் உயிருக்கே ஆபத்தானது. மரம் முழுமையாக அழிவதைத் தவிர்க்க 48 மணி நேரத்திற்குள் சிகிச்சை அளிக்க வேண்டும்.",
     severity_level: "critical",
     source: "Coconut Research Institute of Sri Lanka (CRI Bulletin No. 12)",
@@ -227,7 +227,7 @@ export const DEMO_KNOWLEDGE: KnowledgeItem[] = [
   {
     id: "kb_002",
     common_name: "Gray Leaf Spot",
-    common_name_si: "අළු ලප රෝගය",
+    common_name_si: "කොළ අංගමාරය (අළු පැහැති පත්‍ර ලප රෝගය)",
     common_name_ta: "சாம்பல் இலை புள்ளி",
     scientific_name: "Pestalotiopsis palmarum",
     symptoms: [
@@ -238,8 +238,8 @@ export const DEMO_KNOWLEDGE: KnowledgeItem[] = [
     ],
     symptoms_si: [
       "කුඩා කහ-දුඹුරු ලප අළු-සුදු ඉලිප්සාකාර තුවාල බවට විශාල වීම",
-      "පැරණි මට්ටුවල අළු පැහැති මධ්‍යය වටා තද දුඹුරු දාර ඇතිවීම",
-      "ලප එකතු වීමෙන් මට්ටු වේලී පිලිස්සී යාම",
+      "පැරණි පිතිවල අළු පැහැති මධ්‍යය වටා තද දුඹුරු දාර ඇතිවීම",
+      "ලප එකතු වීමෙන් පිති වේලී පිලිස්සී යාම",
       "ප්‍රභාසංස්ලේෂණය හා ගෙඩි හටගැනීම සැලකිය යුතු ලෙස අඩුවීම",
     ],
     symptoms_ta: [
@@ -250,15 +250,15 @@ export const DEMO_KNOWLEDGE: KnowledgeItem[] = [
     ],
     treatment_protocols: {
       chemical: [
-        "Foliar spray with Carbendazim (0.1%) or Mancozeb (0.25%) at first symptom onset",
+        "Foliar spray with Copper fungicides (e.g. Copper Oxychloride) or Mancozeb (0.25%) at first symptom onset (Carbendazim restricted by Sri Lanka DoA/ROP)",
         "Spray Copper Hydroxide (2g/L) across lower and middle canopy tiers",
       ],
       chemical_si: [
-        "රෝග ලක්ෂණ ආරම්භයේදීම කාබෙන්ඩසිම් (0.1%) හෝ මැන්කොසෙබ් (0.25%) පත්‍ර ඉසින්න",
+        "රෝග ලක්ෂණ ආරම්භයේදීම මැන්කොසෙබ් (0.25%) හෝ කොපර් දිලීර නාශක (කොපර් ඔක්සික්ලෝරයිඩ්) පත්‍රවලට ඉසින්න (කාබෙන්ඩසිම් භාවිතය ශ්‍රී ලංකාවේ තහනම්/සීමා කර ඇත)",
         "පහළ සහ මැද වියන් ස්ථර සඳහා කොපර් හයිඩ්‍රොක්සයිඩ් (ලීටරයකට ග්‍රෑම් 2) ඉසින්න",
       ],
       chemical_ta: [
-        "ஆரம்ப நிலையிலேயே கார்பென்டாசிம் (0.1%) அல்லது மேன்கோசெப் (0.25%) தெளிக்கவும்",
+        "ஆரம்ப நிலையிலேயே மேன்கோசெப் (0.25%) அல்லது காப்பர் பூஞ்சைக்கொல்லி தெளிக்கவும் (கார்பென்டாசிம் இலங்கையில் கட்டுப்படுத்தப்பட்டுள்ளது)",
         "கீழ் மற்றும் நடுத்தர ஓலைகளுக்கு காப்பர் ஹைட்ராக்சைடு (2g/L) தெளிக்கவும்",
       ],
       biological: [
@@ -276,7 +276,7 @@ export const DEMO_KNOWLEDGE: KnowledgeItem[] = [
       ],
       cultural_si: [
         "පොටෑසියම් (K₂O) සහ මැග්නීසියම් (MgO) ඌනතා නිවැරදි කිරීමට පොහොර යොදන්න",
-        "දැඩි ලෙස රෝගී වූ වියළි පහළ මට්ටු කපා පුළුස්සා දමන්න",
+        "දැඩි ලෙස රෝගී වූ වියළි පහළ පිති කපා පුළුස්සා දමන්න",
       ],
       cultural_ta: [
         "பொட்டாசியம் மற்றும் மெக்னீசியம் பற்றாக்குறையை உரமிடுதல் மூலம் சரிசெய்யவும்",
@@ -292,7 +292,7 @@ export const DEMO_KNOWLEDGE: KnowledgeItem[] = [
   {
     id: "kb_003",
     common_name: "Leaf Rot",
-    common_name_si: "කොළ කුණු වීම",
+    common_name_si: "කොළ කුණුවීමේ රෝගය",
     common_name_ta: "இலை அழுகல்",
     scientific_name: "Exserohilum rostratum / Colletotrichum gloeosporioides",
     symptoms: [
@@ -348,8 +348,8 @@ export const DEMO_KNOWLEDGE: KnowledgeItem[] = [
         "நல்ல காற்றோட்டத்திற்கு மரங்களுக்கு இடையே 26 அடி இடைவெளியைப் பராமரிக்கவும்",
       ]
     },
-    vernacular_advice: "Young palms (< 8 years) are highly susceptible. Protecting the central spear leaf from mechanical injury is paramount.",
-    vernacular_advice_si: "අවුරුදු 8ට අඩු ළපටි ගස්වලට දැඩි අවදානමක් ඇත. ගොබ පත්‍රයට හානි සිදු වීම වළක්වා ගන්න.",
+    vernacular_advice: "Young palms (< 8 years) are highly susceptible. Protecting the central spear leaf from mechanical injury is paramount. (Note: Targets fungal pathogens Colletotrichum/Exserohilum; distinct from Weligama Coconut Leaf Wilt Disease).",
+    vernacular_advice_si: "අවුරුදු 8ට අඩු ළපටි ගස්වලට දැඩි අවදානමක් ඇත. ගොබ පත්‍රයට හානි සිදු වීම වළක්වා ගන්න (සැලකිය යුතුයි: මෙය දිලීරමය කොළ කුණුවීම වන අතර වැලිගම පොල් කොළ මැලවීමේ රෝගය (WCLWD) සමඟ ව්‍යාකූල කර නොගත යුතුය).",
     vernacular_advice_ta: "8 வயதுக்குட்பட்ட இளம் மரங்கள் அதிகம் பாதிக்கப்படுகின்றன. குருத்து இலை சேதமடைவதைத் தடுக்கவும்.",
     severity_level: "high",
     source: "CRI Plant Pathology Division",
@@ -357,7 +357,7 @@ export const DEMO_KNOWLEDGE: KnowledgeItem[] = [
   {
     id: "kb_004",
     common_name: "Stem Bleeding",
-    common_name_si: "කඳෙන් ලේ වැගිරීම",
+    common_name_si: "කඳෙන් යුෂ ගැලීමේ රෝගය (කඳේ ලේ ගැලීම)",
     common_name_ta: "தண்டு வடியல்",
     scientific_name: "Thielaviopsis paradoxa (Ceratocystis paradoxa)",
     symptoms: [
@@ -382,17 +382,17 @@ export const DEMO_KNOWLEDGE: KnowledgeItem[] = [
       chemical: [
         "Chisel out all discolored vascular wood until clean white trunk tissue is exposed",
         "Dress the wound with hot coal tar or concentrated 10% Bordeaux paste",
-        "Apply 1% Bordeaux drench or Tridemorph root-feeding (5ml in 100ml water)",
+        "Cavity packing with Copper Oxychloride or 1% Bordeaux paste (Note: Tridemorph / Calixin root feeding is phased out / restricted under Sri Lanka DoA/ROP regulations)",
       ],
       chemical_si: [
         "නිරෝගී සුදු පැහැති දැව මතුවන තෙක් රෝගී සියලු දැව කොටස් කටුවකින් හාරා ඉවත් කරන්න",
-        "තුවාලය මත උණුසුම් තාර හෝ ඝන 10% බෝඩෝ පේස්ට් ආලේප කරන්න",
-        "ට්‍රයිඩෙමෝෆ් (Tridemorph) මුල් මඟින් අවශෝෂණය කරවන්න (වතුර 100ml කට 5ml)",
+        "තුවාලය මත උණුසුම් තාර හෝ 10% බෝඩෝ පේස්ට් ආලේප කරන්න",
+        "තුවාල කුහරය පිරිසිදු කර කොපර් ඔක්සික්ලෝරයිඩ් හෝ බෝඩෝ පේස්ට් කුහරයට පිරවීම (සටහන: ට්‍රයිඩෙමෝෆ්/Calixin මුල් මඟින් යෙදීම ශ්‍රී ලංකා පළිබෝධනාශක රෙජිස්ට්‍රාර් මඟින් සීමා කර ඇත/ලබාගත නොහැක)",
       ],
       chemical_ta: [
         "வெள்ளை நிற திசு வரும் வரை பாதிக்கப்பட்ட மரப்பகுதியை உளியால் செதுக்கி எடுக்கவும்",
         "காயத்தின் மேல் நிலக்கரி தார் அல்லது 10% போர்டோ பசையை பூசவும்",
-        "ட்ரைடெமார்ப் (100ml தண்ணீரில் 5ml) வேர் மூலம் செலுத்தவும்",
+        "துவாரத்தில் காப்பர் ஆக்ஸிகுளோரைடு பேஸ்ட் நிரப்பவும் (குறிப்பு: ட்ரைடெமார்ப் வேர் சிகிச்சை இலங்கையில் கட்டுப்படுத்தப்பட்டுள்ளது)",
       ],
       biological: [
         "Apply Trichoderma harzianum paste onto treated trunk wounds",
