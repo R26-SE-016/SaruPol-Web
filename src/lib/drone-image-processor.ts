@@ -32,7 +32,10 @@ export async function extractImageGeolocation(file: File): Promise<DroneGeoLocat
         return {
           lat: Number(gps.latitude.toFixed(6)),
           lng: Number(gps.longitude.toFixed(6)),
-          altitude: typeof gps.altitude === 'number' ? Number(gps.altitude.toFixed(1)) : undefined,
+          altitude:
+            typeof (gps as { altitude?: unknown }).altitude === 'number'
+              ? Number(((gps as { altitude?: number }).altitude)!.toFixed(1))
+              : undefined,
           source: file.name.toLowerCase().endsWith('.tif') || file.name.toLowerCase().endsWith('.tiff') ? 'geotiff' : 'drone_exif',
         };
       }
