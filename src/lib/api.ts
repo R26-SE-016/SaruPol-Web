@@ -454,4 +454,5 @@ export const health = {
   check: () => request<{ status: string }>('/health'),
 };
 
-export default { auth, soil, pathology, yield: yield_, advisory, health };
+const api = { auth, soil, pathology, yield: yield_, advisory, health };
+export default api;
