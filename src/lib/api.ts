@@ -1,7 +1,10 @@
 // ─── SaruPol Unified API Client ───
 // Connects to SaruPol-Gateway (http://localhost:8000) with offline mock fallback
 
+declare const process: { env: Record<string, string | undefined> };
+
 const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:8000';
+const SOIL_API_URL = process.env.NEXT_PUBLIC_SOIL_API_URL || 'https://coconut-soil-intelligence-1.onrender.com';
 
 // Direct URL to the Advisory Backend (coconut_advisory_system) for binary streams (TTS audio, CRI images)
 const ADVISORY_BACKEND_URL = process.env.NEXT_PUBLIC_ADVISORY_BACKEND_URL || 'https://coconut-advisory-system-production.up.railway.app';
@@ -24,17 +27,19 @@ async function request<T>(path: string, options: FetchOptions = {}): Promise<T> 
     }
   }
 
+  const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
+
   const config: RequestInit = {
     method: options.method || 'GET',
     headers: {
-      'Content-Type': 'application/json',
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...authHeader,
       ...options.headers,
     },
   };
 
   if (options.body) {
-    config.body = JSON.stringify(options.body);
+    config.body = isFormData ? (options.body as FormData) : JSON.stringify(options.body);
   }
 
   try {
@@ -44,7 +49,21 @@ async function request<T>(path: string, options: FetchOptions = {}): Promise<T> 
     }
     return res.json();
   } catch {
-    console.warn(`[SaruPol API] Gateway unreachable at ${url}. Using offline mode.`);
+    console.warn(`[SaruPol API] Gateway unreachable at ${url}. Trying direct fallback.`);
+
+    // If it's a soil / nutrient / location endpoint, try direct Render deployment fallback
+    if (path.includes('soil') || path.includes('nutrient') || path.includes('location')) {
+      try {
+        const cleanPath = path.replace(/^\/api\/soil/, '/api/v1');
+        const directUrl = `${SOIL_API_URL}${cleanPath}`;
+        const directRes = await fetch(directUrl, config);
+        if (directRes.ok) {
+          return directRes.json();
+        }
+      } catch (err) {
+        console.warn(`[SaruPol API] Direct Soil API fallback unreachable.`);
+      }
+    }
     throw new Error('GATEWAY_OFFLINE');
   }
 }
@@ -77,60 +96,60 @@ export const auth = {
     request<{ user: AuthUserResponse }>('/api/auth/profile'),
 };
 
-// ─── Soil Intelligence ───
+// ─── Coconut Soil & Nutrient Intelligence API ───
 export const soil = {
-  predictTriangulated: (data: {
-    tree_no: number | string;
-    zone_id?: string;
-    point_a: { N: number; P: number; K: number; pH?: number; moisture?: number; temperature?: number; EC?: number };
-    point_b: { N: number; P: number; K: number; pH?: number; moisture?: number; temperature?: number; EC?: number };
-    point_c: { N: number; P: number; K: number; pH?: number; moisture?: number; temperature?: number; EC?: number };
-  }) => request<any>('/api/v1/predict/triangulated', { method: 'POST', body: data }),
-
-  predictSingle: (data: {
-    tree_no: number | string;
-    zone_id?: string;
-    reading: { N: number; P: number; K: number; pH?: number; moisture?: number; temperature?: number; EC?: number };
-  }) => request<any>('/api/v1/predict/single', { method: 'POST', body: data }),
-
+  // 1. Visual Leaf Nutrient Deficiency Prediction (Multipart file upload)
   predictVisualNutrient: (formData: FormData) =>
-    request<any>('/api/v1/nutrient-analysis/predict', {
+    request<any>('/api/soil/nutrient-analysis/predict', {
       method: 'POST',
       body: formData,
     }),
 
+  // 2. Certified Laboratory DFR Recommendation
   recommendLab: (data: {
     nitrogen: number;
     phosphorus: number;
     potassium: number;
-    magnesium?: number;
+    magnesium?: number | null;
     palm_age: number;
     zone: string;
-  }) => request<any>('/api/v1/recommend/lab', { method: 'POST', body: data }),
+  }) =>
+    request<any>('/api/soil/nutrient-analysis/lab-recommendation', {
+      method: 'POST',
+      body: data,
+    }),
 
+  // 3. Agro-Ecological GIS Zone from Coordinates (NSDI Service)
   getAgroZone: (latitude: number, longitude: number) =>
-    request<any>('/api/v1/location/agro-zone', {
+    request<any>('/api/soil/location/agro-zone', {
       method: 'POST',
       body: { latitude, longitude },
     }),
 
-  getTrees: () => request<any>('/api/v1/trees'),
-
-  startAnalysis: (treeNo: string) =>
-    request<any>('/api/v1/analysis/start', {
-      method: 'POST',
-      body: { tree_no: treeNo },
+  // 4. Deficiencies Knowledge Base & Symptoms
+  getDeficiencies: () =>
+    request<any>('/api/soil/nutrient-analysis/deficiencies', {
+      method: 'GET',
     }),
 
-  recordReading: (data: {
-    analysis_id: string;
-    tree_no: string;
-    point_name: string;
-    reading: { N: number; P: number; K: number; pH?: number; moisture?: number; temperature?: number; EC?: number };
-  }) => request<any>('/api/v1/analysis/reading', { method: 'POST', body: data }),
+  // 5. Scans History (Firestore)
+  saveScan: (data: any) =>
+    request<any>('/api/soil/nutrient-analysis/scans', {
+      method: 'POST',
+      body: data,
+    }),
 
-  completeAnalysis: (data: { analysis_id: string; tree_no: string }) =>
-    request<any>('/api/v1/analysis/complete', { method: 'POST', body: data }),
+  getScans: (userId: string) =>
+    request<any>(`/api/soil/nutrient-analysis/scans?user_id=${encodeURIComponent(userId)}`, {
+      method: 'GET',
+    }),
+
+  // Backward compatibility legacy methods
+  predictTriangulated: (data: any) =>
+    request<any>('/api/v1/predict/triangulated', { method: 'POST', body: data }),
+
+  predictSingle: (data: any) =>
+    request<any>('/api/v1/predict/single', { method: 'POST', body: data }),
 };
 
 // ─── Pathology Detection ───
