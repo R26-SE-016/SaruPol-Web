@@ -170,6 +170,14 @@ export interface TranslationSchema {
       culturalBadge: string;
       biologicalBadge: string;
       criFieldNote: string;
+      circularTitle: string;
+      susceptibleTitle: string;
+      predisposingTitle: string;
+      preventiveTitle: string;
+      recipesTitle: string;
+      ingredientsLabel: string;
+      stepsLabel: string;
+      safetyLabel: string;
     };
     history: {
       filterLabel: string;
