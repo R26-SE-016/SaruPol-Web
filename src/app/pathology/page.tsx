@@ -13,7 +13,7 @@ import {
   ClipboardList, ShieldCheck, Camera, Sparkles, Map, RefreshCw,
   BookOpen, Search, Layers, Radio, Send, ChevronRight,
   Sliders, Info, Compass, ArrowRight, FileText, CheckCircle,
-  Lock, ShieldAlert, Trash2, HelpCircle
+  Lock, ShieldAlert, Trash2, HelpCircle, Beaker, Calendar, Thermometer
 } from "lucide-react";
 import StatCard from "@/components/pathology/StatCard";
 import DiseaseChart from "@/components/pathology/DiseaseChart";
@@ -2084,6 +2084,9 @@ export default function PathologyPage() {
                   const localizedCultural = language === "si" ? item.treatment_protocols.cultural_si : language === "ta" ? item.treatment_protocols.cultural_ta : item.treatment_protocols.cultural;
                   const localizedBiological = language === "si" ? item.treatment_protocols.biological_si : language === "ta" ? item.treatment_protocols.biological_ta : item.treatment_protocols.biological;
                   const localizedAdvice = language === "si" ? item.vernacular_advice_si : language === "ta" ? item.vernacular_advice_ta : item.vernacular_advice;
+                  const localizedSusceptible = language === "si" ? item.susceptible_stage_si : language === "ta" ? item.susceptible_stage_ta : item.susceptible_stage;
+                  const localizedPredisposing = language === "si" ? item.predisposing_factors_si : language === "ta" ? item.predisposing_factors_ta : item.predisposing_factors;
+                  const localizedPreventive = language === "si" ? item.preventive_measures?.measures_si : language === "ta" ? item.preventive_measures?.measures_ta : item.preventive_measures?.measures;
 
                   return (
                     <div 
@@ -2109,6 +2112,17 @@ export default function PathologyPage() {
                             >
                               {item.severity_level}
                             </span>
+                            {item.circular_no && (
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md border font-semibold"
+                                style={{
+                                  background: "rgba(0, 229, 255, 0.1)",
+                                  borderColor: "rgba(0, 229, 255, 0.3)",
+                                  color: "#00E5FF"
+                                }}
+                              >
+                                {item.circular_no}
+                              </span>
+                            )}
                           </div>
                           <p className="text-xs font-mono italic mt-0.5" style={{ color: "var(--text-secondary)" }}>{item.scientific_name}</p>
                         </div>
@@ -2118,6 +2132,32 @@ export default function PathologyPage() {
                       {isExpanded && (
                         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-6 pt-6 border-t space-y-6" style={{ borderColor: "var(--card-border)" }}>
                           
+                          {/* Susceptible Stage & Predisposing Factors */}
+                          {(localizedSusceptible || localizedPredisposing) && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {localizedSusceptible && (
+                                <div className="p-3.5 rounded-xl border" style={{ background: "var(--card-bg)", borderColor: "rgba(230, 175, 46, 0.25)" }}>
+                                  <h4 className="text-xs font-mono uppercase tracking-wider mb-2 flex items-center gap-1.5 font-bold" style={{ color: "#E6AF2E" }}>
+                                    <Calendar className="w-3.5 h-3.5" /> {t.pathology.knowledge.susceptibleTitle}
+                                  </h4>
+                                  <p className="text-xs font-mono" style={{ color: "var(--text-primary)" }}>{localizedSusceptible}</p>
+                                </div>
+                              )}
+                              {localizedPredisposing && localizedPredisposing.length > 0 && (
+                                <div className="p-3.5 rounded-xl border" style={{ background: "var(--card-bg)", borderColor: "rgba(255, 76, 76, 0.25)" }}>
+                                  <h4 className="text-xs font-mono uppercase tracking-wider mb-2 flex items-center gap-1.5 font-bold" style={{ color: "#FF4C4C" }}>
+                                    <Thermometer className="w-3.5 h-3.5" /> {t.pathology.knowledge.predisposingTitle}
+                                  </h4>
+                                  <ul className="text-xs font-mono space-y-1" style={{ color: "var(--text-primary)" }}>
+                                    {localizedPredisposing.map((factor, i) => (
+                                      <li key={i}>• {factor}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
                           {/* Symptoms */}
                           <div>
                             <h4 className="text-xs font-mono uppercase tracking-wider mb-2 flex items-center gap-1.5 font-bold" style={{ color: "#00E5FF" }}>
@@ -2161,6 +2201,68 @@ export default function PathologyPage() {
                               </div>
                             </div>
                           </div>
+
+                          {/* Preventive Measures (e.g. Fungicidal bag method) */}
+                          {localizedPreventive && localizedPreventive.length > 0 && (
+                            <div className="p-4 rounded-xl border" style={{ background: "var(--card-bg)", borderColor: "rgba(0, 255, 157, 0.25)" }}>
+                              <h4 className="text-xs font-mono uppercase tracking-wider mb-2 flex items-center gap-1.5 font-bold" style={{ color: theme === "dark" ? "#00FF9D" : "#00875A" }}>
+                                <ShieldCheck className="w-3.5 h-3.5" /> {t.pathology.knowledge.preventiveTitle}
+                              </h4>
+                              <ul className="text-xs font-mono space-y-1.5" style={{ color: "var(--text-primary)" }}>
+                                {localizedPreventive.map((step, i) => (
+                                  <li key={i} className="flex items-start gap-2">
+                                    <span className="text-emerald-400 font-bold">•</span>
+                                    <span>{step}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          {/* Preparation Recipes / Mix Guides */}
+                          {item.recipes && item.recipes.length > 0 && (
+                            <div>
+                              <h4 className="text-xs font-mono uppercase tracking-wider mb-2 flex items-center gap-1.5 font-bold" style={{ color: "#E6AF2E" }}>
+                                <Beaker className="w-3.5 h-3.5" /> {t.pathology.knowledge.recipesTitle}
+                              </h4>
+                              <div className="space-y-3">
+                                {item.recipes.map((recipe, rIdx) => {
+                                  const rTitle = language === "si" ? recipe.title_si : language === "ta" ? recipe.title_ta : recipe.title;
+                                  const rIngr = language === "si" ? recipe.ingredients_si : language === "ta" ? recipe.ingredients_ta : recipe.ingredients;
+                                  const rSteps = language === "si" ? recipe.preparation_steps_si : language === "ta" ? recipe.preparation_steps_ta : recipe.preparation_steps;
+                                  const rSafety = language === "si" ? recipe.safety_precautions_si : language === "ta" ? recipe.safety_precautions_ta : recipe.safety_precautions;
+
+                                  return (
+                                    <div key={rIdx} className="p-4 rounded-xl border space-y-3" style={{ background: "rgba(230, 175, 46, 0.05)", borderColor: "rgba(230, 175, 46, 0.3)" }}>
+                                      <div className="text-xs font-mono font-bold" style={{ color: "#E6AF2E" }}>{rTitle}</div>
+                                      
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+                                        <div className="p-3 rounded-lg border" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
+                                          <div className="text-[10px] uppercase font-bold text-amber-400 mb-1">{t.pathology.knowledge.ingredientsLabel}:</div>
+                                          <ul className="space-y-1" style={{ color: "var(--text-primary)" }}>
+                                            {rIngr.map((ing, i) => <li key={i}>• {ing}</li>)}
+                                          </ul>
+                                        </div>
+                                        <div className="p-3 rounded-lg border" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
+                                          <div className="text-[10px] uppercase font-bold text-amber-400 mb-1">{t.pathology.knowledge.stepsLabel}:</div>
+                                          <ol className="space-y-1 list-decimal list-inside" style={{ color: "var(--text-primary)" }}>
+                                            {rSteps.map((st, i) => <li key={i}>{st}</li>)}
+                                          </ol>
+                                        </div>
+                                      </div>
+
+                                      {rSafety && (
+                                        <div className="text-[11px] font-mono p-2 rounded border flex items-center gap-2" style={{ background: "rgba(255, 76, 76, 0.1)", borderColor: "rgba(255, 76, 76, 0.25)", color: "#FF8A8A" }}>
+                                          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                                          <span><strong>{t.pathology.knowledge.safetyLabel}:</strong> {rSafety}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
 
                           {/* Vernacular Advice */}
                           <div className="p-3.5 rounded-xl border text-xs font-mono flex items-center gap-2"
