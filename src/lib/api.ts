@@ -3,6 +3,9 @@
 
 const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:8000';
 
+// Direct URL to the Advisory Backend (coconut_advisory_system) for binary streams (TTS audio, CRI images)
+const ADVISORY_BACKEND_URL = process.env.NEXT_PUBLIC_ADVISORY_BACKEND_URL || 'https://coconut-advisory-system-production.up.railway.app';
+
 interface FetchOptions {
   method?: string;
   body?: unknown;
@@ -319,56 +322,128 @@ export interface TranscribeResponse {
   error?: string;
 }
 
+// Direct request to advisory backend (bypasses gateway for faster advisory responses)
+async function directAdvisoryRequest<T>(path: string, body: unknown): Promise<T> {
+  const url = `${ADVISORY_BACKEND_URL}${path}`;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      throw new Error(`Advisory backend returned ${res.status}`);
+    }
+    return res.json();
+  } catch {
+    console.warn(`[SaruPol Advisory] Direct backend at ${url} unreachable. Falling back to gateway.`);
+    throw new Error('ADVISORY_BACKEND_OFFLINE');
+  }
+}
+
 export const advisory = {
-  ask: (data: {
+  ask: async (data: {
     question: string;
     context?: string | null;
     language?: string;
     session_id?: string | null;
     latitude?: number | null;
     longitude?: number | null;
-  }) =>
-    request<AdvisoryAnswerResponse>('/api/advisory/ask', {
-      method: 'POST',
-      body: data,
-    }),
+  }): Promise<AdvisoryAnswerResponse> => {
+    // Try direct backend first, then gateway fallback
+    try {
+      return await directAdvisoryRequest<AdvisoryAnswerResponse>('/ask', data);
+    } catch {
+      return request<AdvisoryAnswerResponse>('/api/advisory/ask', {
+        method: 'POST',
+        body: data,
+      });
+    }
+  },
 
-  askMulti: (data: {
+  askMulti: async (data: {
     question: string;
     context?: string | null;
     language?: string;
     session_id?: string | null;
     latitude?: number | null;
     longitude?: number | null;
-  }) =>
-    request<MultiLLMAdvisoryResponse>('/api/advisory/ask-multi', {
-      method: 'POST',
-      body: data,
-    }),
+  }): Promise<MultiLLMAdvisoryResponse> => {
+    try {
+      return await directAdvisoryRequest<MultiLLMAdvisoryResponse>('/ask-multi', data);
+    } catch {
+      return request<MultiLLMAdvisoryResponse>('/api/advisory/ask-multi', {
+        method: 'POST',
+        body: data,
+      });
+    }
+  },
 
-  translateBatch: (messages: TranslateItem[], targetLang: 'en' | 'si' | 'ta') =>
-    request<TranslateBatchResponse>('/api/advisory/translate-batch', {
-      method: 'POST',
-      body: { messages, target_lang: targetLang },
-    }),
+  translateBatch: async (messages: TranslateItem[], targetLang: 'en' | 'si' | 'ta'): Promise<TranslateBatchResponse> => {
+    try {
+      return await directAdvisoryRequest<TranslateBatchResponse>('/translate-batch', { messages, target_lang: targetLang });
+    } catch {
+      return request<TranslateBatchResponse>('/api/advisory/translate-batch', {
+        method: 'POST',
+        body: { messages, target_lang: targetLang },
+      });
+    }
+  },
 
   transcribe: async (audioBlob: Blob, language: string = 'auto'): Promise<TranscribeResponse> => {
     const formData = new FormData();
-    formData.append('audio', audioBlob, 'recording.wav');
-    formData.append('language', language);
+    const mime = audioBlob.type || '';
+    const ext = mime.includes('webm') ? 'webm'
+      : mime.includes('ogg') ? 'ogg'
+      : mime.includes('mp4') || mime.includes('m4a') || mime.includes('aac') ? 'm4a'
+      : mime.includes('mpeg') ? 'mp3'
+      : 'wav';
+    formData.append('audio', audioBlob, `recording.${ext}`);
+    formData.append('language', language || 'auto');
 
-    const res = await fetch(`${GATEWAY_URL}/api/advisory/transcribe`, {
-      method: 'POST',
-      body: formData,
-    });
-    if (!res.ok) {
-      throw new Error(`Transcription failed with status ${res.status}`);
+    // Try direct backend first (better for binary uploads), fallback to gateway
+    const urls = [
+      `${ADVISORY_BACKEND_URL}/transcribe`,
+      `${GATEWAY_URL}/api/advisory/transcribe`,
+    ];
+
+    for (const url of urls) {
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          body: formData,
+        });
+        if (res.ok) {
+          return res.json();
+        }
+      } catch {
+        console.warn(`[SaruPol STT] ${url} unreachable, trying fallback...`);
+      }
     }
-    return res.json();
+    throw new Error('Transcription failed: all endpoints unreachable');
   },
 
   getTtsUrl: (text: string, lang: string = 'en') =>
-    `${GATEWAY_URL}/api/advisory/tts?text=${encodeURIComponent(text)}&lang=${lang}`,
+    `${ADVISORY_BACKEND_URL}/tts?text=${encodeURIComponent(text)}&lang=${lang}`,
+
+  // Resolve CRI reference image URL — images served from advisory backend /static/images/
+  getImageUrl: (filename: string) => {
+    if (!filename) return '/brand/logo-icon.png';
+    // If already a full URL, return as-is
+    if (filename.startsWith('http://') || filename.startsWith('https://')) return filename;
+    // Strip any /static/images/ prefix
+    const clean = filename.replace(/^\/?(static\/images\/)?/, '');
+    // Try local /cri-reference/ first — images bundled in public/ folder
+    return `/cri-reference/${clean}`;
+  },
+
+  // Resolve CRI reference image URL directly from the advisory backend
+  getBackendImageUrl: (filename: string) => {
+    if (!filename) return '/brand/logo-icon.png';
+    if (filename.startsWith('http://') || filename.startsWith('https://')) return filename;
+    const clean = filename.replace(/^\/?(static\/images\/)?/, '');
+    return `${ADVISORY_BACKEND_URL}/static/images/${encodeURIComponent(clean)}`;
+  },
 
   getHealth: () =>
     request<{ status: string; rag_loaded: boolean; retriever_loaded: boolean }>('/api/advisory/health'),

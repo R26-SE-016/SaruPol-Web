@@ -16,11 +16,13 @@ interface MultiLlmConsensusCardProps {
   earlyExit?: boolean;
   similarityScore?: number;
   latencyMs?: number;
+  retrievalConfidence?: number;
+  combinedReliability?: number;
 }
 
 export default function MultiLlmConsensusCard({
-  bestModel = "meta-llama/llama-3.3-70b-instruct",
-  consensusScore = 88,
+  bestModel = "llama",
+  consensusScore = 80,
   judgeReason,
   llamaAnswer,
   gptAnswer,
@@ -28,18 +30,30 @@ export default function MultiLlmConsensusCard({
   earlyExit = false,
   similarityScore,
   latencyMs,
+  retrievalConfidence,
+  combinedReliability,
 }: MultiLlmConsensusCardProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { theme } = useTheme();
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Format clean model name for display
+  // Backend returns best_model as 'llama' | 'gpt4omini' | 'gemma' (legacy: 'qwen')
   const cleanModelName = (name: string) => {
-    if (name.includes("llama")) return "LLaMA 3.3 70B (Groq Turbo)";
-    if (name.includes("gpt")) return "OpenAI GPT-4o-mini";
-    if (name.includes("gemma") || name.includes("qwen")) return "Google Gemma 2 27B / Qwen";
+    const n = (name || "").toLowerCase();
+    if (n.includes("llama")) return "LLaMA 3.1 8B";
+    if (n.includes("gpt")) return "GPT-4o Mini";
+    if (n.includes("gemma") || n.includes("qwen") || n.includes("gemini")) return "Gemini Flash";
     return name;
   };
+  const bm = (bestModel || "").toLowerCase();
+  const isLlamaBest = bm.includes("llama");
+  const isGptBest = bm.includes("gpt");
+  const isGemmaBest = bm.includes("gemma") || bm.includes("qwen") || bm.includes("gemini");
+
+  const L = (en: string, si: string, ta: string) => (language === "si" ? si : language === "ta" ? ta : en);
+  const combined = Math.round(combinedReliability ?? 80);
+  const combinedColor = combined >= 80 ? "#66BB6A" : combined >= 60 ? "#FFCA28" : "#EF5350";
+  const combinedLabel = combined >= 80 ? L("High", "ඉහළ", "அதிகம்") : combined >= 60 ? L("Moderate", "මධ්‍යම", "நடுத்தரம்") : L("Low", "අඩු", "குறைவு");
 
   const score = Math.round(consensusScore);
 
@@ -83,24 +97,60 @@ export default function MultiLlmConsensusCard({
         </div>
 
         {/* Telemetry metadata tags */}
-        <div className="flex items-center gap-2">
-          {earlyExit && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {earlyExit ? (
             <span
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-mono border"
               style={{
-                background: "rgba(0,229,255,0.12)",
-                color: theme === "dark" ? "#00E5FF" : "#0284C7",
-                borderColor: "rgba(0,229,255,0.3)",
+                background: "rgba(102,187,106,0.12)",
+                color: theme === "dark" ? "#66BB6A" : "#2E7D32",
+                borderColor: "rgba(102,187,106,0.35)",
               }}
             >
-              <Zap className="w-3 h-3" /> {t.advisory.earlyExit}
+              <Zap className="w-3 h-3" /> {L("Fast Validated", "ඉක්මන් සත්‍යාපනය", "விரைவு சரிபார்ப்பு")}
+              {similarityScore != null && (
+                <span className="ml-1 opacity-80">• {Math.round(similarityScore * 100)}% {L("match", "ගැලපීම", "பொருத்தம்")}</span>
+              )}
+            </span>
+          ) : (
+            <span
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-mono border"
+              style={{
+                background: "rgba(0,255,157,0.1)",
+                color: theme === "dark" ? "#00FF9D" : "#00875A",
+                borderColor: "rgba(0,255,157,0.3)",
+              }}
+            >
+              <CheckCircle2 className="w-3 h-3" /> {L("Best Answer Selected", "තෝරාගත් හොඳම පිළිතුර", "சிறந்த பதில் தேர்ந்தெடுக்கப்பட்டது")}
             </span>
           )}
-          {latencyMs && (
+          {latencyMs != null && (
             <span className="text-[10px] font-mono px-2 py-1 rounded" style={{ color: "var(--text-muted)", background: "var(--card-bg)" }}>
               {latencyMs}ms
             </span>
           )}
+        </div>
+      </div>
+
+      {/* Combined Reliability breakdown (Retrieval 50% + Consensus 50%) — same as mobile */}
+      <div className="mt-3 p-3 rounded-xl border" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[11px] font-mono font-bold" style={{ color: "var(--text-primary)" }}>
+            {L("Combined Reliability", "ඒකාබද්ධ විශ්වසනීයත්වය", "ஒருங்கிணைந்த நம்பகத்தன்மை")}
+          </span>
+          <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full border" style={{ color: combinedColor, borderColor: combinedColor }}>
+            {combined}% ({combinedLabel})
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="px-2.5 py-1.5 rounded-lg text-[10px] font-mono flex justify-between" style={{ background: "rgba(127,127,127,0.08)", color: "var(--text-secondary)" }}>
+            <span>{L("Retrieval (50%)", "දත්ත ගැලපීම (50%)", "மீட்புத் தரம் (50%)")}</span>
+            <strong style={{ color: "var(--text-primary)" }}>{Math.round((retrievalConfidence ?? 0.85) * 100)}%</strong>
+          </div>
+          <div className="px-2.5 py-1.5 rounded-lg text-[10px] font-mono flex justify-between" style={{ background: "rgba(127,127,127,0.08)", color: "var(--text-secondary)" }}>
+            <span>{L("Consensus (50%)", "ආකෘති එකඟතාව (50%)", "மாதிரி ஒருமித்தம் (50%)")}</span>
+            <strong style={{ color: "var(--text-primary)" }}>{score}%</strong>
+          </div>
         </div>
       </div>
 
@@ -175,7 +225,7 @@ export default function MultiLlmConsensusCard({
                       <span className="text-[11px] font-mono font-bold" style={{ color: "#A78BFA" }}>
                         {t.advisory.llamaOutput}
                       </span>
-                      {bestModel.includes("llama") && (
+                      {isLlamaBest && (
                         <span className="text-[9px] font-mono px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: "rgba(0,255,157,0.15)", color: "#00FF9D" }}>
                           <CheckCircle2 className="w-2.5 h-2.5" /> Selected Best
                         </span>
@@ -194,7 +244,7 @@ export default function MultiLlmConsensusCard({
                       <span className="text-[11px] font-mono font-bold" style={{ color: theme === "dark" ? "#00E5FF" : "#0284C7" }}>
                         {t.advisory.gptOutput}
                       </span>
-                      {bestModel.includes("gpt") && (
+                      {isGptBest && (
                         <span className="text-[9px] font-mono px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: "rgba(0,255,157,0.15)", color: "#00FF9D" }}>
                           <CheckCircle2 className="w-2.5 h-2.5" /> Selected Best
                         </span>
@@ -213,7 +263,7 @@ export default function MultiLlmConsensusCard({
                       <span className="text-[11px] font-mono font-bold" style={{ color: theme === "dark" ? "#E6AF2E" : "#B45309" }}>
                         {t.advisory.gemmaOutput}
                       </span>
-                      {(bestModel.includes("gemma") || bestModel.includes("qwen")) && (
+                      {isGemmaBest && (
                         <span className="text-[9px] font-mono px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: "rgba(0,255,157,0.15)", color: "#00FF9D" }}>
                           <CheckCircle2 className="w-2.5 h-2.5" /> Selected Best
                         </span>

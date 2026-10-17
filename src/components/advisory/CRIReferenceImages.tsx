@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Image as ImageIcon, ZoomIn, X, ExternalLink, Camera } from "lucide-react";
-import { AdvisoryImageRef } from "@/lib/api";
+import { AdvisoryImageRef, advisory } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
 import { useTheme } from "@/lib/theme/ThemeContext";
 
@@ -21,17 +21,14 @@ export default function CRIReferenceImages({ images }: CRIReferenceImagesProps) 
     return null;
   }
 
-  // Normalize image URL to local public/cri-reference directory or fallback
+  // Normalize image URL: try local /cri-reference/ first
   const getNormalizedUrl = (url: string) => {
-    if (!url) return "/brand/logo-icon.png";
-    if (url.startsWith("/static/images/")) {
-      const filename = url.replace("/static/images/", "");
-      return `/cri-reference/${filename}`;
-    }
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      return url;
-    }
-    return `/cri-reference/${url}`;
+    return advisory.getImageUrl(url);
+  };
+
+  // Fallback to advisory backend if local image is missing
+  const getBackendFallbackUrl = (url: string) => {
+    return advisory.getBackendImageUrl(url);
   };
 
   return (
@@ -60,8 +57,15 @@ export default function CRIReferenceImages({ images }: CRIReferenceImagesProps) 
                   alt={img.caption || "CRI Reference"}
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   onError={(e) => {
-                    // Fallback to placeholder if image load fails
-                    (e.target as HTMLImageElement).src = "/brand/logo-icon.png";
+                    // Fallback: try backend URL, then placeholder
+                    const el = e.target as HTMLImageElement;
+                    const backendUrl = getBackendFallbackUrl(img.url);
+                    if (!el.dataset.triedBackend) {
+                      el.dataset.triedBackend = '1';
+                      el.src = backendUrl;
+                    } else {
+                      el.src = '/brand/logo-icon.png';
+                    }
                   }}
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-white text-xs font-mono">
@@ -118,6 +122,13 @@ export default function CRIReferenceImages({ images }: CRIReferenceImagesProps) 
                   src={getNormalizedUrl(selectedImage.url)}
                   alt={selectedImage.caption}
                   className="w-full h-full object-contain"
+                  onError={(e) => {
+                    const el = e.target as HTMLImageElement;
+                    if (!el.dataset.triedBackend) {
+                      el.dataset.triedBackend = '1';
+                      el.src = getBackendFallbackUrl(selectedImage.url);
+                    }
+                  }}
                 />
               </div>
 

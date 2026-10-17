@@ -1,21 +1,18 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Navbar from "@/components/layout/Navbar";
 import AuthGuard from "@/components/auth/AuthGuard";
 import {
-  MessageCircle, Send, Mic, MicOff, Volume2, Globe, Bot, User,
-  Sparkles, History, Cpu, ShieldCheck, Compass, Sun, Copy, Check,
-  ThumbsUp, ThumbsDown, Edit3, ArrowRight, Loader2, BookOpen, AlertCircle
+  MessageCircle, Send, Mic, MicOff, Bot, User,
+  Sparkles, History, Cpu, Copy, Check, MapPin,
+  ThumbsUp, ThumbsDown, Edit3, ArrowRight, Loader2, BookOpen, X, Plus, Languages
 } from "lucide-react";
-import { useTranslation, SUPPORTED_LANGUAGES } from "@/lib/i18n/LanguageContext";
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 import { Language } from "@/lib/i18n/types";
 import { useTheme } from "@/lib/theme/ThemeContext";
-import {
-  advisory, AdvisorySource, AdvisoryImageRef,
-  AdvisoryAnswerResponse, MultiLLMAdvisoryResponse
-} from "@/lib/api";
+import { advisory, AdvisorySource, AdvisoryImageRef } from "@/lib/api";
 
 import ReliabilityBadge from "@/components/advisory/ReliabilityBadge";
 import MultiLlmConsensusCard from "@/components/advisory/MultiLlmConsensusCard";
@@ -28,10 +25,12 @@ interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
-  translations?: Record<string, string>;
+  translations?: Record<string, string | undefined>;
   sources?: AdvisorySource[];
   images?: AdvisoryImageRef[];
+  context_used?: string;
   timestamp: Date;
+  isError?: boolean;
   // Reliability metrics
   retrieval_confidence?: number;
   combined_reliability?: number;
@@ -51,6 +50,45 @@ interface ChatMessage {
 
 const STORAGE_KEY = "sarupol_chat_sessions";
 
+// ─── Helpers ported from SaruPol-Apk (utils/contextHelper.ts) ───
+const determineSeason = (date: Date): "Yala" | "Maha" => {
+  const month = date.getMonth() + 1;
+  return month >= 5 && month <= 9 ? "Yala" : "Maha";
+};
+
+const getMonthName = (date: Date) => date.toLocaleString("en-US", { month: "long" });
+
+const determineZone = (lat: number, lon: number): string => {
+  if (lat >= 5.9 && lat <= 7.5 && lon >= 79.8 && lon <= 80.6) return "Wet Zone";
+  if (lat >= 5.9 && lat <= 8.0 && lon >= 79.8 && lon <= 81.2) return "Intermediate Zone";
+  if (lat >= 5.5 && lat <= 10.0 && lon >= 79.5 && lon <= 82.0) return "Dry Zone";
+  return "Unknown Zone";
+};
+
+// Representative coordinates used by the mobile app for manual zone overrides
+const ZONE_COORDS: Record<string, { lat: number; lon: number }> = {
+  "Wet Zone": { lat: 6.9271, lon: 79.8612 },
+  "Intermediate Zone": { lat: 7.2906, lon: 80.6337 },
+  "Dry Zone": { lat: 8.3114, lon: 80.4037 },
+};
+
+const generateUUID = () =>
+  "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+
+const L = (lang: string, en: string, si: string, ta: string) => (lang === "si" ? si : lang === "ta" ? ta : en);
+
+// Same suggested questions as the mobile app (matched to the CRI knowledge-base PDFs)
+const getSuggestions = (lang: string) => [
+  L(lang, "How should I fertilize young coconut palms?", "පොල් පැළ සඳහා පොහොර යෙදිය යුත්තේ කෙසේද?", "இளம் தேங்காய் மரங்களுக்கு உரமிட வேண்டியது எப்படி?"),
+  L(lang, "How do I select a good mother palm?", "හොඳ මව් ශාකයක් තෝරා ගන්නේ කෙසේද?", "நல்ல தாய் பனையை தேர்ந்தெடுப்பது எப்படி?"),
+  L(lang, "How do I control termites in coconut nursery?", "පොල් තවාන් වල වේයන් පාලනය කරන්නේ කෙසේද?", "தேங்காய் நாற்றங்காலில் கறையானைகளை கட்டுப்படுத்துவது எப்படி?"),
+  L(lang, "What fertilizer mixture is recommended for coconut seedlings?", "පොල් පැළ සඳහා නිර්දේශිත පොහොර මිශ්‍රණය කුමක්ද?", "தேங்காய் நாற்றுகளுக்கு பரிந்துரைக்கப்படும் உரக் கலவை என்ன?"),
+];
+
 export default function AdvisoryPage() {
   const { t, language, setLanguage } = useTranslation();
   const { theme } = useTheme();
@@ -58,16 +96,24 @@ export default function AdvisoryPage() {
   // Engine Mode
   const [chatMode, setChatMode] = useState<"standard" | "multi">("standard");
 
-  // Agro-Climatic Context
-  const [zone, setZone] = useState("Intermediate Zone");
-  const [season, setSeason] = useState("Yala");
+  // Agro-Climatic Context (Auto GPS + date, with manual override — same as mobile)
   const [isAutoGps, setIsAutoGps] = useState(true);
+  const [gpsZone, setGpsZone] = useState<string>("Unknown Zone");
+  const [userCoords, setUserCoords] = useState<{ lat: number; lon: number } | null>(null);
+  const [manualZone, setManualZone] = useState<string>("Intermediate Zone");
+  const [manualSeason, setManualSeason] = useState<string | null>(null);
+  const autoSeason = determineSeason(new Date());
+  const zone = isAutoGps ? gpsZone : manualZone;
+  const season = manualSeason || autoSeason;
+  const isOverridden = !isAutoGps || manualSeason !== null;
 
   // Sessions & Messages
-  const [sessionId, setSessionId] = useState<string>(() => Date.now().toString());
+  const [sessionId, setSessionId] = useState<string>(() => generateUUID());
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [editingMsgId, setEditingMsgId] = useState<string | null>(null);
+  const [translating, setTranslating] = useState(false);
 
   // Input & Voice state
   const [input, setInput] = useState("");
@@ -76,6 +122,7 @@ export default function AdvisoryPage() {
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcribedHighlight, setTranscribedHighlight] = useState(false);
+  const [sttError, setSttError] = useState<string | null>(null);
   const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
   const [ratedMsgIds, setRatedMsgIds] = useState<Record<string, "up" | "down">>({});
 
@@ -84,42 +131,59 @@ export default function AdvisoryPage() {
   const recordIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const textInputRef = useRef<HTMLInputElement>(null);
+  const prevLangRef = useRef<Language>(language);
+  const messagesRef = useRef<ChatMessage[]>([]);
+  messagesRef.current = messages;
 
-  // Auto-scroll to bottom of chat
+  // Auto-scroll to bottom of chat safely without shoving header behind fixed navbar
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messages.length > 0) {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
   }, [messages, isLoading]);
+
+  // Ensure window resets to top on initial mount or when a new session begins
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }, [sessionId]);
+
+  // Get browser GPS location once (mobile: expo-location)
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setUserCoords({ lat: latitude, lon: longitude });
+        setGpsZone(determineZone(latitude, longitude));
+      },
+      (err) => console.log("Geolocation unavailable:", err.message),
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
+    );
+  }, []);
 
   // Load chat sessions from localStorage
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setSessions(parsed);
-      }
+      if (stored) setSessions(JSON.parse(stored));
     } catch (e) {
       console.warn("Failed to load past chat sessions:", e);
     }
   }, []);
 
-  // Sync current session into sessions list and localStorage
-  const saveCurrentSession = (updatedMessages: ChatMessage[]) => {
-    if (updatedMessages.length === 0) return;
-
-    const firstUserMsg = updatedMessages.find((m) => m.role === "user");
-    const topic = firstUserMsg ? firstUserMsg.content.slice(0, 45) + (firstUserMsg.content.length > 45 ? "..." : "") : "New Consultation";
+  // Persist current session whenever messages change (same as mobile)
+  useEffect(() => {
+    if (messages.length === 0) return;
+    const firstUserMsg = messages.find((m) => m.role === "user");
+    const topic = firstUserMsg
+      ? firstUserMsg.content.slice(0, 45) + (firstUserMsg.content.length > 45 ? "..." : "")
+      : "New Consultation";
 
     setSessions((prev) => {
       const existingIdx = prev.findIndex((s) => s.id === sessionId);
-      const newSession: ChatSession = {
-        id: sessionId,
-        topic,
-        timestamp: Date.now(),
-        messages: updatedMessages,
-        chatMode,
-      };
-
+      const newSession: ChatSession = { id: sessionId, topic, timestamp: Date.now(), messages, chatMode };
       let updatedList: ChatSession[];
       if (existingIdx >= 0) {
         updatedList = [...prev];
@@ -127,7 +191,6 @@ export default function AdvisoryPage() {
       } else {
         updatedList = [newSession, ...prev];
       }
-
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
       } catch (e) {
@@ -135,13 +198,15 @@ export default function AdvisoryPage() {
       }
       return updatedList;
     });
-  };
+  }, [messages, sessionId, chatMode]);
 
   // Start a brand-new chat session
   const handleNewSession = () => {
-    setSessionId(Date.now().toString());
+    setSessionId(generateUUID());
     setMessages([]);
     setInput("");
+    setEditingMsgId(null);
+    setIsLoading(false);
   };
 
   // Switch to a previous session
@@ -151,6 +216,7 @@ export default function AdvisoryPage() {
       setSessionId(found.id);
       setMessages(found.messages || []);
       setChatMode(found.chatMode || "standard");
+      setEditingMsgId(null);
     }
   };
 
@@ -163,9 +229,7 @@ export default function AdvisoryPage() {
     } catch (e) {
       console.warn("Failed to update localStorage:", e);
     }
-    if (targetId === sessionId) {
-      handleNewSession();
-    }
+    if (targetId === sessionId) handleNewSession();
   };
 
   // Clear all sessions
@@ -175,145 +239,234 @@ export default function AdvisoryPage() {
     handleNewSession();
   };
 
-  // In-place dynamic batch translation when switching language
-  const handleLanguageChange = async (newLang: Language) => {
-    if (newLang === language) return;
-    setLanguage(newLang);
+  // ─── Language switch: batch-translate whole conversation (answers, captions, model answers, judge reason) ───
+  const applyCachedLanguage = (msg: ChatMessage, nextLang: string): ChatMessage => {
+    const tr = msg.translations || {};
+    const updated: ChatMessage = { ...msg, content: tr[nextLang] || msg.content };
+    if (msg.images && msg.images.length > 0) {
+      updated.images = msg.images.map((img, idx) => ({ ...img, caption: tr[`img_${idx}_${nextLang}`] || img.caption }));
+    }
+    if (msg.isMultiLlm) {
+      updated.llama_answer = tr[`llama_${nextLang}`] || msg.llama_answer;
+      updated.gpt_answer = tr[`gpt4omini_${nextLang}`] || msg.gpt_answer;
+      updated.gemma_answer = tr[`gemma_${nextLang}`] || msg.gemma_answer;
+      updated.judge_reason = tr[`reason_${nextLang}`] || msg.judge_reason;
+    }
+    return updated;
+  };
 
-    if (messages.length === 0) return;
+  const translateConversation = async (currentLang: string, nextLang: "en" | "si" | "ta") => {
+    const current = messagesRef.current;
+    if (current.length === 0) return;
 
-    // Filter messages that need translation
-    const itemsToTranslate: { id: string; text: string }[] = [];
-    messages.forEach((msg) => {
-      if (!msg.translations?.[newLang]) {
-        itemsToTranslate.push({ id: msg.id, text: msg.content });
+    const items: { id: string; text: string }[] = [];
+    current.forEach((msg) => {
+      if (msg.isError) return;
+      const tr = msg.translations || {};
+      if (!tr[nextLang]) {
+        items.push({ id: `${msg.id}_text`, text: tr["en"] || tr["si"] || msg.content });
+      }
+      msg.images?.forEach((img, idx) => {
+        if (!tr[`img_${idx}_${nextLang}`] && img.caption) items.push({ id: `${msg.id}_img_${idx}`, text: img.caption });
+      });
+      if (msg.isMultiLlm) {
+        if (!tr[`llama_${nextLang}`] && msg.llama_answer) items.push({ id: `${msg.id}_llama`, text: msg.llama_answer });
+        if (!tr[`gpt4omini_${nextLang}`] && msg.gpt_answer) items.push({ id: `${msg.id}_gpt4omini`, text: msg.gpt_answer });
+        if (!tr[`gemma_${nextLang}`] && msg.gemma_answer) items.push({ id: `${msg.id}_gemma`, text: msg.gemma_answer });
+        if (!tr[`reason_${nextLang}`] && msg.judge_reason) items.push({ id: `${msg.id}_reason`, text: msg.judge_reason });
       }
     });
 
-    if (itemsToTranslate.length === 0) return;
+    if (items.length === 0) {
+      setMessages((prev) => prev.map((m) => (m.isError ? m : applyCachedLanguage(m, nextLang))));
+      return;
+    }
 
+    setTranslating(true);
     try {
-      const res = await advisory.translateBatch(itemsToTranslate, newLang);
-      if (res.success && res.translations) {
-        setMessages((prev) =>
-          prev.map((msg) => {
-            const match = res.translations.find((t) => t.id === msg.id);
-            if (match) {
-              const updatedTranslations = {
-                ...(msg.translations || {}),
-                [newLang]: match.translated_text,
-                [language]: msg.content,
-              };
-              return {
-                ...msg,
-                content: match.translated_text,
-                translations: updatedTranslations,
-              };
-            }
-            return msg;
-          })
-        );
-      }
+      const res = await advisory.translateBatch(items, nextLang);
+      if (!res.success || !res.translations) throw new Error("Translation failed");
+      const find = (id: string) => res.translations.find((x) => x.id === id)?.translated_text;
+
+      setMessages((prev) =>
+        prev.map((msg) => {
+          if (msg.isError) return msg;
+          const tr: Record<string, string | undefined> = { ...(msg.translations || {}) };
+          // Cache current-language versions before switching
+          if (!tr[currentLang]) tr[currentLang] = msg.content;
+          msg.images?.forEach((img, idx) => {
+            if (!tr[`img_${idx}_${currentLang}`] && img.caption) tr[`img_${idx}_${currentLang}`] = img.caption;
+          });
+          if (msg.isMultiLlm) {
+            if (!tr[`llama_${currentLang}`]) tr[`llama_${currentLang}`] = msg.llama_answer;
+            if (!tr[`gpt4omini_${currentLang}`]) tr[`gpt4omini_${currentLang}`] = msg.gpt_answer;
+            if (!tr[`gemma_${currentLang}`]) tr[`gemma_${currentLang}`] = msg.gemma_answer;
+            if (!tr[`reason_${currentLang}`]) tr[`reason_${currentLang}`] = msg.judge_reason;
+          }
+          // Store new translations
+          const txt = find(`${msg.id}_text`);
+          if (txt) tr[nextLang] = txt;
+          msg.images?.forEach((_, idx) => {
+            const c = find(`${msg.id}_img_${idx}`);
+            if (c) tr[`img_${idx}_${nextLang}`] = c;
+          });
+          if (msg.isMultiLlm) {
+            const a = find(`${msg.id}_llama`); if (a) tr[`llama_${nextLang}`] = a;
+            const b = find(`${msg.id}_gpt4omini`); if (b) tr[`gpt4omini_${nextLang}`] = b;
+            const c = find(`${msg.id}_gemma`); if (c) tr[`gemma_${nextLang}`] = c;
+            const r = find(`${msg.id}_reason`); if (r) tr[`reason_${nextLang}`] = r;
+          }
+          return applyCachedLanguage({ ...msg, translations: tr }, nextLang);
+        })
+      );
     } catch (err) {
-      console.warn("Batch translation offline or unavailable:", err);
+      console.warn("Failed to translate previous messages:", err);
+      setMessages((prev) => prev.map((m) => (m.isError ? m : applyCachedLanguage(m, nextLang))));
+    } finally {
+      setTranslating(false);
     }
   };
 
-  // Send query to AI Advisory Engine
-  const sendMessage = async (textToSend?: string) => {
-    const query = (textToSend || input).trim();
-    if (!query || isLoading) return;
+  // React to language changes from the page toggle OR the global Navbar switcher
+  useEffect(() => {
+    const prev = prevLangRef.current;
+    if (prev === language) return;
+    prevLangRef.current = language;
+    void translateConversation(prev, language as "en" | "si" | "ta");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language]);
 
+  // ─── Send query to AI Advisory Engine (mirrors mobile handleSend) ───
+  const sendMessage = async (textToSend?: string) => {
+    const query = (textToSend ?? input).trim();
+    if (!query || isLoading) return;
+    setTranscribedHighlight(false);
+
+    // Location: GPS coords in auto mode, representative zone coords in manual mode
+    let sendLat: number | null = userCoords?.lat ?? null;
+    let sendLon: number | null = userCoords?.lon ?? null;
+    if (!isAutoGps && ZONE_COORDS[manualZone]) {
+      sendLat = ZONE_COORDS[manualZone].lat;
+      sendLon = ZONE_COORDS[manualZone].lon;
+    }
+    const month = manualSeason ? (manualSeason === "Yala" ? "July" : "December") : getMonthName(new Date());
+    const contextPayload = `${zone} | ${season} Season (${month})`;
+
+    // Edit & resend: drop the edited question and everything after it
+    let baseMessages = messagesRef.current;
+    if (editingMsgId) {
+      const idx = baseMessages.findIndex((m) => m.id === editingMsgId);
+      if (idx !== -1) baseMessages = baseMessages.slice(0, idx);
+      setEditingMsgId(null);
+    }
+
+    const detectedLang = /[\u0D80-\u0DFF]/.test(query) ? "si" : /[\u0B80-\u0BFF]/.test(query) ? "ta" : "en";
     const userMessage: ChatMessage = {
-      id: Date.now().toString(),
+      id: generateUUID(),
       role: "user",
       content: query,
+      translations: { [detectedLang]: query },
       timestamp: new Date(),
     };
 
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
+    setMessages([...baseMessages, userMessage]);
     setInput("");
     setIsLoading(true);
 
-    const contextPayload = `${zone} | ${season} Season`;
+    const payload = {
+      question: query,
+      context: contextPayload,
+      language,
+      session_id: sessionId,
+      latitude: sendLat,
+      longitude: sendLon,
+    };
 
     try {
       if (chatMode === "multi") {
-        // Multi-LLM Consensus Mode
-        let res: MultiLLMAdvisoryResponse;
-        try {
-          res = await advisory.askMulti({
-            question: query,
-            context: contextPayload,
-            language,
-            session_id: sessionId,
-          });
-        } catch {
-          // Realistic multi-model mock fallback when backend is offline
-          res = generateMockMultiLlmResponse(query, language, zone, season);
-        }
+        const res = await advisory.askMulti(payload);
+        if (res.session_id) setSessionId(res.session_id);
+        if (!res.success) throw new Error("Multi-LLM query failed");
 
+        const gemmaAns = res.gemma_answer || res.qwen_answer;
         const assistantMessage: ChatMessage = {
-          id: (Date.now() + 1).toString(),
+          id: generateUUID(),
           role: "assistant",
           content: res.best_answer,
-          sources: res.sources,
-          images: res.images,
+          translations: {
+            [language]: res.best_answer,
+            [`llama_${language}`]: res.llama_answer,
+            [`gpt4omini_${language}`]: res.gpt4omini_answer,
+            [`gemma_${language}`]: gemmaAns,
+            [`reason_${language}`]: res.reason,
+          },
+          sources: res.sources || [],
+          images: res.images || [],
+          context_used: res.zone ? `${res.zone} | ${res.season}` : undefined,
           timestamp: new Date(),
-          retrieval_confidence: res.retrieval_confidence,
-          combined_reliability: res.combined_reliability,
-          reliability_level: res.reliability_level,
+          retrieval_confidence: res.retrieval_confidence ?? 0.85,
+          combined_reliability: res.combined_reliability ?? 80,
+          reliability_level: res.reliability_level ?? "Moderate",
           isMultiLlm: true,
           best_model: res.best_model,
           judge_reason: res.reason,
           consensus_score: res.consensus_score,
           llama_answer: res.llama_answer,
           gpt_answer: res.gpt4omini_answer,
-          gemma_answer: res.gemma_answer || res.qwen_answer,
-          early_exit: res.early_exit,
-          similarity_score: res.similarity_score,
-          latency_ms: res.latency_ms || 480,
+          gemma_answer: gemmaAns,
+          early_exit: res.early_exit ?? false,
+          similarity_score: res.similarity_score ?? undefined,
+          latency_ms: res.latency_ms ?? undefined,
         };
-
-        const updated = [...newMessages, assistantMessage];
-        setMessages(updated);
-        saveCurrentSession(updated);
+        setMessages((prev) => [...prev, assistantMessage]);
       } else {
-        // Standard Single-LLM RAG Mode
-        let res: AdvisoryAnswerResponse;
-        try {
-          res = await advisory.ask({
-            question: query,
-            context: contextPayload,
-            language,
-            session_id: sessionId,
-          });
-        } catch {
-          res = generateMockStandardResponse(query, language, zone, season);
+        const res = await advisory.ask(payload);
+        if (res.session_id) setSessionId(res.session_id);
+
+        // Backend may return the question translated into the selected language
+        if (res.question && language !== "en" && detectedLang === "en") {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === userMessage.id
+                ? { ...m, content: res.question, translations: { ...m.translations, [language]: res.question } }
+                : m
+            )
+          );
         }
 
         const assistantMessage: ChatMessage = {
-          id: (Date.now() + 1).toString(),
+          id: generateUUID(),
           role: "assistant",
           content: res.answer,
-          sources: res.sources,
-          images: res.images,
+          translations: { [language]: res.answer },
+          sources: res.sources || [],
+          images: res.images || [],
+          context_used: res.context_used,
           timestamp: new Date(),
-          retrieval_confidence: res.retrieval_confidence,
-          combined_reliability: res.combined_reliability,
-          reliability_level: res.reliability_level,
+          retrieval_confidence: res.retrieval_confidence ?? 0.85,
+          combined_reliability: res.combined_reliability ?? 80,
+          reliability_level: res.reliability_level ?? "Moderate",
           isMultiLlm: false,
-          best_model: res.validated_by || "CRI Hybrid RAG Engine",
-          consensus_score: res.consensus_score,
         };
-
-        const updated = [...newMessages, assistantMessage];
-        setMessages(updated);
-        saveCurrentSession(updated);
+        setMessages((prev) => [...prev, assistantMessage]);
       }
     } catch (err) {
       console.error("Advisory error:", err);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: generateUUID(),
+          role: "assistant",
+          isError: true,
+          timestamp: new Date(),
+          content: L(
+            language,
+            "Sorry, I am facing connectivity issues to my knowledge base. Please check your internet connection.",
+            "සමාවන්න, උපදේශන සේවාව සමඟ සම්බන්ධ වීමට අපොහොසත් විය. කරුණාකර අන්තර්ජාලය පරීක්ෂා කරන්න.",
+            "மன்னிக்கவும், தகவல் தளத்துடன் இணைப்பதில் சிக்கல் ஏற்பட்டுள்ளது. உங்கள் இணைய இணைப்பை சரிபார்க்கவும்."
+          ),
+        },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -331,41 +484,56 @@ export default function AdvisoryPage() {
     setRatedMsgIds((prev) => ({ ...prev, [msgId]: type }));
   };
 
-  // Edit previously asked question
-  const handleEditQuestion = (text: string) => {
-    setInput(text);
-    textInputRef.current?.focus();
+  // Edit previously asked question (resend replaces it and following answers)
+  const handleEditQuestion = (msg: ChatMessage) => {
+    setEditingMsgId(msg.id);
+    setInput(msg.content);
+    setTimeout(() => textInputRef.current?.focus(), 50);
   };
 
-  // Microphone Voice Recording (STT)
+  const cancelEdit = () => {
+    setEditingMsgId(null);
+    setInput("");
+  };
+
+  // ─── Microphone Voice Recording (STT) ───
   const startRecording = async () => {
+    setSttError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      const preferred = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"];
+      const mimeType = typeof MediaRecorder !== "undefined"
+        ? preferred.find((m) => MediaRecorder.isTypeSupported(m))
+        : undefined;
+      const mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
       mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
+        const audioBlob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType || "audio/webm" });
         stream.getTracks().forEach((track) => track.stop());
+
+        if (audioBlob.size < 1000) {
+          setSttError(L(language, "Recording too short. Please speak clearly and try again.", "පටිගත කිරීම කෙටි වැඩියි. කරුණාකර නැවත උත්සාහ කරන්න.", "பதிவு மிகவும் குறுகியது. மீண்டும் முயற்சிக்கவும்."));
+          return;
+        }
 
         setIsTranscribing(true);
         try {
           const res = await advisory.transcribe(audioBlob, language);
-          if (res.success && res.transcribed_text) {
+          if (res.success && res.transcribed_text?.trim()) {
             setInput(res.transcribed_text);
             setTranscribedHighlight(true);
-            setTimeout(() => setTranscribedHighlight(false), 2500);
-            textInputRef.current?.focus();
+            setTimeout(() => textInputRef.current?.focus(), 50);
+          } else {
+            throw new Error(res.error || "Empty transcription");
           }
         } catch (sttErr) {
-          console.warn("Backend STT offline. Using browser Web Speech recognition fallback:", sttErr);
+          console.warn("Backend STT failed. Using browser speech recognition fallback:", sttErr);
           runBrowserSpeechFallback();
         } finally {
           setIsTranscribing(false);
@@ -375,10 +543,7 @@ export default function AdvisoryPage() {
       mediaRecorder.start();
       setIsRecording(true);
       setRecordingSeconds(0);
-
-      recordIntervalRef.current = setInterval(() => {
-        setRecordingSeconds((prev) => prev + 1);
-      }, 1000);
+      recordIntervalRef.current = setInterval(() => setRecordingSeconds((prev) => prev + 1), 1000);
     } catch (err) {
       console.warn("Microphone access failed, using browser Web Speech API:", err);
       runBrowserSpeechFallback();
@@ -402,34 +567,36 @@ export default function AdvisoryPage() {
       const recognition = new SpeechRecognition();
       recognition.lang = language === "si" ? "si-LK" : language === "ta" ? "ta-LK" : "en-US";
       recognition.interimResults = false;
-
       recognition.onstart = () => setIsRecording(true);
       recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        setInput(transcript);
+        setInput(event.results[0][0].transcript);
         setTranscribedHighlight(true);
-        setTimeout(() => setTranscribedHighlight(false), 2500);
       };
       recognition.onerror = () => setIsRecording(false);
       recognition.onend = () => setIsRecording(false);
       recognition.start();
     } else {
       setIsRecording(false);
+      setSttError(L(language, "Voice input failed. Please type your question.", "හඬ ආදානය අසාර්ථක විය. කරුණාකර ප්‍රශ්නය ටයිප් කරන්න.", "குரல் உள்ளீடு தோல்வியடைந்தது. கேள்வியை தட்டச்சு செய்யவும்."));
     }
   };
 
+  const suggestions = getSuggestions(language);
+  const editingMsg = editingMsgId ? messages.find((m) => m.id === editingMsgId) : null;
+  const month = manualSeason ? (manualSeason === "Yala" ? "July" : "December") : getMonthName(new Date());
+
   return (
     <AuthGuard>
-      <main className="h-screen overflow-hidden flex flex-col relative" style={{ background: "var(--background)", color: "var(--text-primary)" }}>
+      <main className="min-h-screen relative flex flex-col" style={{ background: "var(--background)", color: "var(--text-primary)" }}>
         <Navbar />
-      
+
       {/* Unified SaruPol Background Ambience matching Pathology */}
       <div className="absolute inset-0 telemetry-grid pointer-events-none opacity-20" />
       <div className="absolute top-20 right-10 w-96 h-96 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(230, 175, 46, 0.05)" }} />
       <div className="absolute top-80 left-10 w-96 h-96 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(0, 255, 157, 0.04)" }} />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-24 pb-4 relative z-10 flex-1 flex flex-col w-full min-h-0">
-        
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-28 pb-6 relative z-10 flex-1 flex flex-col w-full">
+
         {/* Header Title Area — matching Pathology */}
         <div className="mb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3 flex-shrink-0" style={{ borderColor: "var(--card-border)" }}>
           <div className="flex items-center gap-3">
@@ -455,7 +622,7 @@ export default function AdvisoryPage() {
                     color: theme === "dark" ? "#E6AF2E" : "#B45309",
                   }}
                 >
-                  CRI Consensus AI
+                  Coconut Consensus AI
                 </span>
               </div>
               <p className="text-xs font-mono tracking-wide mt-0.5" style={{ color: "var(--text-secondary)" }}>
@@ -464,16 +631,29 @@ export default function AdvisoryPage() {
             </div>
           </div>
 
-          {/* Right Header Action Pills: Agro-Climatic Context & Consultation History */}
+          {/* Right Header Action Pills: Agro-Climatic Context, New Chat & History */}
           <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
             <AgroContextPanel
               zone={zone}
               season={season}
-              isAutoGps={isAutoGps}
-              onZoneChange={setZone}
-              onSeasonChange={setSeason}
-              onToggleAutoGps={setIsAutoGps}
+              isAutoGps={isAutoGps && manualSeason === null}
+              onZoneChange={(z) => setManualZone(z)}
+              onSeasonChange={(s) => setManualSeason(s)}
+              onToggleAutoGps={(auto) => {
+                setIsAutoGps(auto);
+                if (auto) setManualSeason(null);
+              }}
             />
+
+            <button
+              onClick={handleNewSession}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-mono smooth-transition hover:opacity-80 shadow-sm whitespace-nowrap"
+              style={{ background: "var(--card-bg)", borderColor: "var(--card-border)", color: "var(--text-primary)" }}
+              title={t.advisory.newChat}
+            >
+              <Plus className="w-3.5 h-3.5" style={{ color: theme === "dark" ? "#00FF9D" : "#00875A" }} />
+              <span className="font-medium hidden md:inline">{t.advisory.newChat}</span>
+            </button>
 
             <button
               onClick={() => setIsHistoryOpen(true)}
@@ -501,7 +681,7 @@ export default function AdvisoryPage() {
 
         {/* Full-Width Segmented Mode Navigation Bar — matching Pathology Tab Bar */}
         <div
-          className="mb-3 p-1 rounded-2xl border backdrop-blur-xl grid grid-cols-2 gap-1.5 shadow-md smooth-transition flex-shrink-0"
+          className="mb-2 p-1 rounded-2xl border backdrop-blur-xl grid grid-cols-2 gap-1.5 shadow-md smooth-transition flex-shrink-0"
           style={{
             background: "var(--card-bg)",
             borderColor: "var(--card-border)",
@@ -519,7 +699,7 @@ export default function AdvisoryPage() {
           >
             <Sparkles className="w-3.5 h-3.5 flex-shrink-0" style={{ color: chatMode === "standard" ? "#00FF9D" : "inherit" }} />
             <span className="font-bold">{t.advisory.standardMode}</span>
-            <span className="text-[10px] opacity-60 hidden md:inline">• Fast Single-LLM RAG</span>
+            <span className="text-[10px] opacity-60 hidden md:inline">• {L(language, "For Farmers", "ගොවීන් සඳහා", "விவசாயிகளுக்கு")}</span>
           </button>
 
           <button
@@ -538,8 +718,30 @@ export default function AdvisoryPage() {
           </button>
         </div>
 
+        {/* Active context banner (same info mobile shows above the chat) */}
+        <div
+          className="mb-3 px-3 py-1.5 rounded-xl border text-[11px] font-mono flex items-center gap-2 flex-shrink-0 self-start"
+          style={{
+            background: isOverridden ? "rgba(245,158,11,0.12)" : "rgba(0,255,157,0.08)",
+            borderColor: isOverridden ? "rgba(245,158,11,0.4)" : "rgba(0,255,157,0.25)",
+            color: isOverridden ? (theme === "dark" ? "#F59E0B" : "#B45309") : (theme === "dark" ? "#00FF9D" : "#00875A"),
+          }}
+        >
+          <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+          <span>
+            {zone} | {season} Season ({month})
+            {isOverridden ? ` · ${L(language, "Manual", "අතින්", "கைமுறை")}` : userCoords ? " · GPS" : ""}
+          </span>
+          {translating && (
+            <span className="flex items-center gap-1 ml-2 opacity-80">
+              <Languages className="w-3 h-3 animate-pulse" />
+              {L(language, "Translating...", "පරිවර්තනය කරමින්...", "மொழிபெயர்க்கிறது...")}
+            </span>
+          )}
+        </div>
+
         {/* Chat Feed */}
-        <div className="flex-1 overflow-y-auto space-y-4 mb-3 pr-1 sm:pr-2 min-h-0">
+        <div className="flex-1 space-y-4 mb-4">
           {messages.length === 0 ? (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center justify-center py-4 sm:py-8 text-center">
               <div
@@ -552,12 +754,17 @@ export default function AdvisoryPage() {
                 <Sparkles className="w-6 h-6 text-amber-400" />
               </div>
               <p className="text-xs max-w-md mb-4 font-mono leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                {t.advisory.chatPlaceholder}
+                {L(
+                  language,
+                  "Hello! I am your SaruPol AI Farming Advisor. I can answer any questions about coconut cultivation, pest controls, diseases, or fertilizer schedules. Ask me anything!",
+                  "ආයුබෝවන්! මම සරුපොල් AI වගා උපදේශකයා වෙමි. පොල් වගාව, පළිබෝධ පාලනය, රෝග හෝ පොහොර යෙදීම් පිළිබඳ ඕනෑම ගැටලුවක් මගෙන් විමසන්න.",
+                  "வணக்கம்! நான் SaruPol AI விவசாய ஆலோசகர். தேங்காய் பயிர்ச்செய்கை, பூச்சி கட்டுப்பாடு, நோய்கள் அல்லது உர திட்டங்கள் பற்றி எந்தக் கேள்வியையும் கேளுங்கள்!"
+                )}
               </p>
 
               {/* Starter Question Pills */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-2xl w-full text-left">
-                {t.advisory.suggestedQuestions.map((q, i) => (
+                {suggestions.map((q, i) => (
                   <button
                     key={i}
                     onClick={() => sendMessage(q)}
@@ -585,11 +792,11 @@ export default function AdvisoryPage() {
                   <div
                     className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-1 shadow-md"
                     style={{
-                      background: msg.isMultiLlm ? "rgba(230,175,46,0.2)" : "rgba(0,255,157,0.2)",
-                      border: `1px solid ${msg.isMultiLlm ? "rgba(230,175,46,0.4)" : "rgba(0,255,157,0.4)"}`,
+                      background: msg.isError ? "rgba(239,83,80,0.2)" : msg.isMultiLlm ? "rgba(230,175,46,0.2)" : "rgba(0,255,157,0.2)",
+                      border: `1px solid ${msg.isError ? "rgba(239,83,80,0.4)" : msg.isMultiLlm ? "rgba(230,175,46,0.4)" : "rgba(0,255,157,0.4)"}`,
                     }}
                   >
-                    <Bot className="w-4 h-4" style={{ color: msg.isMultiLlm ? "#E6AF2E" : "#00FF9D" }} />
+                    <Bot className="w-4 h-4" style={{ color: msg.isError ? "#EF5350" : msg.isMultiLlm ? "#E6AF2E" : "#00FF9D" }} />
                   </div>
                 )}
 
@@ -598,15 +805,18 @@ export default function AdvisoryPage() {
                     msg.role === "user" ? "rounded-br-md shadow-md" : "rounded-bl-md glass-card shadow-lg"
                   }`}
                   style={{
-                    background: msg.role === "user" ? "rgba(0, 255, 157, 0.12)" : "var(--card-bg)",
-                    border: `1px solid ${msg.role === "user" ? "rgba(0, 255, 157, 0.3)" : "var(--card-border)"}`,
+                    background: msg.role === "user" ? "rgba(0, 255, 157, 0.12)" : msg.isError ? "rgba(239,83,80,0.08)" : "var(--card-bg)",
+                    border: `1px solid ${msg.role === "user" ? "rgba(0, 255, 157, 0.3)" : msg.isError ? "rgba(239,83,80,0.35)" : "var(--card-border)"}`,
+                    outline: editingMsgId === msg.id ? "2px dashed rgba(230,175,46,0.6)" : undefined,
                   }}
                 >
                   {/* Assistant Mode Header */}
                   {msg.role === "assistant" && (
                     <div className="flex items-center justify-between pb-2 mb-3 border-b" style={{ borderColor: "var(--card-border)" }}>
-                      <span className="text-[10px] font-mono uppercase font-bold tracking-wider" style={{ color: msg.isMultiLlm ? "#E6AF2E" : "#00FF9D" }}>
-                        {msg.isMultiLlm ? "CRI Multi-LLM Consensus Verdict" : "CRI Knowledge RAG Engine"}
+                      <span className="text-[10px] font-mono uppercase font-bold tracking-wider" style={{ color: msg.isError ? "#EF5350" : msg.isMultiLlm ? "#E6AF2E" : "#00FF9D" }}>
+                        {msg.isError
+                          ? L(language, "SaruPol AI", "සරුපොල් AI", "சருபோல் AI")
+                          : msg.isMultiLlm ? "CRI Multi-LLM Consensus Verdict" : "CRI Knowledge RAG Engine"}
                       </span>
                       <span className="text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>
                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -621,10 +831,14 @@ export default function AdvisoryPage() {
 
                   {/* User Edit Trigger */}
                   {msg.role === "user" && (
-                    <div className="mt-2 flex justify-end">
+                    <div className="mt-2 flex justify-between items-center gap-3">
+                      <span className="text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>
+                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </span>
                       <button
-                        onClick={() => handleEditQuestion(msg.content)}
-                        className="text-[10px] font-mono flex items-center gap-1 hover:opacity-80 transition-opacity"
+                        onClick={() => handleEditQuestion(msg)}
+                        disabled={isLoading}
+                        className="text-[10px] font-mono flex items-center gap-1 hover:opacity-80 transition-opacity disabled:opacity-40"
                         style={{ color: "var(--text-muted)" }}
                       >
                         <Edit3 className="w-3 h-3" />
@@ -634,9 +848,9 @@ export default function AdvisoryPage() {
                   )}
 
                   {/* Assistant Components: Reliability Badge, Multi-LLM Card, Reference Images & Citations */}
-                  {msg.role === "assistant" && (
+                  {msg.role === "assistant" && !msg.isError && (
                     <div className="space-y-3 pt-2">
-                      
+
                       {/* Reliability Score Badge */}
                       <ReliabilityBadge
                         combinedReliability={msg.combined_reliability}
@@ -656,7 +870,17 @@ export default function AdvisoryPage() {
                           earlyExit={msg.early_exit}
                           similarityScore={msg.similarity_score}
                           latencyMs={msg.latency_ms}
+                          retrievalConfidence={msg.retrieval_confidence}
+                          combinedReliability={msg.combined_reliability}
                         />
+                      )}
+
+                      {/* Context used by the backend */}
+                      {msg.context_used && (
+                        <div className="flex items-center gap-1.5 text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>
+                          <MapPin className="w-3 h-3" />
+                          <span>{L(language, "Context Used:", "භාවිතා කළ සන්දර්භය:", "பயன்படுத்தப்பட்ட சூழல்:")} {msg.context_used}</span>
+                        </div>
                       )}
 
                       {/* CRI Reference Images */}
@@ -682,7 +906,7 @@ export default function AdvisoryPage() {
                                   color: "var(--text-secondary)",
                                 }}
                               >
-                                <span>[{i + 1}] {src.title || src.content.slice(0, 45)}</span>
+                                <span>[{i + 1}] {src.title || (src.content || "").slice(0, 45)}</span>
                               </div>
                             ))}
                           </div>
@@ -691,7 +915,7 @@ export default function AdvisoryPage() {
 
                       {/* Assistant Action Bar: Audio Player, Copy, Feedback */}
                       <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t mt-3" style={{ borderColor: "var(--card-border)" }}>
-                        <AudioWavePlayer text={msg.content} lang={language} />
+                        <AudioWavePlayer key={`${msg.id}_${language}`} text={msg.content} lang={language} />
 
                         <div className="flex items-center gap-1.5">
                           {/* Copy Button */}
@@ -773,7 +997,9 @@ export default function AdvisoryPage() {
                   <span className="w-2 h-2 rounded-full bg-amber-400 animate-bounce [animation-delay:0.4s]" />
                 </div>
                 <span className="text-xs font-mono font-medium" style={{ color: "var(--text-primary)" }}>
-                  {chatMode === "multi" ? "Querying LLaMA + GPT + Gemma consensus engine..." : "Consulting CRI Knowledge Base & Agronomist Leaflets..."}
+                  {chatMode === "multi"
+                    ? L(language, "Querying LLaMA + GPT-4o Mini + Gemini consensus engine...", "ආකෘති 3ක සම්මුතිය විශ්ලේෂණය කරමින්...", "3 மாதிரி ஒருமித்த பகுப்பாய்வு...")
+                    : L(language, "Searching knowledge base...", "විශ්ලේෂණය කරමින් පවතී...", "தகவல் தளத்தை தேடுகிறது...")}
                 </span>
               </div>
             </motion.div>
@@ -782,23 +1008,50 @@ export default function AdvisoryPage() {
           <div ref={chatEndRef} />
         </div>
 
-        {/* Input Bar & Voice Controls */}
+        {/* Input Bar & Voice Controls (Sticky floating at the bottom) */}
         <div
-          className="glass-panel p-3 sm:p-4 rounded-3xl border shadow-2xl flex flex-col gap-2 flex-shrink-0"
-          style={{ borderColor: "var(--card-border)" }}
+          className="sticky bottom-4 z-30 glass-panel p-3 sm:p-4 rounded-3xl border shadow-2xl backdrop-blur-xl flex flex-col gap-2 mt-auto"
+          style={{
+            borderColor: transcribedHighlight ? "rgba(102,187,106,0.6)" : "var(--card-border)",
+            background: theme === "dark" ? "rgba(10, 20, 14, 0.88)" : "rgba(255, 255, 255, 0.92)",
+          }}
         >
+          {/* Editing banner */}
+          {editingMsg && (
+            <div
+              className="px-3 py-1.5 rounded-xl border text-[11px] font-mono flex items-center justify-between gap-2"
+              style={{ background: "rgba(230,175,46,0.1)", borderColor: "rgba(230,175,46,0.35)", color: theme === "dark" ? "#E6AF2E" : "#B45309" }}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <Edit3 className="w-3.5 h-3.5 flex-shrink-0" />
+                <span className="font-bold whitespace-nowrap">{L(language, "Editing Question", "ප්‍රශ්නය සංස්කරණය කිරීම", "கேள்வியைத் திருத்துகிறது")}</span>
+                <span className="truncate opacity-75">&quot;{editingMsg.content}&quot;</span>
+              </div>
+              <button onClick={cancelEdit} className="p-0.5 hover:opacity-70">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
           {/* Transcribed Highlight Banner */}
           {transcribedHighlight && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
               className="px-3 py-1.5 rounded-xl border text-[11px] font-mono flex items-center gap-2 font-medium"
-              style={{ background: "rgba(230,175,46,0.15)", borderColor: "rgba(230,175,46,0.35)", color: theme === "dark" ? "#E6AF2E" : "#B45309" }}
+              style={{ background: "rgba(102,187,106,0.12)", borderColor: "rgba(102,187,106,0.35)", color: theme === "dark" ? "#66BB6A" : "#2E7D32" }}
             >
-              <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
-              <span>{t.advisory.transcribedHighlight}</span>
+              <Mic className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>{L(language, "Transcribed from voice — tap send or edit", "හඬින් පරිවර්තනය විය — යැවීමට තට්ටු කරන්න හෝ සංස්කරණය කරන්න", "குரலிலிருந்து பெறப்பட்டது — அனுப்ப தட்டவும் அல்லது திருத்தவும்")}</span>
             </motion.div>
+          )}
+
+          {/* STT error */}
+          {sttError && (
+            <div className="px-3 py-1.5 rounded-xl border text-[11px] font-mono flex items-center justify-between gap-2" style={{ background: "rgba(239,83,80,0.1)", borderColor: "rgba(239,83,80,0.35)", color: "#EF5350" }}>
+              <span>{sttError}</span>
+              <button onClick={() => setSttError(null)}><X className="w-3.5 h-3.5" /></button>
+            </div>
           )}
 
           <div className="flex items-center gap-2 sm:gap-3">
@@ -837,8 +1090,14 @@ export default function AdvisoryPage() {
               ref={textInputRef}
               type="text"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+              onChange={(e) => {
+                setInput(e.target.value);
+                if (transcribedHighlight) setTranscribedHighlight(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) sendMessage();
+                if (e.key === "Escape" && editingMsgId) cancelEdit();
+              }}
               placeholder={
                 isRecording
                   ? t.advisory.listening
@@ -863,7 +1122,7 @@ export default function AdvisoryPage() {
                 color: input.trim() ? "#030705" : "var(--text-muted)",
               }}
             >
-              <Send className="w-5 h-5" />
+              {editingMsgId ? <Check className="w-5 h-5" /> : <Send className="w-5 h-5" />}
             </button>
           </div>
         </div>
@@ -884,104 +1143,4 @@ export default function AdvisoryPage() {
     </main>
     </AuthGuard>
   );
-}
-
-// ─── Realistic Mock Fallback Generators (Offline Support) ───
-
-function generateMockStandardResponse(
-  question: string,
-  lang: string,
-  zone: string,
-  season: string
-): AdvisoryAnswerResponse {
-  const lower = question.toLowerCase();
-
-  let answer = `**CRI General Advisory for ${zone} (${season} Season):**\n\nFor optimal coconut yield in Sri Lanka, apply split fertilizer doses in the manure circle (1.8m radius) during the active monsoon season. Ensure adequate soil moisture retention via coconut husk mulching (2 layers, convex side upwards).\n\n*Reference: CRI Coconut Cultivation Handbook & Advisory Circular A1*`;
-  let sources: AdvisorySource[] = [
-    { title: "CRI Advisory Circular No. A1 — Plant Nutrition & Fertilizer Management", content: "Split application guidelines for adult palms." }
-  ];
-  let images: AdvisoryImageRef[] = [
-    { url: "Spreading of fertilizer in the manure circle.png", caption: "Correct circular spreading of fertilizer in the 1.8m manure ring.", source: "CRI Advisory Circular A1" }
-  ];
-
-  if (lower.includes("rot") || lower.includes("කුණු") || lower.includes("ගොබය") || lower.includes("அழுகல்")) {
-    answer = `**Bud Rot / ගොබය කුණුවීමේ රෝගය (Phytophthora palmivora) Control Protocol for ${zone}:**\n\n1. **Immediate Sanitation:** Sever and incinerate all infected spear leaves and rotting crown tissue down to healthy white cabbage.\n2. **Protective Dressing:** Paint the exposed tissue with Bordeaux Paste (100g Copper Sulphate + 100g Quicklime in 1L water) or Copper Oxychloride paste (50g/L).\n3. **Prophylactic Spray:** Spray neighboring asymptomatic palms with Mancozeb 80% WP (4g/L water) or Copper Oxychloride.\n4. **Drainage:** Deepen contour drainage channels to eliminate standing water during the ${season} monsoon season.\n\n*Reference: CRI Advisory Leaflet No. 4 & Plant Pathology Bulletin 2026*`;
-    sources = [
-      { title: "CRI Advisory Leaflet No. 4 — Management of Bud Rot in Coconut", content: "Phytophthora palmivora disease protocol." },
-      { title: "CRI Plant Pathology Bulletin 2026", content: "Fungicidal dosage and prophylactic crown spray schedules." }
-    ];
-    images = [
-      { url: "Bud rot damage in mature coconut.png", caption: "Severe bud rot necrosis showing collapsed central spear leaf.", source: "CRI Advisory Leaflet No. 4" },
-      { url: "Coconut palm affected by leaf rot disease.png", caption: "Leaf rot and necrotic frond lesions requiring copper fungicide.", source: "CRI Advisory Leaflet No. 4" }
-    ];
-  } else if (lower.includes("bleed") || lower.includes("යුෂ") || lower.includes("ලේ") || lower.includes("தண்டு") || lower.includes("stem")) {
-    answer = `**Stem Bleeding / කඳෙන් යුෂ ගැලීමේ රෝගය (Ceratocystis paradoxa) Management Protocol:**\n\n1. **Surgical Chiseled Clearing:** Chisel out all discolored vascular wood until clean white fibrous tissue is exposed; collect and burn excised bark fragments.\n2. **Wound Sealing:** Paint the clean excavated cavity immediately with hot coal tar or 10% concentrated Bordeaux paste.\n3. **Cavity Packing:** For deeper hollows, pack with Copper Oxychloride paste (1:1 with water) to suppress internal mycelial growth.\n4. **Regulatory & Cultural Note:** Tridemorph (Calixin) root feeding is phased out / restricted under Sri Lanka Registrar of Pesticides regulations. Maintain clean weed-free trunk bases to avoid physical injury from implements.\n\n*Reference: CRI Advisory Circular No. 19 & Pathology Division Circulars*`;
-    sources = [
-      { title: "CRI Advisory Circular No. 19 — Stem Bleeding Disease of Coconut", content: "Surgical wound chiseling, coal tar application, and cavity treatment." },
-      { title: "CRI Plant Pathology Division Circular", content: "Current pesticide compliance and physical barrier protection." }
-    ];
-    images = [
-      { url: "Coconut palm affected by leaf rot disease.png", caption: "Stem lesion inspection and trunk pathology assessment.", source: "CRI Advisory Circular No. 19" }
-    ];
-  } else if (lower.includes("blight") || lower.includes("spot") || lower.includes("අංගමාර") || lower.includes("ලප") || lower.includes("சாம்பல்")) {
-    answer = `**Gray Leaf Spot / කොළ අංගමාරය (Pestalotiopsis palmarum) Integrated Protocol:**\n\n1. **Nutritional Correction:** Apply targeted MOP (Muriate of Potash, 60% K₂O) and Dolomite to address Potassium/Magnesium deficiencies which predispose palms to leaf blight.\n2. **Foliar Treatment:** Spray with Copper Oxychloride (2-3g/L) or Mancozeb (2.5g/L) across lower and middle canopy fronds at symptom onset. *(Note: Carbendazim is banned/restricted in Sri Lanka)*.\n3. **Sanitation:** Prune and incinerate dried, heavily infected lower fronds (පිති) to minimize secondary spore loads.\n\n*Reference: CRI Advisory Circular No. 42 & Foliar Nutrition Guidelines*`;
-    sources = [
-      { title: "CRI Advisory Circular No. 42 — Leaf Blight & Gray Spot Management", content: "NPK+Mg nutrition and compliant copper fungicide sprays." }
-    ];
-    images = [
-      { url: "Coconut palm affected by leaf rot disease.png", caption: "Foliar blight necrosis on outer fronds.", source: "CRI Advisory Circular No. 42" }
-    ];
-  } else if (lower.includes("weevil") || lower.includes("කුරුමිණි") || lower.includes("வண்டு") || lower.includes("beetle")) {
-    answer = `**Red Palm Weevil (Rhynchophorus ferrugineus) & Black Beetle Integrated Protocol:**\n\n1. **Pheromone Trapping:** Install Ferrugineol aggregation pheromone traps with food attractant (fresh sugarcane or coconut water) at 1 trap per hectare.\n2. **Trunk Wound Sealing:** Paint all fresh harvesting injuries or machete cuts with coal tar to prevent adult female oviposition.\n3. **Biological Control:** Release predatory earwigs and apply Metarhizium anisopliae fungal spores to cattle dung breeding pits.\n4. **Emergency Curative Action:** Inject Monocrotophos 600g/L SL (10ml in 10ml water) into the trunk 1 meter below the lowest frond if chewing sounds are heard.\n\n*Reference: CRI Crop Protection Circular CP-12*`;
-    sources = [
-      { title: "CRI Crop Protection Circular CP-12 — Red Palm Weevil & Rhinoceros Beetle Management", content: "Pheromone trapping and trunk injection methods." }
-    ];
-    images = [
-      { url: "Pheromone Trap in the Field.png", caption: "CRI standard aggregation pheromone trap positioned in field block.", source: "CRI Crop Protection Circular CP-12" },
-      { url: "Crown toppled palm due to red weevil damage.png", caption: "Toppled palm crown caused by internal larval tunneling.", source: "CRI Crop Protection Circular CP-12" }
-    ];
-  }
-
-  return {
-    success: true,
-    question,
-    answer,
-    sources,
-    images,
-    zone,
-    season,
-    retrieval_confidence: 0.94,
-    combined_reliability: 91.5,
-    reliability_level: "High",
-  };
-}
-
-function generateMockMultiLlmResponse(
-  question: string,
-  lang: string,
-  zone: string,
-  season: string
-): MultiLLMAdvisoryResponse {
-  const std = generateMockStandardResponse(question, lang, zone, season);
-
-  return {
-    success: true,
-    best_answer: std.answer,
-    best_model: "meta-llama/llama-3.3-70b-instruct (Groq Turbo)",
-    reason: "Judge selected LLaMA 3.3 70B for strict adherence to CRI Leaflet No. 4 dosage parameters, high factual consistency with retrieved documents, and comprehensive step-by-step agronomist formatting.",
-    consensus_score: 92,
-    retrieval_confidence: 0.95,
-    combined_reliability: 93.8,
-    reliability_level: "High",
-    llama_answer: std.answer,
-    gpt4omini_answer: std.answer.replace("1.", "Step 1:").replace("2.", "Step 2:"),
-    gemma_answer: std.answer.replace("**Immediate Sanitation:**", "**1. Sanitation:**"),
-    sources: std.sources,
-    images: std.images,
-    zone,
-    season,
-    early_exit: true,
-    similarity_score: 0.93,
-    latency_ms: 540,
-  };
 }

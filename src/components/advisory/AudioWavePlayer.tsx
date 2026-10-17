@@ -50,6 +50,10 @@ export default function AudioWavePlayer({ text, lang }: AudioWavePlayerProps) {
     try {
       const ttsUrl = advisory.getTtsUrl(text, activeLang);
       const audio = new Audio(ttsUrl);
+      // Match mobile: Sinhala gTTS voice is slow, so speed up to 1.25x
+      audio.defaultPlaybackRate = activeLang === "si" ? 1.25 : 1.0;
+      audio.playbackRate = activeLang === "si" ? 1.25 : 1.0;
+      (audio as any).preservesPitch = true;
       audioRef.current = audio;
 
       audio.onplay = () => {
