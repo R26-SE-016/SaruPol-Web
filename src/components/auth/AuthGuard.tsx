@@ -9,7 +9,7 @@ import { useTranslation } from "@/lib/i18n/LanguageContext";
 import { useTheme } from "@/lib/theme/ThemeContext";
 
 interface AuthGuardProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export default function AuthGuard({ children }: AuthGuardProps) {
