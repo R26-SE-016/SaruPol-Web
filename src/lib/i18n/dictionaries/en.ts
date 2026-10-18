@@ -146,6 +146,7 @@ export const en: TranslationSchema = {
       chemicalAction: "CHEMICAL ACTION",
       culturalMeasure: "CULTURAL MEASURE",
       viewFullKbGuide: "View Full CRI Treatment Guide for",
+      generateTreatmentBtn: "Generate CRI Treatment Plan via AI",
       recentScansTitle: "Recent Microscopic Leaf Diagnostics",
       colDiagId: "Diagnostic ID / Date",
       colPathogenClass: "Pathogen Class",
@@ -258,6 +259,7 @@ export const en: TranslationSchema = {
       healthySubtitle: "Healthy Palm Foliage (No Deficiencies Detected)",
       healthyDesc: "The AI vision model analyzed your leaf sample and detected no mineral deficiencies. Foliage exhibits balanced pigmentation and vigor.",
       healthyAdvice: "Maintain regular circular manure basin fertilization according to CRI Circular A7. Practice organic mulching to conserve root moisture.",
+      consultAdvisoryBtn: "Consult Advisory AI with Soil Diagnosis",
     },
     lab: {
       title: "Certified Soil & Leaf Chemical Assay Form",

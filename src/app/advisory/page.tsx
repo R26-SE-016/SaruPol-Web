@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
+import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import AuthGuard from "@/components/auth/AuthGuard";
 import {
@@ -89,7 +90,9 @@ const getSuggestions = (lang: string) => [
   L(lang, "What fertilizer mixture is recommended for coconut seedlings?", "පොල් පැළ සඳහා නිර්දේශිත පොහොර මිශ්‍රණය කුමක්ද?", "தேங்காய் நாற்றுகளுக்கு பரிந்துரைக்கப்படும் உரக் கலவை என்ன?"),
 ];
 
-export default function AdvisoryPage() {
+function AdvisoryContent() {
+  const searchParams = useSearchParams();
+  const initialPromptProcessed = useRef(false);
   const { t, language, setLanguage } = useTranslation();
   const { theme } = useTheme();
 
@@ -172,6 +175,35 @@ export default function AdvisoryPage() {
       console.warn("Failed to load past chat sessions:", e);
     }
   }, []);
+
+  // Check for auto-populated query/context from cross-module handoffs (e.g., Soil foliar scan, Pathology critical alert)
+  useEffect(() => {
+    if (initialPromptProcessed.current) return;
+    const promptParam = searchParams?.get("q") || searchParams?.get("prompt");
+    const zoneParam = searchParams?.get("zone");
+    const modeParam = searchParams?.get("mode");
+
+    if (zoneParam) {
+      setIsAutoGps(false);
+      if (zoneParam.toLowerCase().includes("wet")) setManualZone("Wet Zone");
+      else if (zoneParam.toLowerCase().includes("dry")) setManualZone("Dry Zone");
+      else setManualZone("Intermediate Zone");
+    }
+
+    if (modeParam === "multi") {
+      setChatMode("multi");
+    }
+
+    if (promptParam) {
+      initialPromptProcessed.current = true;
+      setInput(promptParam);
+      // Small tick so states settle before auto-firing query
+      const timer = setTimeout(() => {
+        void sendMessage(promptParam);
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
 
   // Persist current session whenever messages change (same as mobile)
   useEffect(() => {
@@ -1142,5 +1174,13 @@ export default function AdvisoryPage() {
       />
     </main>
     </AuthGuard>
+  );
+}
+
+export default function AdvisoryPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#030705]" />}>
+      <AdvisoryContent />
+    </Suspense>
   );
 }
