@@ -88,13 +88,21 @@ export default function PathologyPage() {
       if (typeof navigator !== "undefined" && navigator.onLine && user.id) {
         pathologyApi.getHistory(String(user.id))
           .then((res: any) => {
-            if (res && res.history && Array.isArray(res.history) && res.history.length > 0) {
-              const formattedCloud: UserDiagnosticRecord[] = res.history.map((r: any) => ({
+            const rawList: any[] = Array.isArray(res)
+              ? res
+              : Array.isArray(res?.diagnostics)
+              ? res.diagnostics
+              : Array.isArray(res?.history)
+              ? res.history
+              : [];
+
+            if (rawList.length > 0) {
+              const formattedCloud: UserDiagnosticRecord[] = rawList.map((r: any) => ({
                 id: r.record_id || r.id,
-                disease_class: r.disease_class || r.disease,
+                disease_class: r.disease_class || r.disease || "healthy leaves",
                 confidence: typeof r.confidence === "number" ? r.confidence : 0.9,
                 location: r.location || { lat: 7.3422, lng: 79.8662 },
-                captured_at: r.captured_at || r.created_at || new Date().toISOString(),
+                captured_at: r.captured_at || r.created_at || r.timestamp || new Date().toISOString(),
                 estate_name: r.estate_name || "Estate Plantation",
                 user_id: String(user.id),
                 user_email: user.email,
