@@ -146,6 +146,7 @@ export const si: TranslationSchema = {
       chemicalAction: "රසායනික ක්‍රියාමාර්ගය",
       culturalMeasure: "වගා පිළිවෙත් පියවර",
       viewFullKbGuide: "සම්පූර්ණ CRI ප්‍රතිකාර විස්තරය බලන්න",
+      generateTreatmentBtn: "AI මඟින් CRI ප්‍රතිකාර සැලැස්මක් සකසන්න",
       recentScansTitle: "මෑතකාලීන පත්‍ර රෝග විනිශ්චය වාර්තා",
       colDiagId: "විනිශ්චය අංකය / දිනය",
       colPathogenClass: "රෝගකාරක වර්ගය",
@@ -258,6 +259,7 @@ export const si: TranslationSchema = {
       healthySubtitle: "නිරෝගී පොල් පත්‍රයකි (කිසිදු ඌණතාවයක් නොමැත)",
       healthyDesc: "AI ආකෘතිය මඟින් ඔබේ පත්‍ර සාම්පලයේ කිසිදු ඛනිජ ඌණතාවක් හඳුනාගෙන නොමැත. පත්‍රය ප්‍රශස්ත ක්ලෝරෝෆිල් හා වර්ධනයක් පෙන්වයි.",
       healthyAdvice: "CRI A7 චක්‍රලේඛයට අනුව නිතිපතා පොහොර වළල්ලට පොහොර යොදන්න. මුල්වල තෙතමනය රඳවා ගැනීමට කොහුබත් හෝ ලෙලි වසුන් භාවිතා කරන්න.",
+      consultAdvisoryBtn: "පාංශු රෝග විනිශ්චය සමඟ AI උපදේශක වෙත යොමුවන්න",
     },
     lab: {
       title: "විද්‍යාගාර පාංශු හා පත්‍ර රසායනික පරීක්ෂණ පෝරමය",
