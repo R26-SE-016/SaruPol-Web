@@ -62,38 +62,6 @@ export const COMMERCIAL_ESTATES = [
   "Other / Private Coconut Plantation",
 ];
 
-// Built-in Demo Accounts for instant research validation
-export const DEMO_ACCOUNTS = {
-  agronomist: {
-    email: "agronomist@cri.lk",
-    password: "Password123!",
-    user: {
-      id: "usr_cri_001",
-      name: "Dr. Priyantha Jayalath",
-      email: "agronomist@cri.lk",
-      role: "officer" as const,
-      estate_id: "Lunuwila CRI Headquarters",
-      phone: "+94 77 345 6789",
-      district: "Kurunegala",
-      created_at: "2026-01-15",
-    },
-  },
-  planter: {
-    email: "planter@sarupol.lk",
-    password: "Password123!",
-    user: {
-      id: "usr_plt_042",
-      name: "Sunil Wickramasinghe",
-      email: "planter@sarupol.lk",
-      role: "planter" as const,
-      estate_id: "Makandura Experimental Estate",
-      phone: "+94 71 890 1234",
-      district: "Gampaha",
-      created_at: "2026-03-10",
-    },
-  },
-};
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -129,40 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: false, error: "Please enter both email address and password." };
     }
 
-    // 1. Check Demo Accounts (Fast Path)
-    if (cleanEmail === DEMO_ACCOUNTS.agronomist.email.toLowerCase()) {
-      if (cleanPassword === DEMO_ACCOUNTS.agronomist.password) {
-        const demoUser = DEMO_ACCOUNTS.agronomist.user;
-        const demoToken = "jwt_mock_token_agronomist_2026";
-        setToken(demoToken);
-        setUser(demoUser);
-        localStorage.setItem(STORAGE_KEYS.TOKEN, demoToken);
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(demoUser));
-        setIsLoading(false);
-        return { success: true };
-      } else {
-        setIsLoading(false);
-        return { success: false, error: "Incorrect password for CRI Research Officer account." };
-      }
-    }
-
-    if (cleanEmail === DEMO_ACCOUNTS.planter.email.toLowerCase()) {
-      if (cleanPassword === DEMO_ACCOUNTS.planter.password) {
-        const demoUser = DEMO_ACCOUNTS.planter.user;
-        const demoToken = "jwt_mock_token_planter_2026";
-        setToken(demoToken);
-        setUser(demoUser);
-        localStorage.setItem(STORAGE_KEYS.TOKEN, demoToken);
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(demoUser));
-        setIsLoading(false);
-        return { success: true };
-      } else {
-        setIsLoading(false);
-        return { success: false, error: "Incorrect password for Commercial Planter account." };
-      }
-    }
-
-    // 2. Real SaruPol-Gateway Backend API
+    // Real SaruPol-Gateway Backend API (Firestore backed)
     try {
       const res = await authApi.login(cleanEmail, cleanPassword);
       if (res && res.token && res.user) {
