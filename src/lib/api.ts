@@ -76,6 +76,7 @@ export interface AuthUserResponse {
   role?: string;
   estate_id?: string;
   phone?: string;
+  district?: string;
   created_at?: string;
 }
 

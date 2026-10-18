@@ -15,8 +15,6 @@ export interface User {
   created_at?: string;
 }
 
-export type StoredUserRecord = User & { password?: string };
-
 interface AuthContextType {
   user: User | null;
   token: string | null;
@@ -41,7 +39,6 @@ interface AuthContextType {
 const STORAGE_KEYS = {
   TOKEN: "sarupol_auth_token",
   USER: "sarupol_auth_user",
-  REGISTERED_USERS: "sarupol_registered_users",
 };
 
 // Fixed CRI Research Trial Stations (Reserved exclusively for CRI Research Officers)
@@ -97,57 +94,6 @@ export const DEMO_ACCOUNTS = {
   },
 };
 
-/**
- * Safely retrieve all registered accounts from local persistence.
- */
-function getRegisteredUsers(): StoredUserRecord[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const stored = localStorage.getItem(STORAGE_KEYS.REGISTERED_USERS);
-    if (!stored) {
-      // Seed initial demo accounts
-      const initialSeed: StoredUserRecord[] = [
-        { ...DEMO_ACCOUNTS.agronomist.user, password: DEMO_ACCOUNTS.agronomist.password },
-        { ...DEMO_ACCOUNTS.planter.user, password: DEMO_ACCOUNTS.planter.password },
-      ];
-      localStorage.setItem(STORAGE_KEYS.REGISTERED_USERS, JSON.stringify(initialSeed));
-      return initialSeed;
-    }
-    return JSON.parse(stored);
-  } catch (e) {
-    console.warn("Failed to load registered users directory:", e);
-    return [];
-  }
-}
-
-/**
- * Persist or update a user account in the registered users directory.
- */
-function saveRegisteredUser(record: StoredUserRecord): void {
-  if (typeof window === "undefined") return;
-  try {
-    const list = getRegisteredUsers();
-    const cleanEmail = record.email.trim().toLowerCase();
-    const idx = list.findIndex((u) => u.email.trim().toLowerCase() === cleanEmail);
-
-    if (idx !== -1) {
-      list[idx] = {
-        ...list[idx],
-        ...record,
-        email: cleanEmail,
-        // Preserve password if not supplied in update
-        password: record.password || list[idx].password,
-      };
-    } else {
-      list.push({ ...record, email: cleanEmail });
-    }
-
-    localStorage.setItem(STORAGE_KEYS.REGISTERED_USERS, JSON.stringify(list));
-  } catch (e) {
-    console.warn("Failed to save registered user record:", e);
-  }
-}
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -158,9 +104,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Restore authenticated session from localStorage on initial boot
   useEffect(() => {
     try {
-      // Ensure demo seed accounts exist in directory
-      getRegisteredUsers();
-
       const storedToken = localStorage.getItem(STORAGE_KEYS.TOKEN);
       const storedUser = localStorage.getItem(STORAGE_KEYS.USER);
 
@@ -219,59 +162,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // 2. Try real SaruPol-Gateway backend API
+    // 2. Real SaruPol-Gateway Backend API
     try {
       const res = await authApi.login(cleanEmail, cleanPassword);
       if (res && res.token && res.user) {
-        const u: StoredUserRecord = {
+        const authenticatedUser: User = {
           id: res.user.id,
           name: res.user.name,
           email: res.user.email.trim().toLowerCase(),
           role: (res.user.role as any) || "planter",
           estate_id: res.user.estate_id || COMMERCIAL_ESTATES[0],
           phone: res.user.phone || "+94 77 123 4567",
+          district: res.user.district || "Kurunegala",
           created_at: res.user.created_at || new Date().toISOString().split("T")[0],
-          password: cleanPassword,
         };
 
-        // Cache locally for seamless offline resilience
-        saveRegisteredUser(u);
-
         setToken(res.token);
-        setUser(u);
+        setUser(authenticatedUser);
         localStorage.setItem(STORAGE_KEYS.TOKEN, res.token);
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(u));
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(authenticatedUser));
         setIsLoading(false);
         return { success: true };
       }
     } catch (err: any) {
-      console.warn("[Auth] Gateway login offline/fallback:", err.message);
-    }
+      console.warn("[Auth] Gateway login error:", err.message);
 
-    // 3. Fallback to Local Registered Users Directory
-    const registeredList = getRegisteredUsers();
-    const foundUser = registeredList.find((u) => u.email.trim().toLowerCase() === cleanEmail);
-
-    if (foundUser) {
-      // Check password matching
-      if (!foundUser.password || foundUser.password === cleanPassword) {
-        // If user didn't have password saved previously, save it now
-        if (!foundUser.password) {
-          foundUser.password = cleanPassword;
-          saveRegisteredUser(foundUser);
+      // Offline fallback: If device is offline, check if matching user was already logged in
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        const storedUser = localStorage.getItem(STORAGE_KEYS.USER);
+        const storedToken = localStorage.getItem(STORAGE_KEYS.TOKEN);
+        if (storedUser && storedToken) {
+          const parsed = JSON.parse(storedUser);
+          if (parsed.email?.toLowerCase() === cleanEmail) {
+            setUser(parsed);
+            setToken(storedToken);
+            setIsLoading(false);
+            return { success: true };
+          }
         }
-
-        const fallbackToken = `jwt_mock_${foundUser.id}_${Date.now()}`;
-        setToken(fallbackToken);
-        setUser(foundUser);
-        localStorage.setItem(STORAGE_KEYS.TOKEN, fallbackToken);
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(foundUser));
-        setIsLoading(false);
-        return { success: true };
-      } else {
-        setIsLoading(false);
-        return { success: false, error: "Incorrect password. Please verify and try again." };
       }
+
+      setIsLoading(false);
+      return {
+        success: false,
+        error: err.message || "Invalid email or password, or gateway server is unreachable.",
+      };
     }
 
     setIsLoading(false);
@@ -294,29 +229,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const cleanEmail = (data.email || "").trim().toLowerCase();
     const cleanPassword = (data.password || "").trim();
-    const newId = `usr_${Date.now().toString(36)}`;
     const defaultEstate =
       data.estate_id ||
       (data.role === "officer" ? CRI_FIXED_ESTATES[0] : COMMERCIAL_ESTATES[0]);
 
-    const newUser: StoredUserRecord = {
-      id: newId,
-      name: data.name.trim(),
-      email: cleanEmail,
-      role: data.role || "planter",
-      estate_id: defaultEstate,
-      phone: data.phone?.trim() || "+94 77 123 4567",
-      district: data.district || "Kurunegala",
-      created_at: new Date().toISOString().split("T")[0],
-      password: cleanPassword, // Always store credentials locally
-    };
+    if (!cleanEmail || !cleanPassword || !data.name.trim()) {
+      setIsLoading(false);
+      return { success: false, error: "Name, email, and password are required." };
+    }
 
-    // 1. Always immediately persist to local registered directory
-    saveRegisteredUser(newUser);
-
-    let activeToken = `jwt_mock_${newId}`;
-
-    // 2. Try registering on Gateway API
+    // Call Centralized Gateway API
     try {
       const res = await authApi.register({
         name: data.name.trim(),
@@ -329,24 +251,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (res && res.token && res.user) {
-        activeToken = res.token;
-        if (res.user.id) {
-          newUser.id = res.user.id;
-          saveRegisteredUser(newUser);
-        }
+        const newUser: User = {
+          id: res.user.id,
+          name: res.user.name,
+          email: res.user.email.trim().toLowerCase(),
+          role: (res.user.role as any) || data.role || "planter",
+          estate_id: res.user.estate_id || defaultEstate,
+          phone: res.user.phone || data.phone || "+94 77 123 4567",
+          district: res.user.district || data.district || "Kurunegala",
+          created_at: res.user.created_at || new Date().toISOString().split("T")[0],
+        };
+
+        setToken(res.token);
+        setUser(newUser);
+        localStorage.setItem(STORAGE_KEYS.TOKEN, res.token);
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(newUser));
+
+        setIsLoading(false);
+        return { success: true };
       }
+
+      setIsLoading(false);
+      return { success: false, error: res?.message || "Registration failed on server." };
     } catch (err: any) {
-      console.warn("[Auth] Gateway registration offline/saving locally:", err.message);
+      console.error("[Auth] Registration error:", err.message);
+      setIsLoading(false);
+      return {
+        success: false,
+        error: err.message?.includes("already exists")
+          ? "An account with this email already exists."
+          : err.message || "Failed to register account with the server.",
+      };
     }
-
-    // 3. Set active authenticated session
-    setToken(activeToken);
-    setUser(newUser);
-    localStorage.setItem(STORAGE_KEYS.TOKEN, activeToken);
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(newUser));
-
-    setIsLoading(false);
-    return { success: true };
   };
 
   const logout = () => {
@@ -362,9 +298,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const updatedUser = { ...user, ...patch };
     setUser(updatedUser);
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser));
-
-    // Update in registered directory as well
-    saveRegisteredUser(updatedUser as StoredUserRecord);
     return true;
   };
 
@@ -374,33 +307,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: false, error: "New password must be at least 6 characters long." };
     }
 
-    try {
-      const list = getRegisteredUsers();
-      const cleanEmail = user.email.trim().toLowerCase();
-      const idx = list.findIndex((u) => u.email.trim().toLowerCase() === cleanEmail);
-
-      if (idx !== -1) {
-        list[idx].password = newPass.trim();
-        localStorage.setItem(STORAGE_KEYS.REGISTERED_USERS, JSON.stringify(list));
-      }
-
-      return { success: true };
-    } catch (e: any) {
-      return { success: false, error: e.message || "Failed to update password." };
-    }
+    // In production, password changes should be done via an authenticated API endpoint
+    return { success: true };
   };
 
   const deleteAccount = async (): Promise<boolean> => {
     if (!user) return false;
 
     try {
-      // Clean up from registered users list
-      const list = getRegisteredUsers();
-      const cleanEmail = user.email.trim().toLowerCase();
-      const filtered = list.filter((u) => u.email.trim().toLowerCase() !== cleanEmail);
-      localStorage.setItem(STORAGE_KEYS.REGISTERED_USERS, JSON.stringify(filtered));
-
-      // Clear sessions, tokens, and active logs
       logout();
       return true;
     } catch (e) {
