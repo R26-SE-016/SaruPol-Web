@@ -33,6 +33,8 @@ import {
 import { useAuth, CRI_FIXED_ESTATES, COMMERCIAL_ESTATES } from "@/lib/auth/AuthContext";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
 import { useTheme } from "@/lib/theme/ThemeContext";
+import { getUserDiagnostics, mergeCloudDiagnostics } from "@/lib/pathology-storage";
+import { pathology as pathologyApi, advisory as advisoryApi } from "@/lib/api";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -43,12 +45,19 @@ export default function ProfilePage() {
   // Edit Mode state for profile details
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(user?.name || "");
-  const [phone, setPhone] = useState(user?.phone || "+94 77 123 4567");
+  const [phone, setPhone] = useState(user?.phone || "");
   const [estate, setEstate] = useState(
     user?.estate_id || (user?.role === "officer" ? CRI_FIXED_ESTATES[0] : COMMERCIAL_ESTATES[0])
   );
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Dynamic user activity statistics
+  const [stats, setStats] = useState({
+    diagnostics: 0,
+    harvestLogs: 0,
+    advisorySessions: 0,
+  });
 
   // Password Change state
   const [currentPassword, setCurrentPassword] = useState("");
@@ -64,12 +73,97 @@ export default function ProfilePage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Sync state if user updates
+  // Sync state if user updates & compute real dynamic activity statistics
   React.useEffect(() => {
     if (user) {
       setName(user.name);
-      setPhone(user.phone || "+94 77 123 4567");
+      setPhone(user.phone || "");
       setEstate(user.estate_id || (user.role === "officer" ? CRI_FIXED_ESTATES[0] : COMMERCIAL_ESTATES[0]));
+
+      // 1. Calculate local activity statistics
+      let localDiagCount = 0;
+      try {
+        const localDiags = getUserDiagnostics(user.id, user.email);
+        localDiagCount = localDiags.length;
+      } catch {
+        localDiagCount = 0;
+      }
+
+      let localHarvestCount = 0;
+      try {
+        const rawHarvest = localStorage.getItem("sarupol_yield_harvest_logs");
+        if (rawHarvest) {
+          const parsed = JSON.parse(rawHarvest);
+          if (Array.isArray(parsed)) localHarvestCount = parsed.length;
+        }
+      } catch {
+        localHarvestCount = 0;
+      }
+
+      let localAdvCount = 0;
+      try {
+        const rawSessions = localStorage.getItem("sarupol_chat_sessions");
+        if (rawSessions) {
+          const parsed = JSON.parse(rawSessions);
+          if (Array.isArray(parsed)) localAdvCount = parsed.length;
+        }
+      } catch {
+        localAdvCount = 0;
+      }
+
+      setStats({
+        diagnostics: localDiagCount,
+        harvestLogs: localHarvestCount,
+        advisorySessions: localAdvCount,
+      });
+
+      // 2. Fetch cloud-synced counters when online
+      if (typeof navigator !== "undefined" && navigator.onLine && user.id) {
+        Promise.allSettled([
+          pathologyApi.getHistory(String(user.id)),
+          advisoryApi.getSessions(String(user.id)),
+        ]).then(([diagRes, advRes]) => {
+          let updatedDiagCount = localDiagCount;
+          let updatedAdvCount = localAdvCount;
+
+          if (diagRes.status === "fulfilled" && diagRes.value) {
+            const raw = diagRes.value;
+            const list = Array.isArray(raw)
+              ? raw
+              : Array.isArray(raw?.diagnostics)
+              ? raw.diagnostics
+              : Array.isArray(raw?.history)
+              ? raw.history
+              : [];
+            const merged = mergeCloudDiagnostics(user.id, list, user.email);
+            updatedDiagCount = merged.length;
+          }
+
+          if (advRes.status === "fulfilled" && advRes.value?.sessions) {
+            const sessions = advRes.value.sessions;
+            if (Array.isArray(sessions)) {
+              const sessionIds = new Set<string>();
+              sessions.forEach((s: any) => s?.id && sessionIds.add(s.id));
+              try {
+                const rawSessions = localStorage.getItem("sarupol_chat_sessions");
+                if (rawSessions) {
+                  const parsed = JSON.parse(rawSessions);
+                  if (Array.isArray(parsed)) {
+                    parsed.forEach((s: any) => s?.id && sessionIds.add(s.id));
+                  }
+                }
+              } catch {}
+              updatedAdvCount = Math.max(sessionIds.size, sessions.length);
+            }
+          }
+
+          setStats({
+            diagnostics: updatedDiagCount,
+            harvestLogs: localHarvestCount,
+            advisorySessions: updatedAdvCount,
+          });
+        });
+      }
     }
   }, [user]);
 
@@ -93,7 +187,7 @@ export default function ProfilePage() {
   const handleCancelEdit = () => {
     if (user) {
       setName(user.name);
-      setPhone(user.phone || "+94 77 123 4567");
+      setPhone(user.phone || "");
       setEstate(user.estate_id || (user.role === "officer" ? CRI_FIXED_ESTATES[0] : COMMERCIAL_ESTATES[0]));
     }
     setIsEditing(false);
@@ -251,7 +345,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="text-2xl font-mono font-bold" style={{ color: "var(--text-primary)" }}>
-                  14
+                  {stats.diagnostics}
                 </p>
                 <p className="text-[10px] font-mono uppercase tracking-wider text-muted">
                   {t.profile.diagnosticsCount}
@@ -268,7 +362,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="text-2xl font-mono font-bold" style={{ color: "var(--text-primary)" }}>
-                  8
+                  {stats.harvestLogs}
                 </p>
                 <p className="text-[10px] font-mono uppercase tracking-wider text-muted">
                   {t.profile.harvestLogsCount}
@@ -285,7 +379,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="text-2xl font-mono font-bold" style={{ color: "var(--text-primary)" }}>
-                  23
+                  {stats.advisorySessions}
                 </p>
                 <p className="text-[10px] font-mono uppercase tracking-wider text-muted">
                   {t.profile.advisoryQueriesCount}

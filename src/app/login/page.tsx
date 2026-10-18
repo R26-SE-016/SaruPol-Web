@@ -14,12 +14,10 @@ import {
   AlertCircle,
   CheckCircle2,
   Sparkles,
-  ArrowRight,
-  UserCheck,
-  ShieldCheck
+  ArrowRight
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
-import { useAuth, DEMO_ACCOUNTS } from "@/lib/auth/AuthContext";
+import { useAuth } from "@/lib/auth/AuthContext";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
 import { useTheme } from "@/lib/theme/ThemeContext";
 
@@ -48,22 +46,6 @@ export default function LoginPage() {
     setIsLoading(true);
 
     const res = await login(email, password);
-    if (res.success) {
-      router.push("/");
-    } else {
-      setError(res.error || t.auth.invalidCredentials);
-      setIsLoading(false);
-    }
-  };
-
-  const handleDemoLogin = async (type: "agronomist" | "planter") => {
-    setError(null);
-    setIsLoading(true);
-    const demo = DEMO_ACCOUNTS[type];
-    setEmail(demo.email);
-    setPassword(demo.password);
-
-    const res = await login(demo.email, demo.password);
     if (res.success) {
       router.push("/");
     } else {
@@ -199,34 +181,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Quick Demo Login One-Click Section */}
-          <div className="pt-2 border-t space-y-2.5" style={{ borderColor: "var(--card-border)" }}>
-            <p className="text-[10px] font-mono uppercase tracking-wider text-muted text-center">
-              {t.auth.demoLoginHeader}
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleDemoLogin("agronomist")}
-                className="p-2.5 rounded-xl border text-xs font-mono flex items-center justify-center gap-1.5 smooth-transition hover:border-amber-500 cursor-pointer"
-                style={{ background: "rgba(230,175,46,0.06)", borderColor: "var(--card-border)" }}
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
-                <span className="truncate">{t.auth.demoAgronomist}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleDemoLogin("planter")}
-                className="p-2.5 rounded-xl border text-xs font-mono flex items-center justify-center gap-1.5 smooth-transition hover:border-emerald-400 cursor-pointer"
-                style={{ background: "rgba(0,255,157,0.06)", borderColor: "var(--card-border)" }}
-              >
-                <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="truncate">{t.auth.demoPlanter}</span>
-              </button>
-            </div>
-          </div>
 
           {/* Footer Link */}
           <p className="text-xs font-mono text-center text-muted">
