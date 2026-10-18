@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Script from "next/script";
 import Navbar from "@/components/layout/Navbar";
@@ -13,7 +14,8 @@ import {
   ClipboardList, ShieldCheck, Camera, Sparkles, Map, RefreshCw,
   BookOpen, Search, Layers, Radio, Send, ChevronRight,
   Sliders, Info, Compass, ArrowRight, FileText, CheckCircle,
-  Lock, ShieldAlert, Trash2, HelpCircle, Beaker, Calendar, Thermometer
+  Lock, ShieldAlert, Trash2, HelpCircle, Beaker, Calendar, Thermometer,
+  MessageCircle
 } from "lucide-react";
 import StatCard from "@/components/pathology/StatCard";
 import DiseaseChart from "@/components/pathology/DiseaseChart";
@@ -55,6 +57,7 @@ const DiagnosticMapInner = dynamic(() => import("@/components/pathology/Diagnost
 type TabType = "overview" | "aerial" | "mobile" | "knowledge" | "history";
 
 export default function PathologyPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const isPlanter = user?.role === "planter";
   const { t } = useTranslation();
@@ -1907,8 +1910,29 @@ export default function PathologyPage() {
                             </div>
                           )}
 
-                          {/* Direct Cross-link to Knowledge Base */}
-                          <div className="pt-2">
+                          {/* Cross-Module Advisory AI & Knowledge Base Action Buttons */}
+                          <div className="pt-2 space-y-2">
+                            {/* 1-Click Generate CRI Treatment Plan via Advisory AI */}
+                            <button
+                              onClick={() => {
+                                const diseaseName = mobileResult.disease || "Coconut Palm Pathogen";
+                                const confidencePct = (mobileResult.confidence * 100).toFixed(1);
+                                const chemicalProtocol = mobileResult.knowledge?.treatment_protocols?.chemical?.[0] || "";
+                                const prompt = `Microscopic foliar diagnostic identified ${diseaseName} with ${confidencePct}% confidence. ${chemicalProtocol ? `Initial chemical recommendation: "${chemicalProtocol}". ` : ""}What is the comprehensive, official Coconut Research Institute (CRI) Sri Lanka emergency treatment plan, fungicide dosage (Bordeaux mixture/Mancozeb/Carbendazim), and containment protocol to prevent epidemic spread to neighboring palms?`;
+                                router.push(`/advisory?q=${encodeURIComponent(prompt)}&mode=multi`);
+                              }}
+                              className="w-full py-2.5 px-4 rounded-xl border transition-all text-xs font-mono flex items-center justify-center gap-2 font-bold shadow-lg"
+                              style={{
+                                background: "linear-gradient(135deg, rgba(255, 76, 76, 0.25), rgba(230, 175, 46, 0.25))",
+                                borderColor: "rgba(255, 76, 76, 0.45)",
+                                color: "#FFFFFF",
+                              }}
+                            >
+                              <MessageCircle className="w-4 h-4 text-amber-400" />
+                              <span>{t.pathology.systemB.generateTreatmentBtn}</span>
+                              <ArrowRight className="w-3.5 h-3.5 text-red-400" />
+                            </button>
+
                             <button
                               onClick={() => jumpToKnowledgeBase(mobileResult.matchingKbId)}
                               className="w-full py-2.5 px-4 rounded-xl border transition-all text-xs font-mono flex items-center justify-center gap-2 font-medium"
