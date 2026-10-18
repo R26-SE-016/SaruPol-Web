@@ -153,6 +153,7 @@ export interface TranslationSchema {
       chemicalAction: string;
       culturalMeasure: string;
       viewFullKbGuide: string;
+      generateTreatmentBtn: string;
       recentScansTitle: string;
       colDiagId: string;
       colPathogenClass: string;
@@ -265,6 +266,7 @@ export interface TranslationSchema {
       healthySubtitle: string;
       healthyDesc: string;
       healthyAdvice: string;
+      consultAdvisoryBtn: string;
     };
     lab: {
       title: string;
