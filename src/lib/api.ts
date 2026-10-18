@@ -191,6 +191,10 @@ export interface YieldPredictionInput {
   soil_n?: number;
   soil_p?: number;
   soil_k?: number;
+  soil_ph?: number;
+  variety?: string;
+  ageRange?: string;
+  fronds?: number;
   last_harvest_yield?: number;
   actual_harvest_logs?: { actual_yield_nuts: number; predicted_yield_nuts: number }[];
 }
@@ -223,10 +227,20 @@ export interface YieldPredictionResponse {
 
 export interface CdaRatesResponse {
   success: boolean;
+  price_type?: string;
+  requested_district?: string | null;
   a_grade_price: number;
   b_grade_price: number;
   c_grade_price: number;
   last_updated: string;
+  full_data?: {
+    last_updated?: string;
+    fresh_coconut?: Record<string, any>;
+    farm_gate_per_nut?: Record<string, { min: number; max: number }>;
+    national_average_per_nut?: number;
+    coconut_oil_wholesale_per_mt?: { min: number; max: number };
+    status?: string;
+  };
 }
 
 export const yield_ = {
@@ -242,11 +256,59 @@ export const yield_ = {
       body: data,
     }),
 
-  fetchCdaRates: () =>
-    request<CdaRatesResponse>('/api/cda-rates'),
+  fetchCdaRates: async (): Promise<CdaRatesResponse> => {
+    try {
+      return await request<CdaRatesResponse>('/api/yield/cda-rates');
+    } catch {
+      return await request<CdaRatesResponse>('/api/cda-rates');
+    }
+  },
 
-  getHistory: () =>
-    request<{ success: boolean; records: any[] }>('/api/history'),
+  getHistory: async () => {
+    try {
+      return await request<{ success: boolean; records: any[] }>('/api/yield/history');
+    } catch {
+      return await request<{ success: boolean; records: any[] }>('/api/history');
+    }
+  },
+
+  // Yield Microservice Farms, Zones & Harvest Logs Helpers
+  fetchFarms: (uid: string) =>
+    request<{ success: boolean; farms: any[] }>(`/api/yield/farms?uid=${encodeURIComponent(uid)}`),
+
+  createFarm: (uid: string, farm: any) =>
+    request<{ success: boolean; id: string }>('/api/yield/farms', {
+      method: 'POST',
+      body: { uid, farm },
+    }),
+
+  fetchTrees: (uid: string, farmId: string) =>
+    request<{ success: boolean; trees: Record<string, any> }>(`/api/yield/farms/${farmId}/trees?uid=${encodeURIComponent(uid)}`),
+
+  fetchZones: (uid: string, farmId: string) =>
+    request<{ success: boolean; zones: any[] }>(`/api/yield/farms/${farmId}/zones?uid=${encodeURIComponent(uid)}`),
+
+  deleteFarm: (uid: string, farmId: string) =>
+    request<{ success: boolean }>(`/api/yield/farms/${farmId}?uid=${encodeURIComponent(uid)}`, {
+      method: 'DELETE',
+    }),
+
+  fetchHarvestLogs: (uid: string, farmId: string) =>
+    request<{ success: boolean; logs: any[] }>(`/api/yield/farms/${farmId}/harvests?uid=${encodeURIComponent(uid)}`),
+
+  saveHarvestLog: (uid: string, farmId: string, log: any, logId?: string) =>
+    request<{ success: boolean; id?: string }>(`/api/yield/farms/${farmId}/harvests`, {
+      method: 'POST',
+      body: { uid, log, logId },
+    }),
+
+  deleteHarvestLog: (uid: string, farmId: string, logId: string) =>
+    request<{ success: boolean }>(`/api/yield/farms/${farmId}/harvests/${logId}?uid=${encodeURIComponent(uid)}`, {
+      method: 'DELETE',
+    }),
+
+  fetchDevicePresence: (deviceId: string) =>
+    request<{ success: boolean; latest?: any; isLive?: boolean }>(`/api/yield/devices/${deviceId}/latest`),
 };
 
 // ─── Advisory System Types & API ───
