@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/layout/Navbar";
 import AuthGuard from "@/components/auth/AuthGuard";
@@ -10,7 +11,7 @@ import {
   Compass, Map, Trash2, Camera, UploadCloud, RefreshCw, Send,
   Info, ChevronRight, HelpCircle, FileText, CheckCircle,
   Activity, Zap, BookOpen, Globe, Download, Printer, Eye,
-  ShieldCheck, AlertCircle, ArrowUpRight, Scale
+  ShieldCheck, AlertCircle, ArrowUpRight, Scale, MessageCircle
 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
 import { useTheme } from "@/lib/theme/ThemeContext";
@@ -72,6 +73,7 @@ const LAB_PRESETS = [
 ];
 
 export default function SoilPage() {
+  const router = useRouter();
   const { t, language } = useTranslation();
   const { theme } = useTheme();
   const { user } = useAuth();
@@ -1184,20 +1186,42 @@ export default function SoilPage() {
                                 {nutrientInfo.advice}
                               </div>
 
-                              <div className="flex items-center justify-between pt-2">
+                              {/* Action Buttons: Consult Advisory AI & Save Record */}
+                              <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
                                 <span className="text-xs text-gray-400">
                                   {t.soil.visual.protocolNotice}
                                 </span>
 
-                                <button
-                                  type="button"
-                                  onClick={handleSaveVisualScan}
-                                  disabled={visualScanSaved}
-                                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-white flex items-center gap-1.5 transition disabled:opacity-50"
-                                >
-                                  <CheckCircle2 className={`w-3.5 h-3.5 ${visualScanSaved ? "text-[#00FF9D]" : ""}`} />
-                                  {visualScanSaved ? t.soil.visual.savedRecord : t.soil.visual.saveRecord}
-                                </button>
+                                <div className="flex items-center gap-2.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const prompt = `I performed a foliar nutrient scan on a ${palmAge}-year-old palm in the ${detectedZone || manualZone} zone. The visual AI model detected ${nutrientInfo.element} deficiency with ${((visualResult.prediction?.confidence || 0.88) * 100).toFixed(1)}% confidence (Chlorosis: ${(features.chlorosis * 100).toFixed(0)}%, Yellowing: ${(features.yellowing * 100).toFixed(0)}%, Necrosis: ${(features.necrosis * 100).toFixed(0)}%). What is the official Coconut Research Institute (CRI) recommended fertilizer schedule and corrective treatment plan for this condition?`;
+                                      const targetZone = detectedZone || manualZone || "Intermediate Zone";
+                                      router.push(`/advisory?q=${encodeURIComponent(prompt)}&zone=${encodeURIComponent(targetZone)}&mode=multi`);
+                                    }}
+                                    className="px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition shadow-lg border"
+                                    style={{
+                                      background: "linear-gradient(135deg, rgba(230, 175, 46, 0.2), rgba(0, 255, 157, 0.2))",
+                                      borderColor: "rgba(230, 175, 46, 0.4)",
+                                      color: "#FFFFFF",
+                                    }}
+                                  >
+                                    <MessageCircle className="w-3.5 h-3.5 text-amber-400" />
+                                    <span>{t.soil.visual.consultAdvisoryBtn}</span>
+                                    <ArrowRight className="w-3.5 h-3.5 text-[#00FF9D]" />
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={handleSaveVisualScan}
+                                    disabled={visualScanSaved}
+                                    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-white flex items-center gap-1.5 transition disabled:opacity-50"
+                                  >
+                                    <CheckCircle2 className={`w-3.5 h-3.5 ${visualScanSaved ? "text-[#00FF9D]" : ""}`} />
+                                    {visualScanSaved ? t.soil.visual.savedRecord : t.soil.visual.saveRecord}
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>
