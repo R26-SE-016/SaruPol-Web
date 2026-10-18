@@ -323,12 +323,56 @@ export function saveUserDiagnostic(record: UserDiagnosticRecord): UserDiagnostic
 
   try {
     const current = getUserDiagnostics(record.user_id, record.user_email);
-    const updated = [record, ...current];
+    const updated = [record, ...current.filter((c) => c.id !== record.id)];
     localStorage.setItem(storageKey, JSON.stringify(updated));
     return updated;
   } catch (e) {
     console.warn("Failed to save user diagnostic:", e);
     return [];
+  }
+}
+
+/**
+ * Synchronize and merge cloud diagnostic records with local storage
+ */
+export function mergeCloudDiagnostics(
+  userId: string | number,
+  cloudRecords: UserDiagnosticRecord[],
+  userEmail?: string
+): UserDiagnosticRecord[] {
+  if (typeof window === "undefined" && typeof localStorage === "undefined") return cloudRecords;
+  const effectiveId = String(userId || "guest");
+  const storageKey = `sarupol_user_diagnostics_${effectiveId}`;
+
+  try {
+    const local = getUserDiagnostics(userId, userEmail);
+    const map = new Map<string, UserDiagnosticRecord>();
+
+    // Add local records first
+    local.forEach((r) => {
+      if (r && r.id) map.set(r.id, r);
+    });
+
+    // Merge cloud records
+    cloudRecords.forEach((cr) => {
+      if (!cr || !cr.id) return;
+      if (!map.has(cr.id)) {
+        map.set(cr.id, cr);
+      } else {
+        const existing = map.get(cr.id)!;
+        map.set(cr.id, { ...existing, ...cr, synced: true });
+      }
+    });
+
+    const merged = Array.from(map.values()).sort(
+      (a, b) => new Date(b.captured_at).getTime() - new Date(a.captured_at).getTime()
+    );
+
+    localStorage.setItem(storageKey, JSON.stringify(merged));
+    return merged;
+  } catch (e) {
+    console.warn("Failed to merge cloud diagnostics:", e);
+    return cloudRecords;
   }
 }
 
