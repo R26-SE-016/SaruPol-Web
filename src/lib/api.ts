@@ -45,11 +45,31 @@ async function request<T>(path: string, options: FetchOptions = {}): Promise<T> 
   try {
     const res = await fetch(url, config);
     if (!res.ok) {
-      throw new Error(`Gateway returned ${res.status}`);
+      let errorMessage = `Gateway returned ${res.status}`;
+      try {
+        const errJson = await res.json();
+        if (errJson && (errJson.error || errJson.message)) {
+          errorMessage = errJson.error || errJson.message;
+        }
+      } catch {
+        try {
+          const errText = await res.text();
+          if (errText) errorMessage = errText;
+        } catch {}
+      }
+      const httpError = new Error(errorMessage);
+      (httpError as any).status = res.status;
+      throw httpError;
     }
     return res.json();
-  } catch {
-    console.warn(`[SaruPol API] Gateway unreachable at ${url}. Trying direct fallback.`);
+  } catch (err: any) {
+    // If the server actually responded with an HTTP status (e.g. 400 Bad Request, 401 Unauthorized),
+    // preserve and throw the real server message so the user gets accurate feedback!
+    if (err && (err.status || err.message?.startsWith('Invalid') || err.message?.includes('password') || err.message?.includes('already exists'))) {
+      throw err;
+    }
+
+    console.warn(`[SaruPol API] Gateway network error at ${url}. Trying direct fallback.`);
 
     // If it's a soil / nutrient / location endpoint, try direct Render deployment fallback
     if (path.includes('soil') || path.includes('nutrient') || path.includes('location')) {
@@ -60,7 +80,7 @@ async function request<T>(path: string, options: FetchOptions = {}): Promise<T> 
         if (directRes.ok) {
           return directRes.json();
         }
-      } catch (err) {
+      } catch (fallbackErr) {
         console.warn(`[SaruPol API] Direct Soil API fallback unreachable.`);
       }
     }

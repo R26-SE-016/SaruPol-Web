@@ -203,9 +203,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setIsLoading(false);
+      let userFriendlyError = err.message;
+      if (err.message === 'GATEWAY_OFFLINE') {
+        userFriendlyError = "Gateway server is unreachable. Please verify your internet connection.";
+      } else if (err.message === 'Invalid email or password') {
+        userFriendlyError = "Invalid email or password. If you haven't registered on this deployment yet, please click 'Register Estate' below.";
+      }
+
       return {
         success: false,
-        error: err.message || "Invalid email or password, or gateway server is unreachable.",
+        error: userFriendlyError || "Authentication failed. Please verify your credentials.",
       };
     }
 
