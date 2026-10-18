@@ -47,7 +47,8 @@ import {
   ESTATE_COORDINATES, 
   UserDiagnosticRecord, 
   UserAerialSurveyRecord, 
-  CanopyHotspotRecord 
+  CanopyHotspotRecord,
+  mergeCloudDiagnostics 
 } from "@/lib/pathology-storage";
 import { processDroneImage, computeInstantSpectralPreview, DroneGeoLocation } from "@/lib/drone-image-processor";
 
@@ -82,6 +83,32 @@ export default function PathologyPage() {
       setAerialSurveysList(userSurveys);
       const userHotspots = getUserHotspots(user.id, user.email);
       setHotspotsList(userHotspots);
+
+      // Hydrate historical diagnostics from cloud if online
+      if (typeof navigator !== "undefined" && navigator.onLine && user.id) {
+        pathologyApi.getHistory(String(user.id))
+          .then((res: any) => {
+            if (res && res.history && Array.isArray(res.history) && res.history.length > 0) {
+              const formattedCloud: UserDiagnosticRecord[] = res.history.map((r: any) => ({
+                id: r.record_id || r.id,
+                disease_class: r.disease_class || r.disease,
+                confidence: typeof r.confidence === "number" ? r.confidence : 0.9,
+                location: r.location || { lat: 7.3422, lng: 79.8662 },
+                captured_at: r.captured_at || r.created_at || new Date().toISOString(),
+                estate_name: r.estate_name || "Estate Plantation",
+                user_id: String(user.id),
+                user_email: user.email,
+                synced: true,
+                source: (r.source as any) || "mobile_leaf",
+                image_base64: r.image_base64,
+                entropy: r.entropy
+              }));
+              const merged = mergeCloudDiagnostics(user.id, formattedCloud, user.email);
+              setDiagnosticsList(merged);
+            }
+          })
+          .catch((err) => console.warn("[Pathology Cloud Fetch Error]:", err));
+      }
     } else {
       setDiagnosticsList([]);
       setAerialSurveysList([]);
@@ -564,7 +591,18 @@ export default function PathologyPage() {
             image_base64: reader.result as string,
             synced: navigator.onLine ? true : false,
           });
-          setSyncStatus(navigator.onLine ? "synced" : "offline");
+
+          // Cloud Sync through SaruPol-Gateway / Cloud Run
+          if (typeof navigator !== "undefined" && navigator.onLine && user?.id) {
+            pathologyApi.sync([newDiagnosticRecord])
+              .then(() => setSyncStatus("synced"))
+              .catch((err) => {
+                console.warn("[Pathology Cloud Sync Warning]:", err);
+                setSyncStatus("offline");
+              });
+          } else {
+            setSyncStatus(typeof navigator !== "undefined" && navigator.onLine ? "synced" : "offline");
+          }
         };
         reader.readAsDataURL(mobileFile);
       }

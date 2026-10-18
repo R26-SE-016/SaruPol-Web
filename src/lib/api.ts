@@ -466,6 +466,15 @@ export const advisory = {
 
   getHealth: () =>
     request<{ status: string; rag_loaded: boolean; retriever_loaded: boolean }>('/api/advisory/health'),
+
+  saveSessions: (userId: string, sessions: any[]) =>
+    request<any>('/api/advisory/sessions', {
+      method: 'POST',
+      body: { user_id: userId, sessions },
+    }),
+
+  getSessions: (userId: string) =>
+    request<{ sessions: any[] }>(`/api/advisory/sessions?user_id=${encodeURIComponent(userId)}`),
 };
 
 // ─── Health Check ───
