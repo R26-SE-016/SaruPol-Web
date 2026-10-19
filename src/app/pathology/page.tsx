@@ -603,13 +603,25 @@ export default function PathologyPage() {
 
       const inference = await runEdgeInference(img);
 
-      if (inference.rejected_by_ood) {
+      if (inference.rejected_by_ood || inference.disease_class === "undetected") {
+        const isLowConfidence = inference.confidence > 0 && inference.confidence < 0.85;
+        const errorTitle = isLowConfidence
+          ? (language === "si" ? "අවිනිශ්චිත සාම්පලයක් / අඩු විශ්වාසනීයත්වය (<85%)" : language === "ta" ? "குறைந்த நம்பிக்கை / முடிவற்ற மாதிரி (<85%)" : "Inconclusive Scan / Low Confidence (<85%)")
+          : (language === "si" ? "හඳුනාගත නොහැකි සාම්පලයක් / Out-of-Distribution" : language === "ta" ? "அடையாளம் காணப்படாத மாதிரி / Out-of-Distribution" : "Non-Coconut Specimen / Out-of-Distribution");
+
         setMobileResult({
-          error: "Ambiguous Foliage / OOD",
-          message: `Image rejected by Shannon Entropy Gating (Entropy: ${inference.shannon_entropy.toFixed(2)} bits, Threshold: 2.10 bits). Please capture a clearer close-up of a coconut leaf or trunk.`,
+          error: errorTitle,
+          message: inference.rejection_reason || (
+            language === "si"
+              ? "ලබාදුන් ඡායාරූපයේ පොල් පත්‍ර හෝ කඳ රෝග ලක්ෂණ හඳුනාගත නොහැක. කරුණාකර සැබෑ පොල් පත්‍රයක් ස්කෑන් කරන්න."
+              : language === "ta"
+              ? "தென்னை இலை அல்லது தண்டு நோய் பண்புகள் காணப்படவில்லை. தயவுசெய்து உண்மையான தென்னை இலையை ஸ்கேன் செய்யவும்."
+              : "Image rejected by Domain Verification Gatekeeper. The image does not exhibit standard coconut palm foliage chromaticity, leaflet texture, or recognized pathological symptoms."
+          ),
           confidence: inference.confidence,
           all_predictions: inference.all_predictions,
-          inference_time_ms: inference.inference_time_ms
+          inference_time_ms: inference.inference_time_ms,
+          rejected: true,
         });
       } else {
         const matchingKnowledge = DEMO_KNOWLEDGE.find(
@@ -1951,12 +1963,59 @@ export default function PathologyPage() {
 
                     {mobileResult ? (
                       mobileResult.error ? (
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex flex-col items-center justify-center text-center p-6 rounded-2xl border"
-                          style={{ background: "rgba(230, 175, 46, 0.08)", borderColor: "rgba(230, 175, 46, 0.25)" }}
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex flex-col justify-center p-6 rounded-2xl border space-y-4"
+                          style={{ background: "rgba(230, 175, 46, 0.06)", borderColor: "rgba(230, 175, 46, 0.3)" }}
                         >
-                          <AlertTriangle className="w-12 h-12 mb-3" style={{ color: "#E6AF2E" }} />
-                          <h3 className="text-sm font-mono font-bold mb-1" style={{ color: "#E6AF2E" }}>{mobileResult.error}</h3>
-                          <p className="text-xs font-mono max-w-md" style={{ color: "var(--text-secondary)" }}>{mobileResult.message}</p>
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(230, 175, 46, 0.15)" }}>
+                              <ShieldAlert className="w-6 h-6 text-amber-500" />
+                            </div>
+                            <div>
+                              <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded font-bold" style={{ background: "rgba(230, 175, 46, 0.2)", color: "#E6AF2E" }}>
+                                🛡️ OOD Gatekeeper: Specimen Rejected
+                              </span>
+                              <h3 className="text-sm font-mono font-bold mt-1" style={{ color: "var(--text-primary)" }}>{mobileResult.error}</h3>
+                            </div>
+                          </div>
+
+                          <p className="text-xs font-mono leading-relaxed p-3 rounded-xl border" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)", color: "var(--text-secondary)" }}>
+                            {mobileResult.message}
+                          </p>
+
+                          {/* Optimal Scanning Tips */}
+                          <div className="p-3.5 rounded-xl border space-y-2 text-xs font-mono" style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}>
+                            <span className="text-[11px] font-bold block" style={{ color: "var(--text-primary)" }}>
+                              {language === "si" ? "ඡායාරූප ගැනීමේ මාර්ගෝපදේශ:" : language === "ta" ? "புகைப்படம் எடுக்கும் வழிகாட்டுதல்கள்:" : "Optimal Scanning Guidelines:"}
+                            </span>
+                            <div className="space-y-1.5 text-[11px]" style={{ color: "var(--text-secondary)" }}>
+                              <div className="flex items-start gap-2">
+                                <span>🌴</span>
+                                <span>{language === "si" ? "කැමරාව සෘජුවම පොල් පත්‍රය හෝ පිත්ත දෙසට යොමු කරන්න." : language === "ta" ? "கேமராவை நேரடியாக தென்னை இலை அல்லது மட்டையை நோக்கிப் பிடிக்கவும்." : "Point camera directly at coconut leaflets, fronds, or trunk bark."}</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <span>☀️</span>
+                                <span>{language === "si" ? "ප්‍රමාණවත් ස්වාභාවික ආලෝකය යටතේ ඡායාරූප ගන්න; දැඩි සෙවනැලි වළක්වා ගන්න." : language === "ta" ? "நல்ல இயற்கை வெளிச்சத்தில் புகைப்படம் எடுக்கவும்; நிழல்களைத் தவிர்க்கவும்." : "Ensure natural daylight and avoid deep shadows or glare."}</span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <span>🎯</span>
+                                <span>{language === "si" ? "රෝගී පත්‍රය රාමුවෙන් 50%කට වඩා ආවරණය වන සේ ළං කරන්න." : language === "ta" ? "இலை சட்டகத்தில் 50% பரப்பளவை உள்ளடக்கியிருப்பதை உறுதிசெய்யவும்." : "Ensure suspected leaf tissue fills at least 50% of the frame."}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="pt-1 flex justify-end">
+                            <button
+                              onClick={() => {
+                                setMobileFile(null);
+                                setMobilePreview(null);
+                                setMobileResult(null);
+                              }}
+                              className="px-4 py-2 rounded-xl border text-xs font-mono font-medium transition-all hover:scale-105"
+                              style={{ background: "var(--card-bg)", borderColor: "var(--card-border)", color: "var(--text-primary)" }}
+                            >
+                              {language === "si" ? "වෙනත් ඡායාරූපයක් ලබාගන්න" : language === "ta" ? "மற்றொரு புகைப்படத்தை எடுக்கவும்" : "Scan Another Image"}
+                            </button>
+                          </div>
                         </motion.div>
                       ) : (
                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5 flex-1">
