@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -23,7 +23,7 @@ import DiseaseBadge from "@/components/pathology/DiseaseBadge";
 import ConfidenceBar from "@/components/pathology/ConfidenceBar";
 import HelpTooltip from "@/components/pathology/HelpTooltip";
 import PathologyHelpModal from "@/components/pathology/PathologyHelpModal";
-import { saveDiagnosticLocally } from "@/lib/offline-sync";
+import { saveDiagnosticLocally, markDiagnosticSynced, markDiagnosticsSyncedBatch } from "@/lib/offline-sync";
 import { runEdgeInference, loadEdgeModel } from "@/lib/edge-inference";
 import { DEMO_DIAGNOSTICS, DISEASE_COLORS, DEMO_KNOWLEDGE, KnowledgeItem } from "@/lib/demo-data";
 import { pathology as pathologyApi } from "@/lib/api";
@@ -48,7 +48,9 @@ import {
   UserDiagnosticRecord, 
   UserAerialSurveyRecord, 
   CanopyHotspotRecord,
-  mergeCloudDiagnostics 
+  mergeCloudDiagnostics,
+  getUnsyncedDiagnostics,
+  markUserDiagnosticsSynced
 } from "@/lib/pathology-storage";
 import { processDroneImage, computeInstantSpectralPreview, DroneGeoLocation } from "@/lib/drone-image-processor";
 
@@ -74,6 +76,71 @@ export default function PathologyPage() {
   const [aerialSurveysList, setAerialSurveysList] = useState<UserAerialSurveyRecord[]>([]);
   const [hotspotsList, setHotspotsList] = useState<CanopyHotspotRecord[]>([]);
 
+  // Synchronize pending offline diagnostics to central cloud/gateway
+  const syncPendingDiagnostics = useCallback(async () => {
+    if (typeof navigator === "undefined" || !navigator.onLine || !user?.id) return;
+    const unsynced = getUnsyncedDiagnostics(user.id, user.email);
+    if (!unsynced || unsynced.length === 0) return;
+
+    try {
+      await pathologyApi.sync(unsynced, String(user.id), user.estate_id);
+      const syncedIds = unsynced.map((r) => r.id);
+      const updated = markUserDiagnosticsSynced(user.id, syncedIds, user.email);
+      setDiagnosticsList(updated);
+      await markDiagnosticsSyncedBatch(syncedIds).catch(() => {});
+      setSyncStatus("synced");
+      console.log(`[Pathology Sync] Successfully synced ${syncedIds.length} offline diagnostics to gateway.`);
+    } catch (err) {
+      console.warn("[Pathology Cloud Sync Warning]:", err);
+    }
+  }, [user]);
+
+  // Network online listener for automatic background sync when connectivity is restored
+  useEffect(() => {
+    const handleOnline = () => {
+      console.log("[Pathology] Network online event detected. Flushing offline diagnostics...");
+      syncPendingDiagnostics().then(() => {
+        if (user?.id) {
+          pathologyApi.getHistory(String(user.id))
+            .then((res: any) => {
+              const rawList: any[] = Array.isArray(res)
+                ? res
+                : Array.isArray(res?.diagnostics)
+                ? res.diagnostics
+                : Array.isArray(res?.history)
+                ? res.history
+                : [];
+
+              if (rawList.length > 0) {
+                const formattedCloud: UserDiagnosticRecord[] = rawList.map((r: any) => ({
+                  id: r.record_id || r.id,
+                  disease_class: r.disease_class || r.disease || "healthy leaves",
+                  confidence: typeof r.confidence === "number" ? r.confidence : 0.9,
+                  location: r.location || { lat: 7.3422, lng: 79.8662 },
+                  captured_at: r.captured_at || r.created_at || r.timestamp || new Date().toISOString(),
+                  estate_name: r.estate_name || "Estate Plantation",
+                  user_id: String(user.id),
+                  user_email: user.email,
+                  synced: true,
+                  source: (r.source as any) || "mobile_leaf",
+                  image_base64: r.image_base64,
+                  entropy: r.entropy
+                }));
+                const merged = mergeCloudDiagnostics(user.id, formattedCloud, user.email);
+                setDiagnosticsList(merged);
+              }
+            })
+            .catch((err) => console.warn("[Pathology Cloud Fetch Error]:", err));
+        }
+      });
+    };
+
+    window.addEventListener("online", handleOnline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+    };
+  }, [syncPendingDiagnostics, user]);
+
   // Synchronize telemetry with active authenticated user
   useEffect(() => {
     if (user) {
@@ -84,45 +151,47 @@ export default function PathologyPage() {
       const userHotspots = getUserHotspots(user.id, user.email);
       setHotspotsList(userHotspots);
 
-      // Hydrate historical diagnostics from cloud if online
+      // Hydrate historical diagnostics from cloud if online, flushing pending first
       if (typeof navigator !== "undefined" && navigator.onLine && user.id) {
-        pathologyApi.getHistory(String(user.id))
-          .then((res: any) => {
-            const rawList: any[] = Array.isArray(res)
-              ? res
-              : Array.isArray(res?.diagnostics)
-              ? res.diagnostics
-              : Array.isArray(res?.history)
-              ? res.history
-              : [];
+        syncPendingDiagnostics().finally(() => {
+          pathologyApi.getHistory(String(user.id))
+            .then((res: any) => {
+              const rawList: any[] = Array.isArray(res)
+                ? res
+                : Array.isArray(res?.diagnostics)
+                ? res.diagnostics
+                : Array.isArray(res?.history)
+                ? res.history
+                : [];
 
-            if (rawList.length > 0) {
-              const formattedCloud: UserDiagnosticRecord[] = rawList.map((r: any) => ({
-                id: r.record_id || r.id,
-                disease_class: r.disease_class || r.disease || "healthy leaves",
-                confidence: typeof r.confidence === "number" ? r.confidence : 0.9,
-                location: r.location || { lat: 7.3422, lng: 79.8662 },
-                captured_at: r.captured_at || r.created_at || r.timestamp || new Date().toISOString(),
-                estate_name: r.estate_name || "Estate Plantation",
-                user_id: String(user.id),
-                user_email: user.email,
-                synced: true,
-                source: (r.source as any) || "mobile_leaf",
-                image_base64: r.image_base64,
-                entropy: r.entropy
-              }));
-              const merged = mergeCloudDiagnostics(user.id, formattedCloud, user.email);
-              setDiagnosticsList(merged);
-            }
-          })
-          .catch((err) => console.warn("[Pathology Cloud Fetch Error]:", err));
+              if (rawList.length > 0) {
+                const formattedCloud: UserDiagnosticRecord[] = rawList.map((r: any) => ({
+                  id: r.record_id || r.id,
+                  disease_class: r.disease_class || r.disease || "healthy leaves",
+                  confidence: typeof r.confidence === "number" ? r.confidence : 0.9,
+                  location: r.location || { lat: 7.3422, lng: 79.8662 },
+                  captured_at: r.captured_at || r.created_at || r.timestamp || new Date().toISOString(),
+                  estate_name: r.estate_name || "Estate Plantation",
+                  user_id: String(user.id),
+                  user_email: user.email,
+                  synced: true,
+                  source: (r.source as any) || "mobile_leaf",
+                  image_base64: r.image_base64,
+                  entropy: r.entropy
+                }));
+                const merged = mergeCloudDiagnostics(user.id, formattedCloud, user.email);
+                setDiagnosticsList(merged);
+              }
+            })
+            .catch((err) => console.warn("[Pathology Cloud Fetch Error]:", err));
+        });
       }
     } else {
       setDiagnosticsList([]);
       setAerialSurveysList([]);
       setHotspotsList([]);
     }
-  }, [user]);
+  }, [user, syncPendingDiagnostics]);
 
   // Telemetry Deletion Handlers
   const handleDeleteDiagnostic = (id: string) => {
@@ -602,8 +671,13 @@ export default function PathologyPage() {
 
           // Cloud Sync through SaruPol-Gateway / Cloud Run
           if (typeof navigator !== "undefined" && navigator.onLine && user?.id) {
-            pathologyApi.sync([newDiagnosticRecord])
-              .then(() => setSyncStatus("synced"))
+            pathologyApi.sync([newDiagnosticRecord], String(user.id), user.estate_id)
+              .then(() => {
+                setSyncStatus("synced");
+                const marked = markUserDiagnosticsSynced(user.id, [newDiagnosticRecord.id], user.email);
+                setDiagnosticsList(marked);
+                markDiagnosticSynced(newDiagnosticRecord.id).catch(() => {});
+              })
               .catch((err) => {
                 console.warn("[Pathology Cloud Sync Warning]:", err);
                 setSyncStatus("offline");
