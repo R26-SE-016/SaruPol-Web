@@ -378,16 +378,23 @@ export async function computeInstantSpectralPreview(
     }
   }
 
-  // 1. Precise Excess-Green Canopy Extraction (ExG = 2G - R - B)
+  // 1. Scientific Coconut Canopy Extraction (ExG & Shadow/Soil Rejection)
   for (let i = 0; i < numPixels; i++) {
     const idx = i * 4;
     const r = rgbData[idx] / 255;
     const g = rgbData[idx + 1] / 255;
     const b = rgbData[idx + 2] / 255;
 
-    // Physical coconut canopy filter: isolates green palm fronds and filters roads/soil
-    const exg = (2 * g) - r - b;
-    const isCanopy = (exg > 0.04) && (g > 0.12) && (g > r * 0.90);
+    const rgbSum = r + g + b + 0.0001;
+    const gcc = g / rgbSum;
+    const normExg = (2 * g - r - b) / rgbSum;
+    const brightness = rgbSum / 3;
+
+    // Scientific coconut canopy filter:
+    // 1. Chlorophyll chromatic dominance: gcc >= 0.35 and normExg >= 0.04
+    // 2. Reject deep cast ground shadows (which collapse spectral indices): brightness >= 0.18 and g >= 0.15
+    // 3. Reject high-reflective bare soil / sandy paths / dead weeds: r <= 0.70 and g > r * 0.88
+    const isCanopy = (gcc >= 0.35) && (normExg >= 0.04) && (brightness >= 0.18) && (g >= 0.15) && (r <= 0.70);
     canopyMask[i] = isCanopy ? 1 : 0;
 
     let rawIdx = 0;
@@ -399,20 +406,21 @@ export async function computeInstantSpectralPreview(
         nirVal = Math.min(1.0, rawNir * nirScaleFactor);
       } else {
         // Physical NIR scattering from healthy mesophyll
-        nirVal = Math.min(1.0, Math.max(0, 1.8 * g - 0.4 * r));
+        nirVal = Math.min(1.0, Math.max(0, 2.2 * g - 0.3 * r));
       }
 
-      const denom = Math.max(0.01, nirVal + r);
-      rawIdx = (nirVal - r) / denom;
+      const rLinear = Math.pow(r, 2.0);
+      const denom = Math.max(0.01, nirVal + rLinear);
+      rawIdx = (nirVal - rLinear) / denom;
       rawIdx = Math.max(-1.0, Math.min(1.0, rawIdx));
 
       if (isCanopy) {
         // Calibrated NDVI thresholds:
-        // Healthy: NDVI >= 0.42
-        // Moderate: NDVI 0.25 - 0.42
-        // Severe: NDVI < 0.25
-        if (rawIdx >= 0.42) healthyCount++;
-        else if (rawIdx >= 0.25) moderateCount++;
+        // Healthy: NDVI >= 0.45
+        // Moderate: NDVI 0.30 - 0.45
+        // Severe: NDVI < 0.30
+        if (rawIdx >= 0.45) healthyCount++;
+        else if (rawIdx >= 0.30) moderateCount++;
         else severeCount++;
       }
     } else {
@@ -422,12 +430,12 @@ export async function computeInstantSpectralPreview(
       rawIdx = Math.max(-1.0, Math.min(1.0, rawIdx));
 
       if (isCanopy) {
-        // Calibrated VARI thresholds:
-        // Healthy: VARI >= 0.05
-        // Moderate: VARI 0.00 - 0.05
-        // Severe: VARI < 0.00
-        if (rawIdx >= 0.05) healthyCount++;
-        else if (rawIdx >= 0.00) moderateCount++;
+        // Scientifically calibrated VARI thresholds for mature coconut palms:
+        // Healthy Vigorous Canopy: VARI >= 0.015 (typical mature CRI crowns: 0.02 to 0.20)
+        // Moderate Stress / Chlorotic lower fronds: -0.035 <= VARI < 0.015
+        // Acute Necrosis / Severe Disease: VARI < -0.035
+        if (rawIdx >= 0.015) healthyCount++;
+        else if (rawIdx >= -0.035) moderateCount++;
         else severeCount++;
       }
     }
@@ -455,11 +463,10 @@ export async function computeInstantSpectralPreview(
   for (let i = 0; i < numPixels; i++) {
     const p = i * 4;
     if (canopyMask[i] === 0) {
-      // Dark slate / navy background for roads and bare soil (gives high visual pop)
+      // Dark slate / muted soil background for inter-row soil & shadows
       const r = rgbData[p];
       const g = rgbData[p + 1];
       const b = rgbData[p + 2];
-      // Dark muted soil tone
       out[p] = Math.round(r * 0.22);
       out[p + 1] = Math.round(g * 0.24 + 10);
       out[p + 2] = Math.round(b * 0.28 + 20);
@@ -468,16 +475,16 @@ export async function computeInstantSpectralPreview(
       const idxVal = rawIndexArray[i];
       
       if (isNdvi) {
-        if (idxVal >= 0.42) {
+        if (idxVal >= 0.45) {
           // Lush Emerald Green (Vigorous Canopy)
-          const normG = Math.min(1.0, (idxVal - 0.42) / 0.40);
+          const normG = Math.min(1.0, (idxVal - 0.45) / 0.40);
           out[p] = Math.round(34 * (1 - normG) + 16 * normG);
           out[p + 1] = Math.round(197 * (1 - normG) + 230 * normG);
           out[p + 2] = Math.round(94 * (1 - normG) + 120 * normG);
           out[p + 3] = 255;
-        } else if (idxVal >= 0.25) {
-          // Warm Amber / Golden Yellow (Moderate Stress)
-          const normY = (idxVal - 0.25) / 0.17;
+        } else if (idxVal >= 0.30) {
+          // Warm Amber / Golden Yellow (Moderate Stress / Older fronds)
+          const normY = (idxVal - 0.30) / 0.15;
           out[p] = Math.round(234 * (1 - normY) + 250 * normY);
           out[p + 1] = Math.round(179 * (1 - normY) + 204 * normY);
           out[p + 2] = Math.round(8 * (1 - normY) + 21 * normY);
@@ -490,16 +497,16 @@ export async function computeInstantSpectralPreview(
           out[p + 3] = 255;
         }
       } else {
-        if (idxVal >= 0.05) {
+        if (idxVal >= 0.015) {
           // Lush Emerald Green (Vigorous Canopy)
-          const normG = Math.min(1.0, (idxVal - 0.05) / 0.30);
+          const normG = Math.min(1.0, (idxVal - 0.015) / 0.25);
           out[p] = Math.round(34 * (1 - normG) + 16 * normG);
           out[p + 1] = Math.round(197 * (1 - normG) + 230 * normG);
           out[p + 2] = Math.round(94 * (1 - normG) + 120 * normG);
           out[p + 3] = 255;
-        } else if (idxVal >= 0.00) {
-          // Warm Amber / Golden Yellow (Moderate Stress)
-          const normY = idxVal / 0.05;
+        } else if (idxVal >= -0.035) {
+          // Warm Amber / Golden Yellow (Moderate Stress / Older fronds)
+          const normY = (idxVal - (-0.035)) / 0.050;
           out[p] = Math.round(234 * (1 - normY) + 250 * normY);
           out[p + 1] = Math.round(179 * (1 - normY) + 204 * normY);
           out[p + 2] = Math.round(8 * (1 - normY) + 21 * normY);
@@ -517,120 +524,160 @@ export async function computeInstantSpectralPreview(
 
   heatCtx.putImageData(heatImgData, 0, 0);
 
-  // 3. Physical Coconut Crown Segmentation & Z-Score Anomaly Clustering
-  // Mature plantation palms occupy ~650-900 pixels per tree on 1000px orthomosaic
-  const gridStep = Math.max(30, Math.round(Math.min(w, h) / 22));
-  const palmCandidates: Array<{ x: number; y: number; meanVal: number }> = [];
+  // 3. Area-Based Connected Component Stress Region Detection (Precision Agriculture)
+  const healthyCutoff = isNdvi ? 0.45 : 0.015;
+  const moderateCutoff = isNdvi ? 0.30 : -0.035;
+  const severeCutoff = isNdvi ? 0.20 : -0.060;
 
-  for (let y = gridStep; y < h - gridStep; y += gridStep) {
-    for (let x = gridStep; x < w - gridStep; x += gridStep) {
-      let crownSum = 0;
-      let crownPixels = 0;
-      const r = Math.round(gridStep * 0.45);
-
-      for (let dy = -r; dy <= r; dy++) {
-        for (let dx = -r; dx <= r; dx++) {
-          if (dx * dx + dy * dy <= r * r) {
-            const py = y + dy;
-            const px = x + dx;
-            const idx = py * w + px;
-            if (canopyMask[idx] === 1) {
-              crownSum += rawIndexArray[idx];
-              crownPixels++;
-            }
-          }
-        }
-      }
-
-      if (crownPixels >= (r * r * 0.60)) {
-        palmCandidates.push({
-          x,
-          y,
-          meanVal: crownSum / crownPixels,
-        });
-      }
+  // Calculate healthy canopy statistics as estate baseline
+  let healthySum = 0;
+  let healthyPix = 0;
+  for (let i = 0; i < numPixels; i++) {
+    if (canopyMask[i] === 1 && rawIndexArray[i] >= healthyCutoff) {
+      healthySum += rawIndexArray[i];
+      healthyPix++;
     }
   }
+  const meanHealthy = healthyPix > 0 ? healthySum / healthyPix : (isNdvi ? 0.55 : 0.08);
+  let healthyVarianceSum = 0;
+  for (let i = 0; i < numPixels; i++) {
+    if (canopyMask[i] === 1 && rawIndexArray[i] >= healthyCutoff) {
+      healthyVarianceSum += Math.pow(rawIndexArray[i] - meanHealthy, 2);
+    }
+  }
+  const stdHealthy = healthyPix > 1 ? Math.sqrt(healthyVarianceSum / healthyPix) : 0.04;
 
-  // Moving-Window Z-Score anomaly calculation
-  const neighborThresh = gridStep * 3.5;
-  const hotspotCandidates: Array<{
-    x: number;
-    y: number;
+  // Connected Component Labeling using Queue-Based Flood Fill
+  const visited = new Uint8Array(numPixels);
+  const minPatchPixels = Math.max(30, Math.round(Math.min(w, h) / 30));
+  const metersPerPixel = 0.25;
+
+  interface StressZone {
+    cx: number;
+    cy: number;
+    area: number;
     meanVal: number;
     zScore: number;
     relDrop: number;
     severity: 'critical' | 'high' | 'moderate';
-  }> = [];
+    radiusMeters: number;
+  }
 
-  for (let i = 0; i < palmCandidates.length; i++) {
-    const palm = palmCandidates[i];
-    const neighbors: number[] = [];
+  const stressZones: StressZone[] = [];
+  const queueX = new Int32Array(numPixels);
+  const queueY = new Int32Array(numPixels);
 
-    for (let j = 0; j < palmCandidates.length; j++) {
-      if (i === j) continue;
-      const other = palmCandidates[j];
-      const dist = Math.hypot(palm.x - other.x, palm.y - other.y);
-      if (dist <= neighborThresh) {
-        neighbors.push(other.meanVal);
+  // Scan image for unvisited stressed canopy seeds
+  for (let y = 0; y < h; y += 2) {
+    for (let x = 0; x < w; x += 2) {
+      const idx = y * w + x;
+      if (visited[idx] === 0 && canopyMask[idx] === 1 && rawIndexArray[idx] < moderateCutoff) {
+        // Start BFS flood-fill
+        let head = 0;
+        let tail = 0;
+
+        queueX[tail] = x;
+        queueY[tail] = y;
+        tail++;
+        visited[idx] = 1;
+
+        let zonePixelCount = 0;
+        let sumX = 0;
+        let sumY = 0;
+        let sumVal = 0;
+
+        while (head < tail) {
+          const qx = queueX[head];
+          const qy = queueY[head];
+          head++;
+
+          const pIdx = qy * w + qx;
+          zonePixelCount++;
+          sumX += qx;
+          sumY += qy;
+          sumVal += rawIndexArray[pIdx];
+
+          // 4-neighbor expansion
+          const neighbors = [
+            [qx + 1, qy],
+            [qx - 1, qy],
+            [qx, qy + 1],
+            [qx, qy - 1],
+          ];
+
+          for (let n = 0; n < 4; n++) {
+            const nx = neighbors[n][0];
+            const ny = neighbors[n][1];
+            if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+              const nIdx = ny * w + nx;
+              if (visited[nIdx] === 0 && canopyMask[nIdx] === 1 && rawIndexArray[nIdx] < moderateCutoff) {
+                visited[nIdx] = 1;
+                queueX[tail] = nx;
+                queueY[tail] = ny;
+                tail++;
+              }
+            }
+          }
+        }
+
+        // Filter out micro-speckles and shadows
+        if (zonePixelCount >= minPatchPixels) {
+          const meanVal = sumVal / zonePixelCount;
+          const zScore = (meanVal - meanHealthy) / Math.max(stdHealthy, 0.03);
+          const relDrop = Math.max(0, ((meanHealthy - meanVal) / (Math.abs(meanHealthy) + 0.001)) * 100);
+          const radiusMeters = Math.max(2.5, Number((Math.sqrt(zonePixelCount / Math.PI) * metersPerPixel).toFixed(1)));
+          const isCritical = meanVal < severeCutoff || zScore <= -2.0;
+
+          // Only record genuine stress anomalies
+          if (zScore <= -1.75 || meanVal < severeCutoff) {
+            stressZones.push({
+              cx: Math.round(sumX / zonePixelCount),
+              cy: Math.round(sumY / zonePixelCount),
+              area: zonePixelCount,
+              meanVal,
+              zScore,
+              relDrop,
+              severity: isCritical ? 'critical' : 'high',
+              radiusMeters,
+            });
+          }
+        }
       }
-    }
-
-    let localMean = palm.meanVal;
-    let localStd = 0.04;
-    if (neighbors.length >= 2) {
-      localMean = neighbors.reduce((a, b) => a + b, 0) / neighbors.length;
-      const variance = neighbors.reduce((a, b) => a + Math.pow(b - localMean, 2), 0) / neighbors.length;
-      localStd = Math.sqrt(variance);
-    }
-
-    const zScore = (palm.meanVal - localMean) / Math.max(localStd, 0.03);
-    const relDrop = Math.max(0, ((localMean - palm.meanVal) / (Math.abs(localMean) + 0.001)) * 100);
-
-    const healthyCutoff = isNdvi ? 0.42 : 0.05;
-    const severeCutoff = isNdvi ? 0.25 : 0.00;
-
-    const isAnomaly = (zScore <= -1.4 && palm.meanVal < healthyCutoff) || (palm.meanVal < severeCutoff);
-
-    if (isAnomaly) {
-      const isCritical = zScore <= -2.0 || palm.meanVal < severeCutoff;
-      hotspotCandidates.push({
-        x: palm.x,
-        y: palm.y,
-        meanVal: palm.meanVal,
-        zScore,
-        relDrop,
-        severity: isCritical ? 'critical' : 'high',
-      });
     }
   }
 
-  // Top acute anomalies (typically 6-12 trees)
-  hotspotCandidates.sort((a, b) => a.zScore - b.zScore);
-  const topHotspots = hotspotCandidates.slice(0, 8);
+  // Sort: Critical severity first, then lowest Z-score / highest deficit
+  stressZones.sort((a, b) => {
+    if (a.severity === 'critical' && b.severity !== 'critical') return -1;
+    if (b.severity === 'critical' && a.severity !== 'critical') return 1;
+    return a.zScore - b.zScore;
+  });
 
+  // Take only genuine anomalous zones (up to 8 priority scout targets)
+  const topZones = stressZones.slice(0, 8);
   const spanLat = 0.006;
   const spanLng = 0.006;
-  const hotspots = topHotspots.map((hs, idx) => {
-    const relX = hs.x / w;
-    const relY = hs.y / h;
+
+  const hotspots = topZones.map((zone, idx) => {
+    const relX = zone.cx / w;
+    const relY = zone.cy / h;
     const lat = baseGps.lat + (0.5 - relY) * spanLat;
     const lng = baseGps.lng + (relX - 0.5) * spanLng;
 
-    const isCritical = hs.severity === 'critical';
+    const isCritical = zone.severity === 'critical';
     return {
-      id: `palm_anomaly_${idx + 1}_${Date.now().toString(36).slice(-4)}`,
+      id: `zone_stress_${idx + 1}_${Date.now().toString(36).slice(-4)}`,
       location: { lat: Number(lat.toFixed(6)), lng: Number(lng.toFixed(6)) },
-      pixel_coordinates: { x: hs.x, y: hs.y },
-      mean_index_value: Number(hs.meanVal.toFixed(3)),
-      severity: hs.severity,
-      area_sq_pixels: Math.round(Math.PI * Math.pow(gridStep * 0.45, 2)),
-      radius_meters: Number((gridStep * 0.28).toFixed(1)),
+      pixel_coordinates: { x: zone.cx, y: zone.cy },
+      mean_index_value: Number(zone.meanVal.toFixed(3)),
+      severity: zone.severity,
+      area_sq_pixels: zone.area,
+      radius_meters: zone.radiusMeters,
       recommended_action: isCritical
-        ? `Acute localized canopy necrosis (Tree #${idx + 1}, Z=${hs.zScore.toFixed(2)}, -${hs.relDrop.toFixed(0)}% vs neighbors). Priority ground scout for Bud Rot / Stem Bleeding.`
-        : `Crown chlorosis outlier (Tree #${idx + 1}, Z=${hs.zScore.toFixed(2)}, -${hs.relDrop.toFixed(0)}% vs neighbors). Inspect for crown mite or root decay.`,
-      z_score: Number(hs.zScore.toFixed(2)),
-      relative_drop_pct: Number(hs.relDrop.toFixed(1)),
+        ? `Acute localized canopy stress zone (${zone.area} px², ~${zone.radiusMeters}m radius, Z=${zone.zScore.toFixed(2)}, -${zone.relDrop.toFixed(0)}% deficit). Priority ground scout for Bud Rot / Stem Bleeding.`
+        : `Chlorotic canopy stress cluster (${zone.area} px², ~${zone.radiusMeters}m radius, Z=${zone.zScore.toFixed(2)}, -${zone.relDrop.toFixed(0)}% deficit). Inspect for crown mite, nutrient deficiency, or early wilt.`,
+      z_score: Number(zone.zScore.toFixed(2)),
+      relative_drop_pct: Number(zone.relDrop.toFixed(1)),
       status: 'pending' as const,
     };
   });
@@ -643,13 +690,28 @@ export async function computeInstantSpectralPreview(
   const moderatePct = canopyPixelCount > 0 ? (moderateCount / canopyPixelCount) * 100 : 16;
   const severePct = canopyPixelCount > 0 ? (severeCount / canopyPixelCount) * 100 : 6;
 
-  const totalPalms = Math.max(palmCandidates.length, Math.round(canopyPixelCount / 750));
-  const atRiskPalms = hotspots.length;
-  const healthyPalms = Math.max(0, totalPalms - atRiskPalms);
+  // Scientific Estate Biosecurity Health Grading (Precision Ag Remote Sensing Standard)
+  // Evaluates aggregated canopy purity vigor, mean photosynthetic index, and acute necrosis burden
+  const isHealthyVigor = isNdvi
+    ? (meanVal >= 0.45 || healthyPct >= 65.0)
+    : (meanVal >= 0.020 || healthyPct >= 60.0);
 
-  const outlierRatio = atRiskPalms / Math.max(1, totalPalms);
-  const estateGrade = outlierRatio <= 0.05 ? 'A (Optimal)' : outlierRatio <= 0.15 ? 'B (Good)' : 'C (Action Required)';
-  const riskIndex = outlierRatio <= 0.05 ? 'Low / Healthy' : outlierRatio <= 0.15 ? 'Isolated Outliers' : 'Cluster Anomaly Alert';
+  const isModerateVigor = isNdvi
+    ? (meanVal >= 0.35 || healthyPct >= 45.0)
+    : (meanVal >= -0.010 || healthyPct >= 40.0);
+
+  let estateGrade: string;
+  let riskIndex: string;
+  if (isHealthyVigor && severePct < 20.0) {
+    estateGrade = 'A (Optimal / Healthy)';
+    riskIndex = 'Low Risk — Robust Canopy Vigor';
+  } else if (isModerateVigor && severePct < 30.0) {
+    estateGrade = 'B (Good / Stable)';
+    riskIndex = 'Moderate — Isolated Frond Stress';
+  } else {
+    estateGrade = 'C (Action Required)';
+    riskIndex = 'Elevated Risk — Cluster Anomaly Alert';
+  }
 
   return {
     heatmapDataUrl: heatmapCanvas.toDataURL('image/png'),
@@ -664,9 +726,9 @@ export async function computeInstantSpectralPreview(
       severe_stress_pct: Number(severePct.toFixed(1)),
       estate_health_grade: estateGrade,
       pathology_risk_index: riskIndex,
-      estimated_palms_count: totalPalms,
-      healthy_palms_count: healthyPalms,
-      at_risk_palms_count: atRiskPalms,
+      estimated_palms_count: 0,
+      healthy_palms_count: 0,
+      at_risk_palms_count: 0,
     },
     hotspots,
   };
