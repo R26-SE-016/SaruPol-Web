@@ -47,19 +47,20 @@ export default function YieldAnalyticsTab({ result, treesCount }: YieldAnalytics
     const seasonality = [0.85, 0.90, 1.05, 1.15, 1.25, 1.20, 1.10, 1.00, 0.95, 1.05, 1.10, 0.90];
 
     return months.map((month, idx) => {
-      const rfFactor = seasonality[idx] * (1 + (Math.sin(idx) * 0.04));
-      const lstmFactor = seasonality[idx] * (1 - (Math.cos(idx) * 0.05));
-      const rfVal = Math.round(basePick * rfFactor);
-      const lstmVal = Math.round(basePick * lstmFactor);
-      const hybridVal = Math.round(0.6 * rfVal + 0.4 * lstmVal);
-      const upperBand = Math.round(hybridVal * 1.08);
-      const lowerBand = Math.round(hybridVal * 0.92);
+      const etFactor = seasonality[idx] * (1 + (Math.sin(idx) * 0.02));
+      const xgbFactor = seasonality[idx] * (1 - (Math.cos(idx) * 0.03));
+      const lgbFactor = seasonality[idx] * (1 + (Math.sin(idx + 1) * 0.035));
+      const etVal = Math.round(basePick * etFactor);
+      const xgbVal = Math.round(basePick * xgbFactor);
+      const lgbVal = Math.round(basePick * lgbFactor);
+      const upperBand = Math.round(etVal * 1.08);
+      const lowerBand = Math.round(etVal * 0.92);
 
       return {
         month,
-        rf: rfVal,
-        lstm: lstmVal,
-        hybrid: hybridVal,
+        extraTrees: etVal,
+        xgboost: xgbVal,
+        lightgbm: lgbVal,
         upperBand,
         lowerBand,
         season: idx >= 4 && idx <= 8 ? "Yala" : "Maha",
@@ -121,18 +122,18 @@ export default function YieldAnalyticsTab({ result, treesCount }: YieldAnalytics
               <span>12-Month Harvest Projection Curve</span>
             </h3>
             <p className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
-              Monthly harvest yield trajectory with Hybrid Ensemble (0.6 RF + 0.4 LSTM) confidence corridor.
+              Monthly harvest yield trajectory showing Extra Trees Regressor production forecast alongside XGBoost and LightGBM model corridors.
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs font-mono">
             <span className="flex items-center gap-1 text-cyan-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" /> Hybrid
+              <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" /> Extra Trees
             </span>
             <span className="flex items-center gap-1 text-emerald-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" /> RF
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" /> XGBoost
             </span>
             <span className="flex items-center gap-1 text-amber-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400" /> LSTM
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400" /> LightGBM
             </span>
           </div>
         </div>
@@ -141,7 +142,7 @@ export default function YieldAnalyticsTab({ result, treesCount }: YieldAnalytics
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={temporalData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
-                <linearGradient id="hybridGrad" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="extraTreesGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#00E5FF" stopOpacity={0.4} />
                   <stop offset="95%" stopColor="#00E5FF" stopOpacity={0.0} />
                 </linearGradient>
@@ -173,35 +174,35 @@ export default function YieldAnalyticsTab({ result, treesCount }: YieldAnalytics
                 }}
                 formatter={(val: any, name: any) => [
                   `${Number(val).toLocaleString()} nuts`,
-                  name === "hybrid" ? "Hybrid Ensemble" : name === "rf" ? "Random Forest" : name === "lstm" ? "LSTM Network" : name
+                  name === "extraTrees" ? "Extra Trees (Champion)" : name === "xgboost" ? "XGBoost Regressor" : name === "lightgbm" ? "LightGBM Regressor" : name
                 ]}
               />
               <Area
                 type="monotone"
-                dataKey="hybrid"
+                dataKey="extraTrees"
                 stroke="#00E5FF"
                 strokeWidth={2.5}
                 fillOpacity={1}
-                fill="url(#hybridGrad)"
-                name="hybrid"
+                fill="url(#extraTreesGrad)"
+                name="extraTrees"
               />
               <Line
                 type="monotone"
-                dataKey="rf"
+                dataKey="xgboost"
                 stroke="#10B981"
                 strokeWidth={1.5}
                 strokeDasharray="4 4"
                 dot={false}
-                name="rf"
+                name="xgboost"
               />
               <Line
                 type="monotone"
-                dataKey="lstm"
+                dataKey="lightgbm"
                 stroke="#F59E0B"
                 strokeWidth={1.5}
                 strokeDasharray="2 2"
                 dot={false}
-                name="lstm"
+                name="lightgbm"
               />
             </AreaChart>
           </ResponsiveContainer>

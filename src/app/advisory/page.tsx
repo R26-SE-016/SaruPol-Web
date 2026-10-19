@@ -13,6 +13,7 @@ import {
 import { useTranslation } from "@/lib/i18n/LanguageContext";
 import { Language } from "@/lib/i18n/types";
 import { useTheme } from "@/lib/theme/ThemeContext";
+import { useAuth } from "@/lib/auth/AuthContext";
 import { advisory, AdvisorySource, AdvisoryImageRef } from "@/lib/api";
 
 import ReliabilityBadge from "@/components/advisory/ReliabilityBadge";
@@ -95,6 +96,7 @@ function AdvisoryContent() {
   const initialPromptProcessed = useRef(false);
   const { t, language, setLanguage } = useTranslation();
   const { theme } = useTheme();
+  const { user } = useAuth();
 
   // Engine Mode
   const [chatMode, setChatMode] = useState<"standard" | "multi">("standard");
@@ -166,7 +168,7 @@ function AdvisoryContent() {
     );
   }, []);
 
-  // Load chat sessions from localStorage
+  // Load chat sessions from localStorage + Cloud
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -174,7 +176,38 @@ function AdvisoryContent() {
     } catch (e) {
       console.warn("Failed to load past chat sessions:", e);
     }
-  }, []);
+
+    // Hydrate sessions from Cloud Gateway for multi-device synchronization
+    if (user?.id && typeof navigator !== "undefined" && navigator.onLine) {
+      advisory.getSessions(String(user.id))
+        .then((res) => {
+          if (res?.sessions && Array.isArray(res.sessions) && res.sessions.length > 0) {
+            setSessions((prev) => {
+              const mergedMap = new Map<string, ChatSession>();
+              // Populate cloud sessions first
+              res.sessions.forEach((s: any) => {
+                if (s && s.id) mergedMap.set(s.id, s);
+              });
+              // Merge local sessions, favoring local if newer or active
+              prev.forEach((s) => {
+                const cloudS = mergedMap.get(s.id);
+                if (!cloudS || (s.timestamp && cloudS.timestamp && s.timestamp >= cloudS.timestamp)) {
+                  mergedMap.set(s.id, s);
+                }
+              });
+              const merged = Array.from(mergedMap.values()).sort(
+                (a, b) => (b.timestamp || 0) - (a.timestamp || 0)
+              );
+              try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+              } catch (_) {}
+              return merged;
+            });
+          }
+        })
+        .catch((err) => console.warn("Failed to fetch cloud advisory sessions:", err));
+    }
+  }, [user?.id]);
 
   // Check for auto-populated query/context from cross-module handoffs (e.g., Soil foliar scan, Pathology critical alert)
   useEffect(() => {
@@ -205,7 +238,7 @@ function AdvisoryContent() {
     }
   }, [searchParams]);
 
-  // Persist current session whenever messages change (same as mobile)
+  // Persist current session whenever messages change (local + cloud)
   useEffect(() => {
     if (messages.length === 0) return;
     const firstUserMsg = messages.find((m) => m.role === "user");
@@ -228,9 +261,17 @@ function AdvisoryContent() {
       } catch (e) {
         console.warn("Failed to save session to localStorage:", e);
       }
+
+      // Cloud synchronization across devices
+      if (user?.id && typeof navigator !== "undefined" && navigator.onLine) {
+        advisory.saveSessions(String(user.id), updatedList).catch((err) => {
+          console.warn("Failed to sync advisory sessions to cloud:", err);
+        });
+      }
+
       return updatedList;
     });
-  }, [messages, sessionId, chatMode]);
+  }, [messages, sessionId, chatMode, user?.id]);
 
   // Start a brand-new chat session
   const handleNewSession = () => {
@@ -261,13 +302,21 @@ function AdvisoryContent() {
     } catch (e) {
       console.warn("Failed to update localStorage:", e);
     }
+    if (user?.id && typeof navigator !== "undefined" && navigator.onLine) {
+      advisory.saveSessions(String(user.id), updated).catch(() => {});
+    }
     if (targetId === sessionId) handleNewSession();
   };
 
   // Clear all sessions
   const handleClearAllHistory = () => {
     setSessions([]);
-    localStorage.removeItem(STORAGE_KEY);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (_) {}
+    if (user?.id && typeof navigator !== "undefined" && navigator.onLine) {
+      advisory.saveSessions(String(user.id), []).catch(() => {});
+    }
     handleNewSession();
   };
 
@@ -730,8 +779,8 @@ function AdvisoryContent() {
             }}
           >
             <Sparkles className="w-3.5 h-3.5 flex-shrink-0" style={{ color: chatMode === "standard" ? "#00FF9D" : "inherit" }} />
-            <span className="font-bold">{t.advisory.standardMode}</span>
-            <span className="text-[10px] opacity-60 hidden md:inline">• {L(language, "For Farmers", "ගොවීන් සඳහා", "விவசாயிகளுக்கு")}</span>
+            <span className="font-bold">{t.advisory.forFarmers}</span>
+            <span className="text-[10px] opacity-60 hidden md:inline">• {t.advisory.standardMode}</span>
           </button>
 
           <button
@@ -745,8 +794,8 @@ function AdvisoryContent() {
             }}
           >
             <Cpu className="w-3.5 h-3.5 flex-shrink-0" style={{ color: chatMode === "multi" ? "#E6AF2E" : "inherit" }} />
-            <span className="font-bold">{t.advisory.multiLlmMode}</span>
-            <span className="text-[10px] opacity-60 hidden md:inline">• 3-Model Consensus Ensemble</span>
+            <span className="font-bold">{t.advisory.forExperts}</span>
+            <span className="text-[10px] opacity-60 hidden md:inline">• {t.advisory.multiLlmMode}</span>
           </button>
         </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -23,7 +23,7 @@ import DiseaseBadge from "@/components/pathology/DiseaseBadge";
 import ConfidenceBar from "@/components/pathology/ConfidenceBar";
 import HelpTooltip from "@/components/pathology/HelpTooltip";
 import PathologyHelpModal from "@/components/pathology/PathologyHelpModal";
-import { saveDiagnosticLocally } from "@/lib/offline-sync";
+import { saveDiagnosticLocally, markDiagnosticSynced, markDiagnosticsSyncedBatch } from "@/lib/offline-sync";
 import { runEdgeInference, loadEdgeModel } from "@/lib/edge-inference";
 import { DEMO_DIAGNOSTICS, DISEASE_COLORS, DEMO_KNOWLEDGE, KnowledgeItem } from "@/lib/demo-data";
 import { pathology as pathologyApi } from "@/lib/api";
@@ -47,7 +47,10 @@ import {
   ESTATE_COORDINATES, 
   UserDiagnosticRecord, 
   UserAerialSurveyRecord, 
-  CanopyHotspotRecord 
+  CanopyHotspotRecord,
+  mergeCloudDiagnostics,
+  getUnsyncedDiagnostics,
+  markUserDiagnosticsSynced
 } from "@/lib/pathology-storage";
 import { processDroneImage, computeInstantSpectralPreview, DroneGeoLocation } from "@/lib/drone-image-processor";
 
@@ -73,6 +76,71 @@ export default function PathologyPage() {
   const [aerialSurveysList, setAerialSurveysList] = useState<UserAerialSurveyRecord[]>([]);
   const [hotspotsList, setHotspotsList] = useState<CanopyHotspotRecord[]>([]);
 
+  // Synchronize pending offline diagnostics to central cloud/gateway
+  const syncPendingDiagnostics = useCallback(async () => {
+    if (typeof navigator === "undefined" || !navigator.onLine || !user?.id) return;
+    const unsynced = getUnsyncedDiagnostics(user.id, user.email);
+    if (!unsynced || unsynced.length === 0) return;
+
+    try {
+      await pathologyApi.sync(unsynced, String(user.id), user.estate_id);
+      const syncedIds = unsynced.map((r) => r.id);
+      const updated = markUserDiagnosticsSynced(user.id, syncedIds, user.email);
+      setDiagnosticsList(updated);
+      await markDiagnosticsSyncedBatch(syncedIds).catch(() => {});
+      setSyncStatus("synced");
+      console.log(`[Pathology Sync] Successfully synced ${syncedIds.length} offline diagnostics to gateway.`);
+    } catch (err) {
+      console.warn("[Pathology Cloud Sync Warning]:", err);
+    }
+  }, [user]);
+
+  // Network online listener for automatic background sync when connectivity is restored
+  useEffect(() => {
+    const handleOnline = () => {
+      console.log("[Pathology] Network online event detected. Flushing offline diagnostics...");
+      syncPendingDiagnostics().then(() => {
+        if (user?.id) {
+          pathologyApi.getHistory(String(user.id))
+            .then((res: any) => {
+              const rawList: any[] = Array.isArray(res)
+                ? res
+                : Array.isArray(res?.diagnostics)
+                ? res.diagnostics
+                : Array.isArray(res?.history)
+                ? res.history
+                : [];
+
+              if (rawList.length > 0) {
+                const formattedCloud: UserDiagnosticRecord[] = rawList.map((r: any) => ({
+                  id: r.record_id || r.id,
+                  disease_class: r.disease_class || r.disease || "healthy leaves",
+                  confidence: typeof r.confidence === "number" ? r.confidence : 0.9,
+                  location: r.location || { lat: 7.3422, lng: 79.8662 },
+                  captured_at: r.captured_at || r.created_at || r.timestamp || new Date().toISOString(),
+                  estate_name: r.estate_name || "Estate Plantation",
+                  user_id: String(user.id),
+                  user_email: user.email,
+                  synced: true,
+                  source: (r.source as any) || "mobile_leaf",
+                  image_base64: r.image_base64,
+                  entropy: r.entropy
+                }));
+                const merged = mergeCloudDiagnostics(user.id, formattedCloud, user.email);
+                setDiagnosticsList(merged);
+              }
+            })
+            .catch((err) => console.warn("[Pathology Cloud Fetch Error]:", err));
+        }
+      });
+    };
+
+    window.addEventListener("online", handleOnline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+    };
+  }, [syncPendingDiagnostics, user]);
+
   // Synchronize telemetry with active authenticated user
   useEffect(() => {
     if (user) {
@@ -82,12 +150,48 @@ export default function PathologyPage() {
       setAerialSurveysList(userSurveys);
       const userHotspots = getUserHotspots(user.id, user.email);
       setHotspotsList(userHotspots);
+
+      // Hydrate historical diagnostics from cloud if online, flushing pending first
+      if (typeof navigator !== "undefined" && navigator.onLine && user.id) {
+        syncPendingDiagnostics().finally(() => {
+          pathologyApi.getHistory(String(user.id))
+            .then((res: any) => {
+              const rawList: any[] = Array.isArray(res)
+                ? res
+                : Array.isArray(res?.diagnostics)
+                ? res.diagnostics
+                : Array.isArray(res?.history)
+                ? res.history
+                : [];
+
+              if (rawList.length > 0) {
+                const formattedCloud: UserDiagnosticRecord[] = rawList.map((r: any) => ({
+                  id: r.record_id || r.id,
+                  disease_class: r.disease_class || r.disease || "healthy leaves",
+                  confidence: typeof r.confidence === "number" ? r.confidence : 0.9,
+                  location: r.location || { lat: 7.3422, lng: 79.8662 },
+                  captured_at: r.captured_at || r.created_at || r.timestamp || new Date().toISOString(),
+                  estate_name: r.estate_name || "Estate Plantation",
+                  user_id: String(user.id),
+                  user_email: user.email,
+                  synced: true,
+                  source: (r.source as any) || "mobile_leaf",
+                  image_base64: r.image_base64,
+                  entropy: r.entropy
+                }));
+                const merged = mergeCloudDiagnostics(user.id, formattedCloud, user.email);
+                setDiagnosticsList(merged);
+              }
+            })
+            .catch((err) => console.warn("[Pathology Cloud Fetch Error]:", err));
+        });
+      }
     } else {
       setDiagnosticsList([]);
       setAerialSurveysList([]);
       setHotspotsList([]);
     }
-  }, [user]);
+  }, [user, syncPendingDiagnostics]);
 
   // Telemetry Deletion Handlers
   const handleDeleteDiagnostic = (id: string) => {
@@ -564,7 +668,23 @@ export default function PathologyPage() {
             image_base64: reader.result as string,
             synced: navigator.onLine ? true : false,
           });
-          setSyncStatus(navigator.onLine ? "synced" : "offline");
+
+          // Cloud Sync through SaruPol-Gateway / Cloud Run
+          if (typeof navigator !== "undefined" && navigator.onLine && user?.id) {
+            pathologyApi.sync([newDiagnosticRecord], String(user.id), user.estate_id)
+              .then(() => {
+                setSyncStatus("synced");
+                const marked = markUserDiagnosticsSynced(user.id, [newDiagnosticRecord.id], user.email);
+                setDiagnosticsList(marked);
+                markDiagnosticSynced(newDiagnosticRecord.id).catch(() => {});
+              })
+              .catch((err) => {
+                console.warn("[Pathology Cloud Sync Warning]:", err);
+                setSyncStatus("offline");
+              });
+          } else {
+            setSyncStatus(typeof navigator !== "undefined" && navigator.onLine ? "synced" : "offline");
+          }
         };
         reader.readAsDataURL(mobileFile);
       }
@@ -1338,7 +1458,7 @@ export default function PathologyPage() {
                           <span className="w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-bold"
                             style={{ background: "rgba(0, 229, 255, 0.15)", color: "#00E5FF" }}
                           >2</span>
-                          {uavResult ? `${uavResult.index_type} ${t.pathology.systemA.crownDetection}` : "Canopy Spectral Visualizer"}
+                          {uavResult ? `${uavResult.index_type} Canopy Spectral Zonal Map` : "Canopy Spectral Visualizer"}
                         </h2>
                         
                         {uavResult && (
@@ -1426,7 +1546,7 @@ export default function PathologyPage() {
                             <div className="flex justify-between text-[11px] font-mono mb-1.5" style={{ color: "var(--text-secondary)" }}>
                               <span style={{ color: "#FF4C4C", fontWeight: "600" }}>🔴 {t.pathology.systemA.criticalSeverity}</span>
                               <span style={{ color: "#E6AF2E", fontWeight: "600" }}>🟡 {t.pathology.systemA.highSeverity}</span>
-                              <span style={{ color: theme === "dark" ? "#00FF9D" : "#00875A", fontWeight: "600" }}>🟢 {t.pathology.systemA.crownDetection}</span>
+                              <span style={{ color: theme === "dark" ? "#00FF9D" : "#00875A", fontWeight: "600" }}>🟢 Healthy Canopy Vigor</span>
                             </div>
                             <div className="h-2 rounded-full bg-gradient-to-r from-red-600 via-amber-400 to-emerald-500" />
                           </div>
@@ -1469,33 +1589,35 @@ export default function PathologyPage() {
 
                       <div className="glass-card p-4 rounded-xl">
                         <div className="text-[10px] font-mono uppercase tracking-wider font-medium flex items-center justify-between" style={{ color: "var(--text-muted)" }}>
-                          <span>DETECTED PALMS</span>
-                          <HelpTooltip title="Discrete Palm Crowns" content="Total discrete coconut palm tree crowns identified via watershed local maxima peak segmentation." color="#00E5FF" />
+                          <span>STRESSED CANOPY BURDEN</span>
+                          <HelpTooltip title="Stressed Canopy Proportion" content="Proportion of active coconut canopy foliage exhibiting moderate chlorosis or acute necrosis." color="#FF4C4C" />
                         </div>
-                        <div className="text-2xl font-light mt-1 font-mono text-cyan-500">{uavResult.statistics.estimated_palms_count} Palms</div>
+                        <div className="text-2xl font-light mt-1 font-mono text-amber-500">
+                          {((uavResult.statistics.moderate_stress_pct || 0) + (uavResult.statistics.severe_stress_pct || 0)).toFixed(1)}%
+                        </div>
                         <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>
-                          {uavResult.statistics.healthy_palms_count || 224} Healthy / {uavResult.statistics.at_risk_palms_count || 12} At-Risk
+                          {(uavResult.statistics.severe_stress_pct || 0).toFixed(1)}% Acute / {(uavResult.statistics.moderate_stress_pct || 0).toFixed(1)}% Chlorotic
                         </div>
                       </div>
 
                       <div className="glass-card p-4 rounded-xl">
                         <div className="text-[10px] font-mono uppercase tracking-wider font-medium flex items-center justify-between" style={{ color: "var(--text-muted)" }}>
                           <span>{t.pathology.systemA.canopyVsGround}</span>
-                          <HelpTooltip title="Canopy vs Ground Exposure" content="Ratio of active canopy foliage coverage to bare inter-row soil exposure across the estate block." color="#E6AF2E" />
+                          <HelpTooltip title="Canopy vs Ground Exposure" content="Ratio of active vegetative crown foliage coverage to bare inter-row soil & shadow exposure across the surveyed block." color="#E6AF2E" />
                         </div>
-                        <div className="text-2xl font-light mt-1 font-mono text-amber-500">{uavResult.statistics.canopy_coverage_pct?.toFixed(1)}%</div>
+                        <div className="text-2xl font-light mt-1 font-mono text-cyan-500">{uavResult.statistics.canopy_coverage_pct?.toFixed(1)}%</div>
                         <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>
-                          {(uavResult.statistics.ground_exposure_pct || (100 - uavResult.statistics.canopy_coverage_pct)).toFixed(1)}% Inter-row Soil
+                          {(uavResult.statistics.ground_exposure_pct || (100 - uavResult.statistics.canopy_coverage_pct)).toFixed(1)}% Soil & Inter-row Space
                         </div>
                       </div>
 
                       <div className="glass-card p-4 rounded-xl">
                         <div className="text-[10px] font-mono uppercase tracking-wider font-medium flex items-center justify-between" style={{ color: "var(--text-muted)" }}>
                           <span>{t.pathology.systemA.flaggedAnomalies}</span>
-                          <HelpTooltip title="Flagged Stress Hotspots" content="Individual palms displaying acute spectral drop, severe chlorosis, or frond dieback that require ground-level inspection." color="#FF4C4C" />
+                          <HelpTooltip title="Flagged Stress Hotspots" content="Statistically significant contiguous canopy stress clusters requiring on-site ground scouting." color="#FF4C4C" />
                         </div>
-                        <div className="text-2xl font-light mt-1 font-mono text-red-500">{uavResult.hotspots?.length || 0} Trees</div>
-                        <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>{t.pathology.systemA.zScoreOutliers}</div>
+                        <div className="text-2xl font-light mt-1 font-mono text-red-500">{uavResult.hotspots?.length || 0} Zones</div>
+                        <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>Statistical Anomaly Clusters</div>
                       </div>
                     </motion.div>
                   )}
@@ -1509,7 +1631,7 @@ export default function PathologyPage() {
                             🎯 {t.pathology.systemA.hotspotsDetected}
                           </h3>
                           <p className="text-xs font-mono mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                            GPS coordinates of physiological anomalies extracted using <strong>ExG Canopy Segmentation</strong> & <strong>Local Z-Score Outlier Analysis</strong>.
+                            GPS coordinates of physiological stress zones extracted using <strong>ExG Canopy Segmentation</strong> & <strong>Area-Based Connected Component Analysis</strong>.
                           </p>
                         </div>
                       </div>

@@ -29,7 +29,9 @@ import {
   saveUserHotspots,
   deleteUserHotspot,
   getEstateCoordinates,
-  ESTATE_COORDINATES
+  ESTATE_COORDINATES,
+  getUnsyncedDiagnostics,
+  markUserDiagnosticsSynced
 } from "../lib/pathology-storage";
 
 describe("Pathology Telemetry Storage & CRUD", () => {
@@ -163,5 +165,54 @@ describe("Pathology Telemetry Storage & CRUD", () => {
     const makandura = getEstateCoordinates("Makandura Experimental Estate (Intermediate Zone)");
     expect(makandura.lat).toBeCloseTo(7.3275, 4);
     expect(makandura.lng).toBeCloseTo(79.9880, 4);
+  });
+
+  it("should filter pending unsynced diagnostics and mark them synced upon reconnection", () => {
+    const recordOffline1 = {
+      id: "diag_off_01",
+      user_id: "usr_sync_test",
+      estate_name: "Makandura",
+      disease_class: "leaf rot",
+      confidence: 0.91,
+      captured_at: new Date().toISOString(),
+      location: { lat: 7.3271, lng: 79.9878 },
+      synced: false
+    };
+    const recordOffline2 = {
+      id: "diag_off_02",
+      user_id: "usr_sync_test",
+      estate_name: "Makandura",
+      disease_class: "stembleeding",
+      confidence: 0.95,
+      captured_at: new Date().toISOString(),
+      location: { lat: 7.3267, lng: 79.9872 },
+      synced: false
+    };
+    const recordSynced = {
+      id: "diag_synced_01",
+      user_id: "usr_sync_test",
+      estate_name: "Makandura",
+      disease_class: "healthy leaves",
+      confidence: 0.99,
+      captured_at: new Date().toISOString(),
+      location: { lat: 7.3271, lng: 79.9875 },
+      synced: true
+    };
+
+    saveUserDiagnostic(recordSynced);
+    saveUserDiagnostic(recordOffline1);
+    saveUserDiagnostic(recordOffline2);
+
+    const unsynced = getUnsyncedDiagnostics("usr_sync_test");
+    expect(unsynced.length).toBe(2);
+    expect(unsynced.map(r => r.id).sort()).toEqual(["diag_off_01", "diag_off_02"]);
+
+    // Mark them synced
+    const updated = markUserDiagnosticsSynced("usr_sync_test", ["diag_off_01", "diag_off_02"]);
+    expect(updated.length).toBe(3);
+    expect(updated.every(r => r.synced === true)).toBe(true);
+
+    const remainingUnsynced = getUnsyncedDiagnostics("usr_sync_test");
+    expect(remainingUnsynced.length).toBe(0);
   });
 });
