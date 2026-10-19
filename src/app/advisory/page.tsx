@@ -779,8 +779,8 @@ function AdvisoryContent() {
             }}
           >
             <Sparkles className="w-3.5 h-3.5 flex-shrink-0" style={{ color: chatMode === "standard" ? "#00FF9D" : "inherit" }} />
-            <span className="font-bold">{t.advisory.standardMode}</span>
-            <span className="text-[10px] opacity-60 hidden md:inline">• {L(language, "For Farmers", "ගොවීන් සඳහා", "விவசாயிகளுக்கு")}</span>
+            <span className="font-bold">{t.advisory.forFarmers}</span>
+            <span className="text-[10px] opacity-60 hidden md:inline">• {t.advisory.standardMode}</span>
           </button>
 
           <button
@@ -794,8 +794,8 @@ function AdvisoryContent() {
             }}
           >
             <Cpu className="w-3.5 h-3.5 flex-shrink-0" style={{ color: chatMode === "multi" ? "#E6AF2E" : "inherit" }} />
-            <span className="font-bold">{t.advisory.multiLlmMode}</span>
-            <span className="text-[10px] opacity-60 hidden md:inline">• 3-Model Consensus Ensemble</span>
+            <span className="font-bold">{t.advisory.forExperts}</span>
+            <span className="text-[10px] opacity-60 hidden md:inline">• {t.advisory.multiLlmMode}</span>
           </button>
         </div>
 

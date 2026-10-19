@@ -455,6 +455,8 @@ export const en: TranslationSchema = {
     criSource: "CRI Circular Reference",
     standardMode: "Standard RAG",
     multiLlmMode: "Multi-LLM Consensus",
+    forFarmers: "For Farmers",
+    forExperts: "For Experts",
     standardDesc: "Fast single-model retrieval grounded in official CRI leaflets and handbook.",
     multiDesc: "3-model ensemble (LLaMA + GPT-4o Mini + Gemini) with Judge consensus scoring.",
     zoneLabel: "Agro-Climatic Zone:",

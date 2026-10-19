@@ -455,6 +455,8 @@ export const ta: TranslationSchema = {
     criSource: "CRI சுற்றறிக்கை ஆதாரம்",
     standardMode: "நிலையான RAG",
     multiLlmMode: "பன்முக LLM ஒருமித்த கருத்து",
+    forFarmers: "விவசாயிகளுக்கு",
+    forExperts: "நிபுணர்களுக்கு",
     standardDesc: "CRI அதிகாரப்பூர்வ கையேடுகள் அடிப்படையிலான விரைவான ஒற்றை-மாதிரி பதில்.",
     multiDesc: "3 மாதிரிகள் (LLaMA + GPT-4o Mini + Gemini) மற்றும் நடுவர் ஒருமித்த மதிப்பீடு.",
     zoneLabel: "காலநிலை மண்டலம்:",

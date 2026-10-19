@@ -455,6 +455,8 @@ export const si: TranslationSchema = {
     criSource: "CRI චක්‍රලේඛ මූලාශ්‍රය",
     standardMode: "සම්මත RAG",
     multiLlmMode: "බහුවිධ LLM සම්මුතිය",
+    forFarmers: "ගොවීන් සඳහා",
+    forExperts: "විශේෂඥයින් සඳහා",
     standardDesc: "CRI නිල උපදෙස් පත්‍රිකා හා පොල් වගා අත්පොත පදනම් කරගත් වේගවත් තනි-ආකෘති ප්‍රතිචාරය.",
     multiDesc: "LLM ආකෘති 3ක් (LLaMA + GPT-4o Mini + Gemini) හා විනිසුරු සම්මුති ලකුණු සංසන්දනය.",
     zoneLabel: "දේශගුණික කලාපය:",
