@@ -229,10 +229,16 @@ export const pathology = {
   getHistory: (userId: string, estateId?: string) =>
     request<any>(`/api/pathology/history?user_id=${userId}${estateId ? `&estate_id=${estateId}` : ''}`),
 
-  sync: (diagnostics: any[]) =>
+  sync: (diagnostics: any[], userId?: string, estateId?: string) =>
     request<any>('/api/pathology/sync', {
       method: 'POST',
-      body: { diagnostics },
+      body: {
+        diagnostics,
+        batch: diagnostics,
+        user_id: userId,
+        estate_id: estateId,
+        device_id: 'web-client',
+      },
     }),
 };
 

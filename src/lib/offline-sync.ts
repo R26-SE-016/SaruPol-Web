@@ -50,6 +50,20 @@ export async function markDiagnosticSynced(id: string): Promise<void> {
   }
 }
 
+export async function markDiagnosticsSyncedBatch(ids: string[]): Promise<void> {
+  if (!dbPromise || ids.length === 0) return;
+  const db = await dbPromise;
+  const tx = db.transaction('diagnostic_queue', 'readwrite');
+  for (const id of ids) {
+    const diag = await tx.store.get(id);
+    if (diag) {
+      diag.synced = true;
+      await tx.store.put(diag);
+    }
+  }
+  await tx.done;
+}
+
 export async function getDiagnosticHistoryLocal(): Promise<OfflineDiagnostic[]> {
   if (!dbPromise) return [];
   const db = await dbPromise;
