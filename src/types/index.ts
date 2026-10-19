@@ -61,7 +61,7 @@ export interface SoilPredictionResponse {
 }
 
 // ─── Pathology Detection ───
-export type DiseaseSeverity = 'Critical' | 'High' | 'Moderate' | 'Healthy';
+export type DiseaseSeverity = 'Critical' | 'High' | 'Moderate' | 'Healthy' | 'Undetected';
 
 export interface DiseaseClassification {
   disease_class: string;
@@ -70,7 +70,7 @@ export interface DiseaseClassification {
   inference_time_ms: number;
   system: string;
   part: string;
-  status: 'healthy' | 'diseased';
+  status: 'healthy' | 'diseased' | 'unrecognized';
   diagnosis: string;
   severity: DiseaseSeverity;
   recommendations: {
@@ -80,6 +80,7 @@ export interface DiseaseClassification {
   };
   timestamp: string;
   source?: string;
+  is_valid_specimen?: boolean;
 }
 
 export interface PathologyClassifyRequest {

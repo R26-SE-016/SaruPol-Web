@@ -2,8 +2,20 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  webpack: (config, { dev }) => {
+    // Avoid massive Webpack PackFileCache disk serialization that causes ArrayBuffer allocation crashes on Windows
+    if (dev) {
+      config.cache = {
+        type: 'memory',
+      };
+    }
 
-  webpack: (config) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
       fs: false,

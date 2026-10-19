@@ -119,6 +119,16 @@ export const DISEASE_COLORS: Record<string, {
     description: "Vascular infection oozing dark reddish exudate from trunk.",
     description_si: "පොල් කඳෙන් තද දුඹුරු ශ්‍රාවයක් ගලා යන සනාල ආසාදනය (Ceratocystis paradoxa).",
     description_ta: "மரத் தண்டிலிருந்து கருஞ்சிவப்பு திரவம் வழியும் நாளத் தொற்று."
+  },
+  "undetected": {
+    label: "Undetected / Non-Coconut",
+    label_si: "හඳුනාගත නොහැක",
+    label_ta: "அடையாளம் காணப்படவில்லை",
+    color: "#64748B",
+    bg: "rgba(100, 116, 139, 0.15)",
+    description: "The input image lacks recognized coconut leaf or trunk botanical patterns.",
+    description_si: "ලබාදුන් ඡායාරූපයේ පොල් පත්‍ර හෝ කඳ පිළිබඳ ලක්ෂණ අඩංගු නොවේ.",
+    description_ta: "உள்ளீட்டுப் படத்தில் அங்கீகரிக்கப்பட்ட தென்னை இலை அல்லது தண்டு அமைப்புகள் இல்லை."
   }
 };
 
