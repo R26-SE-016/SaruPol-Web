@@ -336,7 +336,7 @@ export const en: TranslationSchema = {
       consultAdvisoryBtn: "Consult Advisory AI with Soil Diagnosis",
     },
     lab: {
-      title: "Certified Soil & Leaf Chemical Assay Form",
+      title: "Certified Leaf Chemical Assay Form",
       subtitle: "Input laboratory spectrophotometry & flame photometry percentages",
       presets: "Quick Sample Scenarios",
       palmId: "Palm / Field Identifier",
