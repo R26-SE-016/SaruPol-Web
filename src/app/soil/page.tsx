@@ -35,45 +35,6 @@ import {
 
 type SoilTabType = "visual_ai" | "lab_dfr" | "deficiencies" | "history";
 
-// ─── Preset Laboratory Values for Rapid Evaluation ───
-const LAB_PRESETS = [
-  {
-    name: "Standard Bearing Palm (Balanced)",
-    palmAge: 10,
-    zone: "Intermediate",
-    nitrogen: 2.00,
-    phosphorus: 0.12,
-    potassium: 1.35,
-    magnesium: 0.28,
-  },
-  {
-    name: "Acute Potassium & Nitrogen Deficit",
-    palmAge: 12,
-    zone: "Wet",
-    nitrogen: 1.65,
-    phosphorus: 0.11,
-    potassium: 0.85,
-    magnesium: 0.22,
-  },
-  {
-    name: "Young Vegetative Palm (2 Years)",
-    palmAge: 2,
-    zone: "Intermediate",
-    nitrogen: 1.95,
-    phosphorus: 0.12,
-    potassium: 1.25,
-    magnesium: 0.26,
-  },
-  {
-    name: "Dry Zone Sandy Soil (Mg & P Deficit)",
-    palmAge: 8,
-    zone: "Dry",
-    nitrogen: 1.82,
-    phosphorus: 0.07,
-    potassium: 1.10,
-    magnesium: 0.12,
-  },
-];
 
 export default function SoilPage() {
   const router = useRouter();
@@ -207,10 +168,10 @@ export default function SoilPage() {
   // ══════════════════════════════════════════════════════════════════════
   const [visualFile, setVisualFile] = useState<File | null>(null);
   const [visualPreview, setVisualPreview] = useState<string | null>(null);
-  const [palmAge, setPalmAge] = useState<string>("8.0");
-  const [palmStage, setPalmStage] = useState<string>("Bearing Palm");
-  const [geoLat, setGeoLat] = useState<string>("7.2906");
-  const [geoLng, setGeoLng] = useState<string>("80.6337");
+  const [palmAge, setPalmAge] = useState<string>("");
+  const [palmStage, setPalmStage] = useState<string>("");
+  const [geoLat, setGeoLat] = useState<string>("");
+  const [geoLng, setGeoLng] = useState<string>("");
   const [detectedZone, setDetectedZone] = useState<string>("Intermediate");
   const [detectedAez, setDetectedAez] = useState<string>("IL1a");
   const [zoneStatusMsg, setZoneStatusMsg] = useState<string | null>(null);
@@ -226,7 +187,7 @@ export default function SoilPage() {
   const handlePalmAgeChange = (val: string) => {
     setPalmAge(val);
     const age = parseFloat(val);
-    if (!isNaN(age)) {
+    if (!isNaN(age) && val.trim() !== "") {
       if (age >= 0 && age <= 1.5) {
         setPalmStage("Seedling");
       } else if (age > 1.5 && age <= 5) {
@@ -234,6 +195,8 @@ export default function SoilPage() {
       } else {
         setPalmStage("Bearing Palm");
       }
+    } else {
+      setPalmStage("");
     }
   };
 
@@ -461,49 +424,123 @@ export default function SoilPage() {
     }
   };
 
-  // Auto-Detect Agro-Ecological Zone using Sri Lanka NSDI GIS
-  const handleDetectZone = async () => {
+  // Auto-Detect Agro-Ecological Zone using Sri Lanka NSDI GIS & Local Heuristic
+  const handleDetectZone = async (overrideLat?: number, overrideLng?: number) => {
+    const lat = overrideLat !== undefined ? overrideLat : parseFloat(geoLat);
+    const lng = overrideLng !== undefined ? overrideLng : parseFloat(geoLng);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      setZoneStatusMsg("Please enter coordinates or click Auto-Detect via GPS.");
+      return;
+    }
+
     setIsDetectingZone(true);
     setZoneStatusMsg(null);
+
+    // High accuracy Sri Lanka GIS heuristic mapping
+    const resolveLocalHeuristic = (lLat: number, lLng: number): "Wet" | "Intermediate" | "Dry" => {
+      // Wet Zone: South-West Sri Lanka (Western, Southern, Sabaragamuwa, Central western slopes)
+      if (lLat >= 5.9 && lLat <= 7.4 && lLng >= 79.8 && lLng <= 80.6) {
+        return "Wet";
+      }
+      // Dry Zone: Northern, Eastern, North-Central, Hambantota/South-East
+      if (lLat > 7.9 || lLng > 80.9 || (lLat < 6.4 && lLng > 80.7)) {
+        return "Dry";
+      }
+      // Intermediate Zone: Kurunegala, Kuliyapitiya, Matale, Badulla (Coconut Triangle heartland)
+      return "Intermediate";
+    };
+
     try {
-      const lat = parseFloat(geoLat) || 7.2906;
-      const lng = parseFloat(geoLng) || 80.6337;
       const res = await soilApi.getAgroZone(lat, lng);
       if (res && res.zone) {
         setDetectedZone(res.zone);
         setManualZone(res.zone);
+        setLabZone(res.zone as any);
         if (res.agro_ecological_zone) {
           setDetectedAez(res.agro_ecological_zone);
         }
-        setZoneStatusMsg(`Detected: ${res.zone} Zone (${res.agro_ecological_zone || "NSDI"})`);
+        setZoneStatusMsg(`Auto-detected: ${res.zone} Zone (${res.agro_ecological_zone || "NSDI GIS"})`);
       } else {
-        setZoneStatusMsg("NSDI Service response received. Defaulted to Intermediate Zone.");
+        const fallback = resolveLocalHeuristic(lat, lng);
+        setDetectedZone(fallback);
+        setManualZone(fallback);
+        setLabZone(fallback);
+        setZoneStatusMsg(`Auto-detected: ${fallback} Zone (Local GIS)`);
       }
     } catch {
-      setZoneStatusMsg("NSDI Offline. Used local geographic heuristic.");
+      const fallback = resolveLocalHeuristic(lat, lng);
+      setDetectedZone(fallback);
+      setManualZone(fallback);
+      setLabZone(fallback);
+      setZoneStatusMsg(`Auto-detected: ${fallback} Zone (Local GIS)`);
     } finally {
       setIsDetectingZone(false);
     }
   };
 
-  // Use Browser Geolocation
+  // Use Browser Geolocation to Auto-Detect Zone
   const handleUseBrowserGps = () => {
     if (typeof window !== "undefined" && navigator.geolocation) {
       setIsDetectingZone(true);
+      setZoneStatusMsg("Detecting location via GPS...");
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          setGeoLat(pos.coords.latitude.toFixed(4));
-          setGeoLng(pos.coords.longitude.toFixed(4));
-          setIsDetectingZone(false);
-          handleDetectZone();
+          const lat = parseFloat(pos.coords.latitude.toFixed(4));
+          const lng = parseFloat(pos.coords.longitude.toFixed(4));
+          setGeoLat(String(lat));
+          setGeoLng(String(lng));
+          handleDetectZone(lat, lng);
         },
-        () => {
+        (err) => {
           setIsDetectingZone(false);
-          setZoneStatusMsg("Could not retrieve GPS coordinates from browser.");
-        }
+          setZoneStatusMsg("Could not retrieve GPS coordinates. You can select zone manually.");
+          console.warn("Geolocation error:", err);
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
       );
+    } else {
+      setZoneStatusMsg("Geolocation is not supported by your browser.");
     }
   };
+
+  // Automatically trigger zone detection when coordinates are entered
+  const handleLatChange = (val: string) => {
+    setGeoLat(val);
+    const lat = parseFloat(val);
+    const lng = parseFloat(geoLng);
+    if (!isNaN(lat) && !isNaN(lng) && lat >= 5 && lat <= 10 && lng >= 79 && lng <= 82) {
+      handleDetectZone(lat, lng);
+    }
+  };
+
+  const handleLngChange = (val: string) => {
+    setGeoLng(val);
+    const lat = parseFloat(geoLat);
+    const lng = parseFloat(val);
+    if (!isNaN(lat) && !isNaN(lng) && lat >= 5 && lat <= 10 && lng >= 79 && lng <= 82) {
+      handleDetectZone(lat, lng);
+    }
+  };
+
+  // Auto-detect on initial load if geolocation permission is available
+  useEffect(() => {
+    if (typeof window !== "undefined" && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = parseFloat(pos.coords.latitude.toFixed(4));
+          const lng = parseFloat(pos.coords.longitude.toFixed(4));
+          setGeoLat(String(lat));
+          setGeoLng(String(lng));
+          handleDetectZone(lat, lng);
+        },
+        () => {
+          // If dismissed or denied, stay clean without errors
+        },
+        { enableHighAccuracy: true, timeout: 6000 }
+      );
+    }
+  }, []);
 
   // Execute Visual Leaf AI Scan
   const handleRunVisualScan = async () => {
@@ -622,28 +659,16 @@ export default function SoilPage() {
   // ══════════════════════════════════════════════════════════════════════
   // TAB 2: Certified Laboratory DFR Calculator State
   // ══════════════════════════════════════════════════════════════════════
-  const [palmId, setPalmId] = useState<string>("MK-14-PALM-42");
-  const [labPalmAge, setLabPalmAge] = useState<string>("12");
+  const [palmId, setPalmId] = useState<string>("");
+  const [labPalmAge, setLabPalmAge] = useState<string>("");
   const [labZone, setLabZone] = useState<"Wet" | "Intermediate" | "Dry">("Intermediate");
-  const [labNitrogen, setLabNitrogen] = useState<string>("1.85");
-  const [labPhosphorus, setLabPhosphorus] = useState<string>("0.12");
-  const [labPotassium, setLabPotassium] = useState<string>("1.15");
-  const [labMagnesium, setLabMagnesium] = useState<string>("0.22");
+  const [labNitrogen, setLabNitrogen] = useState<string>("");
+  const [labPhosphorus, setLabPhosphorus] = useState<string>("");
+  const [labPotassium, setLabPotassium] = useState<string>("");
+  const [labMagnesium, setLabMagnesium] = useState<string>("");
   const [isCalculatingLab, setIsCalculatingLab] = useState<boolean>(false);
   const [labResult, setLabResult] = useState<any | null>(null);
   const [labSaved, setLabSaved] = useState<boolean>(false);
-
-  // Apply Lab Preset
-  const applyPreset = (preset: typeof LAB_PRESETS[0]) => {
-    setLabPalmAge(String(preset.palmAge));
-    setLabZone(preset.zone as any);
-    setLabNitrogen(preset.nitrogen.toFixed(2));
-    setLabPhosphorus(preset.phosphorus.toFixed(2));
-    setLabPotassium(preset.potassium.toFixed(2));
-    setLabMagnesium(preset.magnesium.toFixed(2));
-    setLabResult(null);
-    setLabSaved(false);
-  };
 
   // Execute Laboratory DFR Calculation
   const handleCalculateLab = async () => {
@@ -1293,7 +1318,8 @@ export default function SoilPage() {
                         <input
                           type="text"
                           readOnly
-                          value={getStageLabel(palmStage)}
+                          value={palmStage ? getStageLabel(palmStage) : ""}
+                          placeholder="Automatic based on age"
                           className="w-full px-3.5 py-2.5 rounded-xl text-[#00FF9D] text-sm font-semibold cursor-not-allowed border"
                           style={{ background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.03)", borderColor: "var(--input-border)" }}
                         />
@@ -1320,16 +1346,16 @@ export default function SoilPage() {
                         <input
                           type="text"
                           value={geoLat}
-                          onChange={(e) => setGeoLat(e.target.value)}
-                          placeholder="Lat: 7.29"
+                          onChange={(e) => handleLatChange(e.target.value)}
+                          placeholder="Lat: e.g. 7.29"
                           className="px-3 py-2 rounded-xl text-xs focus:border-[#00FF9D] focus:outline-none border transition"
                           style={{ background: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text-primary)" }}
                         />
                         <input
                           type="text"
                           value={geoLng}
-                          onChange={(e) => setGeoLng(e.target.value)}
-                          placeholder="Lng: 80.63"
+                          onChange={(e) => handleLngChange(e.target.value)}
+                          placeholder="Lng: e.g. 80.63"
                           className="px-3 py-2 rounded-xl text-xs focus:border-[#00FF9D] focus:outline-none border transition"
                           style={{ background: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text-primary)" }}
                         />
@@ -1338,7 +1364,7 @@ export default function SoilPage() {
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={handleDetectZone}
+                          onClick={() => handleDetectZone()}
                           disabled={isDetectingZone}
                           className="flex-1 py-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition disabled:opacity-50"
                           style={{ background: "var(--card-bg)", borderColor: "var(--card-border)", color: "var(--text-primary)" }}
@@ -1897,30 +1923,8 @@ export default function SoilPage() {
                     </div>
                   </div>
 
-                  {/* Presets Row */}
-                  <div>
-                    <label className="text-xs font-semibold block mb-2" style={{ color: "var(--text-muted)" }}>{t.soil.lab.presets}</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {LAB_PRESETS.map((p, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => applyPreset(p)}
-                          className="px-2.5 py-2 rounded-xl border text-left text-[11px] transition line-clamp-1"
-                          style={{
-                            background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
-                            borderColor: "var(--card-border)",
-                            color: "var(--text-secondary)"
-                          }}
-                        >
-                          {p.name}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
                   {/* Palm Metadata */}
-                  <div className="space-y-4 pt-3 border-t" style={{ borderColor: "var(--card-border)" }}>
+                  <div className="space-y-4 pt-1">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-secondary)" }}>{t.soil.lab.palmId}</label>
@@ -1930,7 +1934,7 @@ export default function SoilPage() {
                           onChange={(e) => setPalmId(e.target.value)}
                           className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:border-cyan-400 focus:outline-none border transition"
                           style={{ background: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text-primary)" }}
-                          placeholder="e.g. MK-PALM-42"
+                          placeholder="e.g. MK-14-PALM-42"
                         />
                       </div>
 
@@ -1943,6 +1947,7 @@ export default function SoilPage() {
                           max="80"
                           value={labPalmAge}
                           onChange={(e) => setLabPalmAge(e.target.value)}
+                          placeholder="e.g. 8"
                           className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:border-cyan-400 focus:outline-none border transition"
                           style={{ background: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text-primary)" }}
                         />
@@ -1950,9 +1955,20 @@ export default function SoilPage() {
                     </div>
 
                     <div>
-                      <label className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-secondary)" }}>
-                        {t.soil.visual.climaticZone}
-                      </label>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="text-xs font-semibold block" style={{ color: "var(--text-secondary)" }}>
+                          {t.soil.visual.climaticZone}
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handleUseBrowserGps}
+                          disabled={isDetectingZone}
+                          className="text-[11px] text-cyan-400 hover:underline flex items-center gap-1 disabled:opacity-50"
+                        >
+                          <Map className="w-3 h-3" />
+                          <span>{isDetectingZone ? "Detecting..." : "Auto-Detect (GPS)"}</span>
+                        </button>
+                      </div>
                       <div className="grid grid-cols-3 gap-2">
                         {(["Wet", "Intermediate", "Dry"] as const).map((z) => (
                           <button
@@ -1992,6 +2008,7 @@ export default function SoilPage() {
                           step="0.01"
                           value={labNitrogen}
                           onChange={(e) => setLabNitrogen(e.target.value)}
+                          placeholder="e.g. 1.82"
                           className="w-full px-3.5 py-2 rounded-xl text-sm focus:border-cyan-400 focus:outline-none border transition"
                           style={{ background: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text-primary)" }}
                         />
@@ -2007,6 +2024,7 @@ export default function SoilPage() {
                           step="0.01"
                           value={labPhosphorus}
                           onChange={(e) => setLabPhosphorus(e.target.value)}
+                          placeholder="e.g. 0.07"
                           className="w-full px-3.5 py-2 rounded-xl text-sm focus:border-cyan-400 focus:outline-none border transition"
                           style={{ background: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text-primary)" }}
                         />
@@ -2022,6 +2040,7 @@ export default function SoilPage() {
                           step="0.01"
                           value={labPotassium}
                           onChange={(e) => setLabPotassium(e.target.value)}
+                          placeholder="e.g. 1.10"
                           className="w-full px-3.5 py-2 rounded-xl text-sm focus:border-cyan-400 focus:outline-none border transition"
                           style={{ background: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text-primary)" }}
                         />
@@ -2037,6 +2056,7 @@ export default function SoilPage() {
                           step="0.01"
                           value={labMagnesium}
                           onChange={(e) => setLabMagnesium(e.target.value)}
+                          placeholder="e.g. 0.12"
                           className="w-full px-3.5 py-2 rounded-xl text-sm focus:border-cyan-400 focus:outline-none border transition"
                           style={{ background: "var(--input-bg)", borderColor: "var(--input-border)", color: "var(--text-primary)" }}
                         />

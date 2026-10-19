@@ -196,7 +196,7 @@ export const en: TranslationSchema = {
     },
   },
   soil: {
-    title: "Nutrient Intelligence & Fertilizer Advisory",
+    title: "Nutrient Intelligence & Fertilizer Recommendation",
     subtitle: "CRI 14th Frond Foliage Diagnostics & Differential Fertilizer Recommendation (DFR)",
     description: "Precision coconut diagnostic console featuring Computer Vision leaf nutrient deficiency scanning, Sri Lanka NSDI Agro-Climatic Zone resolution, and certified Coconut Research Institute Differential Fertilizer Recommendations (DFR).",
     protocolBadge: "CRI 14th Frond Nutrient Diagnostic Protocol · Circular A5/A7",
@@ -336,7 +336,7 @@ export const en: TranslationSchema = {
       consultAdvisoryBtn: "Consult Advisory AI with Soil Diagnosis",
     },
     lab: {
-      title: "Certified Soil & Leaf Chemical Assay Form",
+      title: "Certified Leaf Chemical Assay Form",
       subtitle: "Input laboratory spectrophotometry & flame photometry percentages",
       presets: "Quick Sample Scenarios",
       palmId: "Palm / Field Identifier",
