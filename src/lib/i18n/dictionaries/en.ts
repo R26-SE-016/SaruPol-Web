@@ -3,7 +3,7 @@ import { TranslationSchema } from "../types";
 export const en: TranslationSchema = {
   nav: {
     dashboard: "Dashboard",
-    soil: "Nutrition & Soil",
+    soil: "Nutrition",
     pathology: "Pathology",
     yield: "Yield",
     advisory: "Advisory",
@@ -289,8 +289,12 @@ export const en: TranslationSchema = {
       subtitle: "Authoritative morphological and corrective manual compiled from CRI advisory circulars",
       overview: "Symptom Overview",
       symptoms: "Foliar Diagnostic Symptoms",
+      causes: "Underlying Soil Causes",
       correctiveMeasures: "CRI Corrective Measures",
       susceptibleStage: "Most Susceptible Palm Stage",
+      foliarBenchmark: "Foliar Benchmark",
+      diagnosticGuideBadge: "CRI Advisory Circular A7 Diagnostic Guide",
+      agronomistTip: "CRI Agronomist Tip",
     },
     history: {
       title: "Nutrient Telemetry & Diagnostic History",

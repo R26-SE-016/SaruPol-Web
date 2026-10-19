@@ -289,8 +289,12 @@ export const ta: TranslationSchema = {
       subtitle: "CRI ஆலோசனை சுற்றறிக்கைகளின் அடிப்படையில் தொகுக்கப்பட்ட அதிகாரப்பூர்வ வழிகாட்டி",
       overview: "அறிகுறி கண்ணோட்டம்",
       symptoms: "இலை நோய் கண்டறிதல் அறிகுறிகள்",
+      causes: "அடிப்படை மண் காரணங்கள்",
       correctiveMeasures: "CRI திருத்த நடவடிக்கைகள்",
       susceptibleStage: "பாதிக்கப்படக்கூடிய மர நிலை",
+      foliarBenchmark: "இலை ஊட்டச்சத்து அளவுகோல்",
+      diagnosticGuideBadge: "CRI வழிகாட்டல் சுற்றறிக்கை A7 வழிகாட்டி",
+      agronomistTip: "CRI வேளாண் நிபுணர் குறிப்பு",
     },
     history: {
       title: "ஊட்டச்சத்து வரலாறு மற்றும் பதிவுகள்",

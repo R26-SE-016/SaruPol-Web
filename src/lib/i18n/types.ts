@@ -296,8 +296,12 @@ export interface TranslationSchema {
       subtitle: string;
       overview: string;
       symptoms: string;
+      causes: string;
       correctiveMeasures: string;
       susceptibleStage: string;
+      foliarBenchmark: string;
+      diagnosticGuideBadge: string;
+      agronomistTip: string;
     };
     history: {
       title: string;

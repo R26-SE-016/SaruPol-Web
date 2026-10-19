@@ -3,7 +3,7 @@ import { TranslationSchema } from "../types";
 export const si: TranslationSchema = {
   nav: {
     dashboard: "පුවරුව",
-    soil: "පෝෂණ හා පස",
+    soil: "පෝෂණ ",
     pathology: "රෝග",
     yield: "අස්වැන්න",
     advisory: "උපදෙස්",
@@ -289,8 +289,12 @@ export const si: TranslationSchema = {
       subtitle: "පොල් පර්යේෂණ ආයතනයේ (CRI) උපදේශන චක්‍රලේඛ පාදක නිල අත්පොත",
       overview: "රෝග ලක්ෂණ සාරාංශය",
       symptoms: "පත්‍ර රෝග විනිශ්චය ලක්ෂණ",
+      causes: "පාදක පාංශු හේතු",
       correctiveMeasures: "CRI නිවැරදි කිරීමේ පියවර",
       susceptibleStage: "වඩාත් අවදානම් වර්ධන අවධිය",
+      foliarBenchmark: "පත්‍ර පෝෂක ප්‍රමිතිය",
+      diagnosticGuideBadge: "CRI උපදේශන චක්‍රලේඛය A7 රෝග විනිශ්චය මාර්ගෝපදේශය",
+      agronomistTip: "CRI කෘෂි විද්‍යාඥ උපදෙස",
     },
     history: {
       title: "පෝෂණ දත්ත හා ඉතිහාස සටහන්",
