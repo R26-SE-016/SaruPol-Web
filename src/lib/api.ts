@@ -165,6 +165,28 @@ export const soil = {
       method: 'GET',
     }),
 
+  deleteScan: (scanId: string, userId: string) =>
+    request<any>(`/api/soil/nutrient-analysis/scans/${encodeURIComponent(scanId)}?user_id=${encodeURIComponent(userId)}`, {
+      method: 'DELETE',
+    }),
+
+  // 6. Certified Lab Calculations History (Firestore)
+  saveLabCalculation: (data: any) =>
+    request<any>('/api/soil/nutrient-analysis/lab-calculations', {
+      method: 'POST',
+      body: data,
+    }),
+
+  getLabCalculations: (userId: string) =>
+    request<any>(`/api/soil/nutrient-analysis/lab-calculations?user_id=${encodeURIComponent(userId)}`, {
+      method: 'GET',
+    }),
+
+  deleteLabCalculation: (calcId: string, userId: string) =>
+    request<any>(`/api/soil/nutrient-analysis/lab-calculations/${encodeURIComponent(calcId)}?user_id=${encodeURIComponent(userId)}`, {
+      method: 'DELETE',
+    }),
+
   // Backward compatibility legacy methods
   predictTriangulated: (data: any) =>
     request<any>('/api/v1/predict/triangulated', { method: 'POST', body: data }),
