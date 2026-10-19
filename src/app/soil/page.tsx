@@ -110,84 +110,11 @@ export default function SoilPage() {
 
     const guide = SOIL_DEFICIENCIES_GUIDE.find(g => g.id === guideId) || SOIL_DEFICIENCIES_GUIDE[0];
 
-    const title = language === "si"
-      ? (guideId === "nitrogen" ? "නයිට්‍රජන් ඌනතාව (Nitrogen)" : guideId === "potassium" ? "පොටෑසියම් ඌනතාව (Potassium)" : guideId === "magnesium" ? "මැග්නීසියම් ඌනතාව (Magnesium)" : guideId === "boron" ? "බෝරෝන් ඌනතාව (Boron)" : "පොස්පරස් ඌනතාව (Phosphorus)")
-      : language === "ta"
-        ? (guideId === "nitrogen" ? "நைட்ரஜன் குறைபாடு (Nitrogen)" : guideId === "potassium" ? "பொட்டாசியம் குறைபாடு (Potassium)" : guideId === "magnesium" ? "மெக்னீசியம் குறைபாடு (Magnesium)" : guideId === "boron" ? "போரான் குறைபாடு (Boron)" : "பாஸ்பரஸ் குறைபாடு (Phosphorus)")
-        : (guideId === "nitrogen" ? "Nitrogen Deficiency" : guideId === "potassium" ? "Potassium Deficiency" : guideId === "magnesium" ? "Magnesium Deficiency" : guideId === "boron" ? "Boron Deficiency" : "Phosphorus Deficiency");
-
-    const element = language === "si"
-      ? (guideId === "nitrogen" ? "නයිට්‍රජන් (N)" : guideId === "potassium" ? "පොටෑසියම් (K)" : guideId === "magnesium" ? "මැග්නීසියම් (Mg)" : guideId === "boron" ? "බෝරෝන් (B)" : "පොස්පරස් (P)")
-      : language === "ta"
-        ? (guideId === "nitrogen" ? "நைட்ரஜன் (N)" : guideId === "potassium" ? "பொட்டாசியம் (K)" : guideId === "magnesium" ? "மெக்னீசியம் (Mg)" : guideId === "boron" ? "போரான் (B)" : "பாஸ்பரஸ் (P)")
-        : (guideId === "nitrogen" ? "Nitrogen (N)" : guideId === "potassium" ? "Potassium (K)" : guideId === "magnesium" ? "Magnesium (Mg)" : guideId === "boron" ? "Boron (B)" : "Phosphorus (P)");
-
-    // Deficiency Explanation
-    let description = language === "si"
-      ? (guide.overview_si || guide.overview)
-      : language === "ta"
-        ? (guide.overview_ta || guide.overview)
-        : guide.overview;
-
-    if (guideId === "nitrogen") {
-      description = language === "si"
-        ? "නයිට්‍රජන් ඌනතාවයේදී මුලින්ම පහළ පැරණි පත්‍රවල සිට නව පත්‍ර දක්වා සමස්ත පත්‍රය පුරා ඒකාකාරී ලා කහ පැහැවීමක් (Chlorosis) ඇතිවේ. ගසේ වර්ධන වේගය බාල වී, පිති කෙටි වන අතර කරටිය සිහින් වී ගෙඩි හටගැනීම හා ඵලදාව සීඝ්‍රයෙන් පහත වැටේ."
-        : language === "ta"
-          ? "நைட்ரஜன் குறைபாடு முதலில் பழைய ஓலைகளில் தொடங்கி புதிய ஓலைகள் வரை பரவும் மஞ்சள் நிறமாதலை ஏற்படுத்துகிறது. வளர்ச்சி விகிதம் குறைகிறது, ஓலைகள் குட்டையாகி, கிரீடம் மெலிதாகி, காய் அளவு மற்றும் மகசூல் கணிசமாகக் குறைகிறது."
-          : "Nitrogen deficiency causes general yellowing (chlorosis) of older leaves first, progressing to the younger leaves. The growth rate slows down, fronds become shorter, and the crown becomes thin, significantly dropping nut size and yield.";
-    } else if (guideId === "potassium") {
-      description = language === "si"
-        ? "පොටෑසියම් ඌනතාව වැලි සහිත පස්වල බහුලව දක්නට ලැබේ. පැරණි පත්‍ර මත කහ-තැඹිලි පාට ලප හටගන්නා අතර පත්‍ර දාර හා අගිසි පිලිස්සුනාක් මෙන් මියයයි (Necrosis). පිති දුර්වල වී කඩා වැටීම හෝ අකාලයේ බිඳී යාම සිදුවේ."
-        : language === "ta"
-          ? "பொட்டாசியம் குறைபாடு மணல் பாங்கான நிலங்களில் அதிகம் காணப்படுகிறது. பழைய ஓலைகளில் ஆரஞ்சு-மஞ்சள் நிறப் புள்ளிகள் தோன்றி, ஓலை ஓரங்கள் கருகும். நடுநரம்பு பலவீனமடைந்து ஓலைகள் முன்கூட்டியே முறியும்."
-          : "Potassium deficiency is common in sandy soils. It shows as orange-yellow chlorotic spots on older leaves, with leaflet margins and tips exhibiting burning/necrosis. Midribs weaken and fronds hang down or break prematurely.";
-    } else if (guideId === "magnesium") {
-      description = language === "si"
-        ? "මැග්නීසියම් ඌනතාවයේදී පැරණි පත්‍රවල නාරටිය දෙපස ප්‍රදේශය කොළ පැහැයෙන් තිබියදී පත්‍ර දාර දීප්තිමත් කහ-තැඹිලි පැහැයට හැරේ (V-හැඩැති කහවීම). ප්‍රභාසංස්ලේෂණය අඩපණ වී මුල් සහ ගෙඩි වර්ධනයට දැඩි බලපෑම් එල්ල වේ."
-        : language === "ta"
-          ? "மெக்னீசியம் குறைபாட்டில் பழைய ஓலைகளின் நரம்புப் பகுதி பச்சையாக இருக்கும் போது ஓலை ஓரங்கள் பிரகாசமான ஆரஞ்சு-மஞ்சள் நிறமாக மாறும் (V-வடிவ மஞ்சள்). ஒளிச்சேர்க்கை கடுமையாக பாதிக்கப்பட்டு காய் வளர்ச்சி குறையும்."
-          : "Magnesium deficiency is characterized by a V-shaped yellowing on older leaves, where leaflet margins turn bright orange-yellow while the midrib area remains green. Photosynthesis is severely reduced, affecting root and nut growth.";
-    } else if (guideId === "boron") {
-      description = language === "si"
-        ? "බෝරෝන් ක්ෂුද්‍ර පෝෂක ඌනතාවේදී නව පිතිවල අගිසි කොක්කක් සේ නැමී දෘඪ වේ ('Hook Leaf'). කරටි පත්‍ර දිගහැරීම අවහිර වන අතර ('Crown Choke'), සෛල බෙදීම දුර්වල වී පැතලි වූ, මදය රහිත පුස් ගෙඩි (Barren Nuts) හටගනී."
-        : language === "ta"
-          ? "போரான் குறைபாடு புதிய ஓலைகளின் நுனிகள் வளைந்து விறைப்பாக மாறும் ('ஹூக் லீப்'). குருத்து ஓலைகள் சரியாகத் திறக்காது, செல் பிரிதல் பாதிக்கப்படுவதால் தட்டையான மலட்டுத் தேங்காய்கள் உருவாகும்."
-          : "Boron deficiency manifests as 'Hook Leaf' on emerging fronds where leaflet tips are bent and rigid. Spear leaves fail to open properly ('crown choke'), and the palm produces deformed, flat-sided, barren nuts due to poor cell division.";
-    }
-
-    // Specific Highlighted CRI Treatment Action (matching mobile app CRI Treatment Protocol card)
-    let treatmentAction = "";
-    if (guideId === "nitrogen") {
-      treatmentAction = language === "si"
-        ? "ගසේ වයස අනුව අමතර යූරියා (Urea) ග්‍රෑම් 100 - 200 ක් වෘත්තාකාර කානුවට යොදන්න. පසේ කාබනික ද්‍රව්‍ය ඉහළ නැංවීමට කොම්පෝස්ට්, ගොම පොහොර හෝ මුකුණා (Mucuna) වැනි ආවරණ බෝග වගා කර ගස පාමුල වසුන් කරන්න."
-        : language === "ta"
-          ? "வளர்ச்சி நிலைக்கு ஏற்ப ஒரு தென்னைக்கு கூடுதலாக 100-200 கிராம் யூரியாவை இடவும். மண்ணின் கரிமப் பொருளை அதிகரிக்க மக்கிய உரம், கம்போஸ்ட் அல்லது மூடு பயிர்களை (Mucuna போன்றவை) இட்டு தழைக்கூளம் இடவும்."
-          : "Apply an additional 100-200g of Urea per palm depending on the growth stage. Incorporate organic manure, compost, or cover crops (like Mucuna) to naturally raise soil organic matter and mulch the base.";
-    } else if (guideId === "potassium") {
-      treatmentAction = language === "si"
-        ? "වැඩිහිටි පොල් ගසකට වසරකට අමතර MOP (Muriate of Potash) ග්‍රෑම් 500 ක් යොදන්න. පොටෑසියම් ස්වභාවිකව නැවත පසට එකතු කර තෙතමනය රඳවා ගැනීමට පේළි අතර අගල් කපා පොල් ලෙලි සහ පිති වළලන්න (Husk Burial)."
-        : language === "ta"
-          ? "வருடத்திற்கு ஒரு முதிர்ந்த தென்னைக்கு கூடுதலாக 500 கிராம் MOP உரத்தை இடவும். பொட்டாசியத்தை மறுசுழற்சி செய்யவும் ஈரப்பதத்தைப் பாதுகாக்கவும் மர வரிசைகளுக்கு இடையில் தேங்காய் மட்டைகளை புதைக்கவும்."
-          : "Apply an additional 500g of Muriate of Potash (MOP) per adult palm per year. Bury coconut husks and fronds in trenches between rows to recycle potassium and preserve moisture.";
-    } else if (guideId === "magnesium") {
-      treatmentAction = language === "si"
-        ? "තදබල ඌනතාවලදී: වැඩිහිටි ගසකට අර්ධ-වාර්ෂිකව කයිසරයිට් (Kieserite - MgSO4) කිලෝග්‍රෑම් 1 ක් යොදන්න (රවුමෙන් අඩකට NPK ද අනෙක් අඩට Kieserite ද යොදන්න). දිගුකාලීන පිළියමක් ලෙස වසරකට ඩොලමයිට් (Dolomite) කිලෝග්‍රෑම් 1 - 2 ක් යොදන්න."
-        : language === "ta"
-          ? "தீவிர நிலைக்கு: ஒரு முதிர்ந்த தென்னைக்கு 6 மாதத்திற்கு ஒருமுறை 1 கிலோ கீசரைட் இடவும் (வட்டத்தில் பாதிக்கு NPK, மறுபாதிக்கு கீசரைட்). நீண்ட கால தடுப்பிற்கு வருடத்திற்கு 1 கிலோ டோலமைட் இடவும்."
-          : "For severe cases: Apply 1 kg Kieserite (Magnesium Sulphate) per adult palm half-yearly (apply NPK to one half of the circle and Kieserite to the other). For long-term prevention, apply 1 kg Dolomite per palm per year.";
-    } else if (guideId === "boron") {
-      treatmentAction = language === "si"
-        ? "රෝග ලක්ෂණ පහව යන තුරු වැඩිහිටි හෝ ළපටි ගසකට මාස 6කට වරක් බොරැක්ස් (Borax - Sodium Tetraborate) ග්‍රෑම් 20 බැගින් යොදන්න (පැළ සඳහා ග්‍රෑම් 10). පසේ තෙතමනය ඇති විට යොදන්න."
-        : language === "ta"
-          ? "அறிகுறிகள் மறையும் வரை 6 மாத இடைவெளியில் ஒரு தென்னைக்கு 20 கிராம் போராக்ஸ் (Borax) இடவும் (கன்றுகளுக்கு 10 கிராம்). உரம் இடும் போது மண்ணில் ஈரப்பதம் இருப்பதை உறுதி செய்யவும்."
-          : "Apply 20g of Sodium Tetraborate (Borax) per mature or young palm at 6-month intervals until symptoms disappear (CRI A7 Guidance). For seedlings: Apply 10g Borax. Ensure soil is moist during application.";
-    } else {
-      treatmentAction = language === "si"
-        ? "තෙත් සහ අතරමැදි කලාප සඳහා ERP (එප්පාවල රොක් පොස්පේට්) ග්‍රෑම් 900 ක් හෝ වියළි කලාපය සඳහා TSP ග්‍රෑම් 400 ක් ගසේ මුල සිට මීටර් 1.8 ක් දුරින් වෘත්තාකාර කානුවට යොදන්න."
-        : language === "ta"
-          ? "ஈர/இடைப்பட்ட மண்டலங்களுக்கு 900 கிராம் ERP அல்லது உலர் மண்டலத்திற்கு 400 கிராம் TSP உரத்தை மரத்திலிருந்து 1.8 மீ தொலைவில் இடவும்."
-          : "Apply recommended dosage of Eppawala Rock Phosphate (ERP - 900g for Wet/Intermediate zone) or Triple Super Phosphate (TSP - 400g for Dry zone). Practice ring trench placement 1.8m from the trunk.";
-    }
+    const nutrientData = (t.soil.nutrients as any)[guideId] || t.soil.nutrients.nitrogen;
+    const title = nutrientData.title;
+    const element = nutrientData.element;
+    const description = nutrientData.description;
+    const treatmentAction = nutrientData.treatment;
 
     const symptoms = language === "si" ? guide.symptoms_si || guide.symptoms : language === "ta" ? guide.symptoms_ta || guide.symptoms : guide.symptoms;
     const correctiveMeasures = language === "si" ? guide.correctiveMeasures_si || guide.correctiveMeasures : language === "ta" ? guide.correctiveMeasures_ta || guide.correctiveMeasures : guide.correctiveMeasures;
@@ -195,16 +122,16 @@ export default function SoilPage() {
 
     if (raw.includes("healthy")) {
       return {
-        title: language === "si" ? "නිරෝගී පත්‍ර තත්ත්වය (Healthy)" : language === "ta" ? "ஆரோக்கியமான ஓலை நிலை (Healthy)" : "Healthy Palm Foliage",
-        element: language === "si" ? "ප්‍රශස්ත පෝෂණය" : language === "ta" ? "உகந்த ஊட்டச்சத்து" : "Optimal Foliage",
+        title: t.soil.healthyPalmTitle,
+        element: t.soil.healthyOptimalFoliage,
         symbol: "OK",
         themeColor: "#10B981",
-        description: language === "si" ? "පත්‍රවල ප්‍රශස්ත ක්ලෝරෝෆිල් ව්‍යාප්තියක්, නිරෝගී වර්ණයක් සහ සමබර කායික වර්ධනයක් දක්නට ලැබේ. කිසිදු පෝෂක ඌනතා ලක්ෂණයක් හඳුනාගෙන නොමැත." : "The AI model analyzed your leaf image and detected no mineral deficiencies. Your coconut palm appears healthy and well-nourished.",
-        treatmentAction: language === "si" ? "නියමිත කාලසටහනට අනුව සම්මත CRI පොහොර මිශ්‍රණය (යූරියා, ERP, MOP, ඩොලමයිට්) අඛණ්ඩව යොදන්න. පාමුල තෙතමනය රැකගැනීමට කාබනික වසුන් යොදන්න." : "Maintain regular circular trench fertilization according to CRI Circular A7. Practice organic mulching to conserve root moisture.",
+        description: t.soil.healthyDescription,
+        treatmentAction: t.soil.healthyTreatment,
         symptoms: [],
         causes: [],
         correctiveMeasures: [],
-        advice: visualResult?.recommendation?.advice || (language === "si" ? "නියමිත කාලසටහනට අනුව සම්මත CRI පොහොර මිශ්‍රණය අඛණ්ඩව යොදන්න." : "Continue standard CRI routine fertilization schedule."),
+        advice: language === "en" ? (visualResult?.recommendation?.advice || t.soil.healthyRoutineAdvice) : t.soil.healthyRoutineAdvice,
       };
     }
 
@@ -310,6 +237,209 @@ export default function SoilPage() {
     }
   };
 
+  // Reusable Standard CRI Fertilizer Dosage & Guidelines Renderer
+  const renderStandardCriPlan = (criPlan: StandardCriPlan) => (
+    <div className="space-y-4">
+      <div
+        onClick={() => setIsCriPlanOpen(!isCriPlanOpen)}
+        className="p-5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between group shadow-sm hover:shadow-md"
+        style={{
+          background: isDark ? "rgba(16, 185, 129, 0.06)" : "#F1F8E9",
+          borderColor: isDark ? "rgba(16, 185, 129, 0.3)" : "rgba(46, 125, 50, 0.3)"
+        }}
+      >
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-700 flex items-center justify-center text-white shadow-sm shrink-0 group-hover:scale-105 transition-transform">
+            <Leaf className="w-6 h-6" />
+          </div>
+          <div>
+            <h4 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
+              {t.soil.seeStandardCriPlan}
+            </h4>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
+              {t.soil.baselineScheduleSubtitle}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold text-xs">
+          <span>{isCriPlanOpen ? t.soil.hidePlan : t.soil.viewPlan}</span>
+          {isCriPlanOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </div>
+      </div>
+
+      {/* Expanded Standard CRI Plan Container */}
+      {isCriPlanOpen && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          className="p-6 rounded-3xl border space-y-6 shadow-sm"
+          style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
+        >
+          {/* Plan Header & Summary Chips */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b" style={{ borderColor: "var(--card-border)" }}>
+            <div>
+              <span className="text-xs uppercase tracking-wider font-semibold text-emerald-500">
+                {t.soil.annualFertilizerSchedule}
+              </span>
+              <h3 className="text-xl font-black mt-0.5" style={{ color: "var(--text-primary)" }}>
+                {t.soil.criFertilizerPrescription}
+              </h3>
+            </div>
+
+            {/* Chips */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="px-3 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5" style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", color: "var(--text-primary)" }}>
+                <Calendar className="w-3.5 h-3.5 text-emerald-500" /> {palmAge} {t.soil.yearsUnit}
+              </span>
+              <span className="px-3 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5" style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", color: "var(--text-primary)" }}>
+                <Leaf className="w-3.5 h-3.5 text-emerald-500" /> {getStageLabel(palmStage)}
+              </span>
+              <span className="px-3 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5" style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", color: "var(--text-primary)" }}>
+                <Map className="w-3.5 h-3.5 text-emerald-500" /> {getZoneLabel(manualZone)}
+              </span>
+            </div>
+          </div>
+
+          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+            {t.soil.criDosageIntro}
+          </p>
+
+          {/* Fertilizer Cards Grid (Urea, ERP/TSP, MOP, Dolomite) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* 1. Urea Card */}
+            <div className="p-4 rounded-2xl border" style={{ background: isDark ? "rgba(16, 185, 129, 0.04)" : "#F9FBF9", borderColor: isDark ? "rgba(16, 185, 129, 0.2)" : "#E8F5E9" }}>
+              <div className="flex items-center justify-between">
+                <span className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-black text-sm flex items-center justify-center">N</span>
+                <span className="text-xs font-semibold text-emerald-500">{t.soil.nitrogenSource}</span>
+              </div>
+              <h5 className="text-sm font-bold mt-2" style={{ color: "var(--text-primary)" }}>Urea (යූරියා)</h5>
+              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
+                {criPlan.urea} <span className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>g / yr</span>
+              </div>
+              <div className="w-full h-1.5 rounded-full bg-emerald-500/20 overflow-hidden mt-3">
+                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, (criPlan.urea / 1200) * 100)}%` }} />
+              </div>
+              <p className="text-[11px] mt-2 font-medium" style={{ color: "var(--text-secondary)" }}>
+                {t.soil.splitYalaMahaText.replace("{yala}", String(criPlan.yala_urea)).replace("{maha}", String(criPlan.maha_urea))}
+              </p>
+            </div>
+
+            {/* 2. ERP/TSP Card */}
+            <div className="p-4 rounded-2xl border" style={{ background: isDark ? "rgba(6, 182, 212, 0.04)" : "#F8FBFC", borderColor: isDark ? "rgba(6, 182, 212, 0.2)" : "#E0F2FE" }}>
+              <div className="flex items-center justify-between">
+                <span className="w-8 h-8 rounded-xl bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 font-black text-sm flex items-center justify-center">P</span>
+                <span className="text-xs font-semibold text-cyan-500">{t.soil.phosphorusSource}</span>
+              </div>
+              <h5 className="text-sm font-bold mt-2" style={{ color: "var(--text-primary)" }}>{criPlan.phosphate_type} ({criPlan.phosphate_type === "TSP" ? "Triple Super Phosphate" : "Eppawala Rock Phosphate"})</h5>
+              <div className="text-2xl font-black text-cyan-600 dark:text-cyan-400 mt-1">
+                {criPlan.erp_or_tsp} <span className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>g / yr</span>
+              </div>
+              <div className="w-full h-1.5 rounded-full bg-cyan-500/20 overflow-hidden mt-3">
+                <div className="h-full bg-cyan-500 rounded-full" style={{ width: `${Math.min(100, (criPlan.erp_or_tsp / 1200) * 100)}%` }} />
+              </div>
+              <p className="text-[11px] mt-2 font-medium" style={{ color: "var(--text-secondary)" }}>
+                {t.soil.splitYalaMahaText.replace("{yala}", String(criPlan.yala_erp)).replace("{maha}", String(criPlan.maha_erp))}
+              </p>
+            </div>
+
+            {/* 3. MOP Card */}
+            <div className="p-4 rounded-2xl border" style={{ background: isDark ? "rgba(245, 158, 11, 0.04)" : "#FCFAF6", borderColor: isDark ? "rgba(245, 158, 11, 0.2)" : "#FEF3C7" }}>
+              <div className="flex items-center justify-between">
+                <span className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 font-black text-sm flex items-center justify-center">K</span>
+                <span className="text-xs font-semibold text-amber-500">{t.soil.potassiumSource}</span>
+              </div>
+              <h5 className="text-sm font-bold mt-2" style={{ color: "var(--text-primary)" }}>MOP (Muriate of Potash)</h5>
+              <div className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
+                {criPlan.mop} <span className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>g / yr</span>
+              </div>
+              <div className="w-full h-1.5 rounded-full bg-amber-500/20 overflow-hidden mt-3">
+                <div className="h-full bg-amber-500 rounded-full" style={{ width: `${Math.min(100, (criPlan.mop / 2000) * 100)}%` }} />
+              </div>
+              <p className="text-[11px] mt-2 font-medium" style={{ color: "var(--text-secondary)" }}>
+                {t.soil.splitYalaMahaText.replace("{yala}", String(criPlan.yala_mop)).replace("{maha}", String(criPlan.maha_mop))}
+              </p>
+            </div>
+
+            {/* 4. Dolomite Card */}
+            <div className="p-4 rounded-2xl border" style={{ background: isDark ? "rgba(239, 68, 68, 0.04)" : "#FCF8F8", borderColor: isDark ? "rgba(239, 68, 68, 0.2)" : "#FEE2E2" }}>
+              <div className="flex items-center justify-between">
+                <span className="w-8 h-8 rounded-xl bg-red-500/15 text-red-600 dark:text-red-400 font-black text-sm flex items-center justify-center">Mg</span>
+                <span className="text-xs font-semibold text-red-500">{t.soil.magnesiumSource}</span>
+              </div>
+              <h5 className="text-sm font-bold mt-2" style={{ color: "var(--text-primary)" }}>Dolomite (ඩොලමයිට්)</h5>
+              <div className="text-2xl font-black text-red-600 dark:text-red-400 mt-1">
+                {criPlan.dolomite} <span className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>g / yr</span>
+              </div>
+              <div className="w-full h-1.5 rounded-full bg-red-500/20 overflow-hidden mt-3">
+                <div className="h-full bg-red-500 rounded-full" style={{ width: `${Math.min(100, (criPlan.dolomite / 1200) * 100)}%` }} />
+              </div>
+              <p className="text-[11px] mt-2 font-medium" style={{ color: "var(--text-secondary)" }}>
+                {t.soil.singleAnnualBroadcast}
+              </p>
+            </div>
+          </div>
+
+          {/* Total Dosage Banner */}
+          <div className="p-4 rounded-2xl border flex items-center justify-between" style={{ background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)", borderColor: "var(--card-border)" }}>
+            <div className="flex items-center gap-2">
+              <Scale className="w-4 h-4 text-emerald-500" />
+              <span className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>
+                {t.soil.totalAnnualMixture}
+              </span>
+            </div>
+            <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
+              {criPlan.total_kg} kg / palm / year
+            </span>
+          </div>
+
+          {/* APPLICATION GUIDELINES */}
+          <div className="space-y-3 pt-2">
+            <span className="text-xs font-bold uppercase tracking-wider block" style={{ color: "var(--text-muted)" }}>
+              {t.soil.applicationGuidelines}
+            </span>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Guideline 1: Circular Trenching */}
+              <div className="p-4 rounded-2xl border space-y-1.5" style={{ background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", borderColor: "var(--card-border)" }}>
+                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
+                  <Compass className="w-4 h-4" />
+                  <span>{t.soil.circularTrenching}</span>
+                </div>
+                <p className="text-[11px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  {t.soil.circularTrenchingDesc}
+                </p>
+              </div>
+
+              {/* Guideline 2: Split Application */}
+              <div className="p-4 rounded-2xl border space-y-1.5" style={{ background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", borderColor: "var(--card-border)" }}>
+                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
+                  <Calendar className="w-4 h-4" />
+                  <span>{t.soil.splitApplication}</span>
+                </div>
+                <p className="text-[11px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  {t.soil.splitApplicationDesc}
+                </p>
+              </div>
+
+              {/* Guideline 3: Soil Moisture */}
+              <div className="p-4 rounded-2xl border space-y-1.5" style={{ background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", borderColor: "var(--card-border)" }}>
+                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
+                  <Droplets className="w-4 h-4" />
+                  <span>{t.soil.soilMoisture}</span>
+                </div>
+                <p className="text-[11px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  {t.soil.soilMoistureDesc}
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
+
   // Image Selection Handlers
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -400,11 +530,7 @@ export default function SoilPage() {
       console.warn("Visual AI Server error:", err);
       let displayMsg = err?.message || "Failed to communicate with Coconut Soil Intelligence backend. Please verify your connection.";
       if (err?.message === "GATEWAY_OFFLINE" || err?.message?.includes("Failed to fetch") || err?.message?.includes("NetworkError")) {
-        displayMsg = language === "si"
-          ? "සර්වර් සම්බන්ධතාවය තහවුරු කරගත නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න."
-          : language === "ta"
-            ? "சேவையக இணைப்பை உறுதிப்படுத்த முடியவில்லை. தயவுசெய்து மீண்டும் முயற்சிக்கவும்."
-            : "Unable to reach Coconut Soil Intelligence backend. Please verify your connection.";
+        displayMsg = t.soil.serverConnectionError;
       }
       setVisualResult({
         success: false,
@@ -1355,68 +1481,91 @@ export default function SoilPage() {
                       </div>
                     ) : visualResult.prediction.class?.toLowerCase().includes("healthy") ? (
                       /* CASE 2: Healthy Palm Foliage */
-                      <div className="space-y-6">
-                        <div
-                          className="p-6 rounded-3xl border relative overflow-hidden"
-                          style={{
-                            background: isDark ? "rgba(16, 185, 129, 0.04)" : "rgba(16, 185, 129, 0.08)",
-                            borderColor: "rgba(16, 185, 129, 0.3)"
-                          }}
-                        >
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b" style={{ borderColor: "var(--card-border)" }}>
-                            <div className="flex items-start gap-3.5">
-                              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
-                                <CheckCircle2 className="w-6 h-6" />
-                              </div>
-                              <div>
-                                <span className="text-xs uppercase tracking-wider font-bold text-emerald-500">
-                                  {t.soil.visual.healthyTitle}
-                                </span>
-                                <h3 className="text-2xl font-black mt-0.5" style={{ color: "var(--text-primary)" }}>
-                                  {t.soil.visual.healthySubtitle}
-                                </h3>
-                                <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                                  {t.soil.visual.healthyDesc} · {t.soil.visual.palmStage}: {getStageLabel(palmStage)} ({palmAge} yrs)
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="text-right">
-                              <span className="text-xs block" style={{ color: "var(--text-muted)" }}>{t.soil.visual.confidence}</span>
-                              <span className="text-2xl font-extrabold text-emerald-500">
-                                {((visualResult.prediction.confidence || 0.95) * 100).toFixed(1)}%
-                              </span>
-                            </div>
-                          </div>
-
-                          <div
-                            className="mt-4 p-4 rounded-2xl border text-sm leading-relaxed"
-                            style={{
-                              background: isDark ? "rgba(16, 185, 129, 0.03)" : "rgba(16, 185, 129, 0.08)",
-                              borderColor: "rgba(16, 185, 129, 0.2)",
-                              color: "var(--text-secondary)"
-                            }}
-                          >
-                            {visualResult.recommendation?.advice || t.soil.visual.healthyAdvice}
-                          </div>
-
-                          <div className="flex items-center justify-end pt-4">
-                            <button
-                              type="button"
-                              onClick={handleSaveVisualScan}
-                              disabled={visualScanSaved}
-                              className="px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50"
+                      (() => {
+                        const criPlan = getStandardRecommendation(palmAge, palmStage, manualZone);
+                        return (
+                          <div className="space-y-6">
+                            <div
+                              className="p-6 rounded-3xl border relative overflow-hidden"
                               style={{
-                                background: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
-                                color: "var(--text-primary)"
+                                background: isDark ? "rgba(16, 185, 129, 0.04)" : "rgba(16, 185, 129, 0.08)",
+                                borderColor: "rgba(16, 185, 129, 0.3)"
                               }}
                             >
-                              <CheckCircle2 className={`w-3.5 h-3.5 ${visualScanSaved ? "text-[#00FF9D]" : ""}`} />
-                              {visualScanSaved ? t.soil.visual.savedRecord : t.soil.visual.saveRecord}
-                            </button>
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b" style={{ borderColor: "var(--card-border)" }}>
+                                <div className="flex items-start gap-3.5">
+                                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                                    <CheckCircle2 className="w-6 h-6" />
+                                  </div>
+                                  <div>
+                                    <span className="text-xs uppercase tracking-wider font-bold text-emerald-500">
+                                      {t.soil.visual.healthyTitle}
+                                    </span>
+                                    <h3 className="text-2xl font-black mt-0.5" style={{ color: "var(--text-primary)" }}>
+                                      {t.soil.visual.healthySubtitle}
+                                    </h3>
+                                    <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                                      {t.soil.visual.healthyDesc} · {t.soil.visual.palmStage}: {getStageLabel(palmStage)} ({palmAge} yrs)
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="text-right">
+                                  <span className="text-xs block" style={{ color: "var(--text-muted)" }}>{t.soil.visual.confidence}</span>
+                                  <span className="text-2xl font-extrabold text-emerald-500">
+                                    {((visualResult.prediction.confidence || 0.95) * 100).toFixed(1)}%
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div
+                                className="mt-4 p-4 rounded-2xl border text-sm leading-relaxed"
+                                style={{
+                                  background: isDark ? "rgba(16, 185, 129, 0.03)" : "rgba(16, 185, 129, 0.08)",
+                                  borderColor: "rgba(16, 185, 129, 0.2)",
+                                  color: "var(--text-secondary)"
+                                }}
+                              >
+                                {language === "en" ? (visualResult.recommendation?.advice || t.soil.healthyRoutineAdvice) : t.soil.healthyRoutineAdvice}
+                              </div>
+                            </div>
+
+                            {/* Standard CRI Yearly Fertilizer Schedule for Healthy Palms */}
+                            {renderStandardCriPlan(criPlan)}
+
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3 pt-2">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => window.print()}
+                                  className="px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+                                  style={{
+                                    background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
+                                    color: "var(--text-primary)"
+                                  }}
+                                >
+                                  <Printer className="w-3.5 h-3.5" />
+                                  <span>{t.soil.printPlan}</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={handleSaveVisualScan}
+                                  disabled={visualScanSaved}
+                                  className="px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50"
+                                  style={{
+                                    background: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
+                                    color: "var(--text-primary)"
+                                  }}
+                                >
+                                  <CheckCircle2 className={`w-3.5 h-3.5 ${visualScanSaved ? "text-[#00FF9D]" : ""}`} />
+                                  <span>{visualScanSaved ? t.soil.visual.savedRecord : t.soil.visual.saveRecord}</span>
+                                </button>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
+                        );
+                      })()
                     ) : (
                       /* CASE 3: Mineral Deficiency Detected */
                       (() => {
@@ -1440,16 +1589,16 @@ export default function SoilPage() {
                                 </div>
                                 <div>
                                   <h4 className="text-base font-black text-amber-600 dark:text-amber-400">
-                                    {language === "si" ? "පෝෂණ ඌනතාවක් හඳුනාගන්නා ලදී" : language === "ta" ? "ஊட்டச்சத்துக் குறைபாடு கண்டறியப்பட்டது" : "Deficiency Detected"}
+                                    {t.soil.deficiencyDetected}
                                   </h4>
                                   <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                                    {language === "si" ? "14 වන පිත්තේ පත්‍ර පටක ස්කෑන් විශ්ලේෂණය" : language === "ta" ? "14வது ஓலை திசு ஸ்கேன் பகுப்பாய்வு" : "14th Frond Foliar Optical Assessment"}
+                                    {t.soil.foliarOpticalAssessment}
                                   </p>
                                 </div>
                               </div>
 
                               <span className="text-xs font-bold px-3 py-1 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                                {language === "si" ? "දෘශ්‍ය විශ්ලේෂණය" : language === "ta" ? "காட்சி பகுப்பாய்வு" : "Visual Analysis"}
+                                {t.soil.visualAnalysis}
                               </span>
                             </div>
 
@@ -1471,7 +1620,7 @@ export default function SoilPage() {
                                   </div>
                                   <div>
                                     <span className="text-[11px] uppercase tracking-wider font-bold block" style={{ color: "var(--text-muted)" }}>
-                                      {language === "si" ? "ඉලක්කගත මූලද්‍රව්‍යය" : language === "ta" ? "இலக்கு ஊட்டச்சத்து" : "TARGET NUTRIENT"}
+                                      {t.soil.targetNutrient}
                                     </span>
                                     <h3 className="text-2xl font-black mt-0.5" style={{ color: "var(--text-primary)" }}>
                                       {nutrientInfo.title}
@@ -1495,7 +1644,7 @@ export default function SoilPage() {
                               {/* Confidence Progress Bar */}
                               <div className="mt-4 pt-1">
                                 <div className="flex justify-between text-xs font-semibold mb-1.5">
-                                  <span style={{ color: "var(--text-muted)" }}>{language === "si" ? "ස්කෑන් විශ්වාසනීයත්වය" : language === "ta" ? "ஸ்கேன் நம்பிக்கை" : "Scan Confidence"}</span>
+                                  <span style={{ color: "var(--text-muted)" }}>{t.soil.scanConfidence}</span>
                                   <span style={{ color: nutrientInfo.themeColor || "#10B981" }}>{((visualResult.prediction.confidence || 0.88) * 100).toFixed(0)}%</span>
                                 </div>
                                 <div className="w-full h-2.5 rounded-full overflow-hidden" style={{ background: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)" }}>
@@ -1558,7 +1707,7 @@ export default function SoilPage() {
                               style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
                             >
                               <span className="text-[11px] uppercase tracking-wider font-bold text-amber-500 block">
-                                {language === "si" ? "ඌනතා පැහැදිලි කිරීම (DEFICIENCY EXPLANATION)" : language === "ta" ? "குறைபாடு விளக்கம் (DEFICIENCY EXPLANATION)" : "DEFICIENCY EXPLANATION"}
+                                {t.soil.deficiencyExplanationTitle}
                               </span>
                               <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
                                 {nutrientInfo.description}
@@ -1568,7 +1717,7 @@ export default function SoilPage() {
                               {nutrientInfo.symptoms && nutrientInfo.symptoms.length > 0 && (
                                 <div className="pt-3 border-t mt-3" style={{ borderColor: "var(--card-border)" }}>
                                   <span className="text-xs font-bold block mb-2" style={{ color: "var(--text-primary)" }}>
-                                    {language === "si" ? "ප්‍රධාන ක්ෂේත්‍ර රෝග ලක්ෂණ:" : language === "ta" ? "முக்கிய அறிகுறிகள்:" : "Key Diagnostic Symptoms:"}
+                                    {t.soil.keySymptomsTitle}
                                   </span>
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     {nutrientInfo.symptoms.slice(0, 4).map((sym: string, sIdx: number) => (
@@ -1590,7 +1739,7 @@ export default function SoilPage() {
                               <div className="flex items-center gap-2.5">
                                 <ShieldCheck className="w-5 h-5 text-[#00FF9D]" />
                                 <span className="text-xs uppercase tracking-wider font-bold text-[#00FF9D]">
-                                  {language === "si" ? "CRI නිල ප්‍රතිකාර මාර්ගෝපදේශය (CRI TREATMENT PROTOCOL)" : language === "ta" ? "CRI சிகிச்சை நெறிமுறை (CRI TREATMENT PROTOCOL)" : "CRI TREATMENT PROTOCOL"}
+                                  {t.soil.treatmentProtocolTitle}
                                 </span>
                               </div>
 
@@ -1612,7 +1761,7 @@ export default function SoilPage() {
                               {nutrientInfo.correctiveMeasures && nutrientInfo.correctiveMeasures.length > 0 && (
                                 <div className="space-y-2 pt-2">
                                   <span className="text-xs font-semibold block" style={{ color: "var(--text-muted)" }}>
-                                    {language === "si" ? "පොල් පර්යේෂණ ආයතන නිල නිර්දේශ පියවර:" : language === "ta" ? "CRI அதிகாரப்பூர்வ பரிந்துரை நடவடிக்கைகள்:" : "Certified CRI Agronomic Steps:"}
+                                    {t.soil.certifiedStepsTitle}
                                   </span>
                                   <div className="space-y-2">
                                     {nutrientInfo.correctiveMeasures.map((measure: string, mIdx: number) => (
@@ -1628,214 +1777,8 @@ export default function SoilPage() {
                               )}
                             </div>
 
-                            {/* ══════════════════════════════════════════════════════
-                                SEE STANDARD CRI PLAN (Matching Mobile App Screen)
-                                ══════════════════════════════════════════════════════ */}
-                            <div className="space-y-4">
-                              <div
-                                onClick={() => setIsCriPlanOpen(!isCriPlanOpen)}
-                                className="p-5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between group shadow-sm hover:shadow-md"
-                                style={{
-                                  background: isDark ? "rgba(16, 185, 129, 0.06)" : "#F1F8E9",
-                                  borderColor: isDark ? "rgba(16, 185, 129, 0.3)" : "rgba(46, 125, 50, 0.3)"
-                                }}
-                              >
-                                <div className="flex items-center gap-3.5">
-                                  <div className="w-12 h-12 rounded-2xl bg-emerald-700 flex items-center justify-center text-white shadow-sm shrink-0 group-hover:scale-105 transition-transform">
-                                    <Leaf className="w-6 h-6" />
-                                  </div>
-                                  <div>
-                                    <h4 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
-                                      {language === "si" ? "සම්මත CRI වාර්ෂික පොහොර සැලැස්ම (Standard CRI Plan)" : language === "ta" ? "நிலையான CRI உர திட்டம் (Standard CRI Plan)" : "See Standard CRI Plan"}
-                                    </h4>
-                                    <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                                      {language === "si" ? "පොල් ගසේ වයස හා කලාපය අනුව නිර්දේශිත වාර්ෂික රසායනික පොහොර මිශ්‍රණය" : language === "ta" ? "பரிந்துரைக்கப்பட்ட உர பயன்பாட்டு அட்டவணை" : "Recommended baseline annual fertilizer application schedule"}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold text-xs">
-                                  <span>{isCriPlanOpen ? (language === "si" ? "හකුලන්න" : "Hide Plan") : (language === "si" ? "සැලැස්ම බලන්න" : "View Plan")}</span>
-                                  {isCriPlanOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                                </div>
-                              </div>
-
-                              {/* Expanded Standard CRI Plan Container */}
-                              {isCriPlanOpen && (
-                                <motion.div
-                                  initial={{ opacity: 0, height: 0 }}
-                                  animate={{ opacity: 1, height: "auto" }}
-                                  exit={{ opacity: 0, height: 0 }}
-                                  className="p-6 rounded-3xl border space-y-6 shadow-sm"
-                                  style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
-                                >
-                                  {/* Plan Header & Summary Chips */}
-                                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b" style={{ borderColor: "var(--card-border)" }}>
-                                    <div>
-                                      <span className="text-xs uppercase tracking-wider font-semibold text-emerald-500">
-                                        {language === "si" ? "CRI වාර්ෂික සම්මත මාත්‍රාව" : language === "ta" ? "CRI நிலையான அளவு" : "ANNUAL FERTILIZER SCHEDULE"}
-                                      </span>
-                                      <h3 className="text-xl font-black mt-0.5" style={{ color: "var(--text-primary)" }}>
-                                        {language === "si" ? "පොල් පර්යේෂණ ආයතන නිල පොහොර නිර්දේශය" : language === "ta" ? "CRI உத்தியோகபூர்வ உர பரிந்துரை" : "CRI Standard Fertilizer Prescription"}
-                                      </h3>
-                                    </div>
-
-                                    {/* Chips */}
-                                    <div className="flex flex-wrap items-center gap-2">
-                                      <span className="px-3 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5" style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", color: "var(--text-primary)" }}>
-                                        <Calendar className="w-3.5 h-3.5 text-emerald-500" /> {palmAge} {language === "si" ? "වසර" : "Yrs"}
-                                      </span>
-                                      <span className="px-3 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5" style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", color: "var(--text-primary)" }}>
-                                        <Leaf className="w-3.5 h-3.5 text-emerald-500" /> {getStageLabel(palmStage)}
-                                      </span>
-                                      <span className="px-3 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5" style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", color: "var(--text-primary)" }}>
-                                        <Map className="w-3.5 h-3.5 text-emerald-500" /> {getZoneLabel(manualZone)}
-                                      </span>
-                                    </div>
-                                  </div>
-
-                                  <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                                    {language === "si" ? "පොල් පර්යේෂණ ආයතනය (CRI) මඟින් එක් පොල් ගසක් සඳහා නිර්දේශ කරනු ලබන සම්මත වාර්ෂික රසායනික පොහොර ප්‍රමාණයන් පහත පරිදි වේ:" : "The Coconut Research Institute (CRI) recommends the following annual fertilizer dosage per palm:"}
-                                  </p>
-
-                                  {/* Fertilizer Cards Grid (Urea, ERP/TSP, MOP, Dolomite) */}
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    {/* 1. Urea Card */}
-                                    <div className="p-4 rounded-2xl border" style={{ background: isDark ? "rgba(16, 185, 129, 0.04)" : "#F9FBF9", borderColor: isDark ? "rgba(16, 185, 129, 0.2)" : "#E8F5E9" }}>
-                                      <div className="flex items-center justify-between">
-                                        <span className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-black text-sm flex items-center justify-center">N</span>
-                                        <span className="text-xs font-semibold text-emerald-500">{language === "si" ? "නයිට්‍රජන් ප්‍රභවය" : "Nitrogen Source"}</span>
-                                      </div>
-                                      <h5 className="text-sm font-bold mt-2" style={{ color: "var(--text-primary)" }}>Urea (යූරියා)</h5>
-                                      <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
-                                        {criPlan.urea} <span className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>g / yr</span>
-                                      </div>
-                                      <div className="w-full h-1.5 rounded-full bg-emerald-500/20 overflow-hidden mt-3">
-                                        <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, (criPlan.urea / 1200) * 100)}%` }} />
-                                      </div>
-                                      <p className="text-[11px] mt-2 font-medium" style={{ color: "var(--text-secondary)" }}>
-                                        {language === "si" ? `යල: ${criPlan.yala_urea}g + මහ: ${criPlan.maha_urea}g` : `Split: ${criPlan.yala_urea}g Yala + ${criPlan.maha_urea}g Maha`}
-                                      </p>
-                                    </div>
-
-                                    {/* 2. ERP/TSP Card */}
-                                    <div className="p-4 rounded-2xl border" style={{ background: isDark ? "rgba(6, 182, 212, 0.04)" : "#F8FBFC", borderColor: isDark ? "rgba(6, 182, 212, 0.2)" : "#E0F2FE" }}>
-                                      <div className="flex items-center justify-between">
-                                        <span className="w-8 h-8 rounded-xl bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 font-black text-sm flex items-center justify-center">P</span>
-                                        <span className="text-xs font-semibold text-cyan-500">{language === "si" ? "පොස්පරස් ප්‍රභවය" : "Phosphorus Source"}</span>
-                                      </div>
-                                      <h5 className="text-sm font-bold mt-2" style={{ color: "var(--text-primary)" }}>{criPlan.phosphate_type} ({criPlan.phosphate_type === "TSP" ? "Triple Super Phosphate" : "Eppawala Rock Phosphate"})</h5>
-                                      <div className="text-2xl font-black text-cyan-600 dark:text-cyan-400 mt-1">
-                                        {criPlan.erp_or_tsp} <span className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>g / yr</span>
-                                      </div>
-                                      <div className="w-full h-1.5 rounded-full bg-cyan-500/20 overflow-hidden mt-3">
-                                        <div className="h-full bg-cyan-500 rounded-full" style={{ width: `${Math.min(100, (criPlan.erp_or_tsp / 1200) * 100)}%` }} />
-                                      </div>
-                                      <p className="text-[11px] mt-2 font-medium" style={{ color: "var(--text-secondary)" }}>
-                                        {language === "si" ? `යල: ${criPlan.yala_erp}g + මහ: ${criPlan.maha_erp}g` : `Split: ${criPlan.yala_erp}g Yala + ${criPlan.maha_erp}g Maha`}
-                                      </p>
-                                    </div>
-
-                                    {/* 3. MOP Card */}
-                                    <div className="p-4 rounded-2xl border" style={{ background: isDark ? "rgba(245, 158, 11, 0.04)" : "#FCFAF6", borderColor: isDark ? "rgba(245, 158, 11, 0.2)" : "#FEF3C7" }}>
-                                      <div className="flex items-center justify-between">
-                                        <span className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 font-black text-sm flex items-center justify-center">K</span>
-                                        <span className="text-xs font-semibold text-amber-500">{language === "si" ? "පොටෑසියම් ප්‍රභවය" : "Potassium Source"}</span>
-                                      </div>
-                                      <h5 className="text-sm font-bold mt-2" style={{ color: "var(--text-primary)" }}>MOP (Muriate of Potash)</h5>
-                                      <div className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
-                                        {criPlan.mop} <span className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>g / yr</span>
-                                      </div>
-                                      <div className="w-full h-1.5 rounded-full bg-amber-500/20 overflow-hidden mt-3">
-                                        <div className="h-full bg-amber-500 rounded-full" style={{ width: `${Math.min(100, (criPlan.mop / 2000) * 100)}%` }} />
-                                      </div>
-                                      <p className="text-[11px] mt-2 font-medium" style={{ color: "var(--text-secondary)" }}>
-                                        {language === "si" ? `යල: ${criPlan.yala_mop}g + මහ: ${criPlan.maha_mop}g` : `Split: ${criPlan.yala_mop}g Yala + ${criPlan.maha_mop}g Maha`}
-                                      </p>
-                                    </div>
-
-                                    {/* 4. Dolomite Card */}
-                                    <div className="p-4 rounded-2xl border" style={{ background: isDark ? "rgba(239, 68, 68, 0.04)" : "#FCF8F8", borderColor: isDark ? "rgba(239, 68, 68, 0.2)" : "#FEE2E2" }}>
-                                      <div className="flex items-center justify-between">
-                                        <span className="w-8 h-8 rounded-xl bg-red-500/15 text-red-600 dark:text-red-400 font-black text-sm flex items-center justify-center">Mg</span>
-                                        <span className="text-xs font-semibold text-red-500">{language === "si" ? "මැග්නීසියම් / හුණු" : "Magnesium Source"}</span>
-                                      </div>
-                                      <h5 className="text-sm font-bold mt-2" style={{ color: "var(--text-primary)" }}>Dolomite (ඩොලමයිට්)</h5>
-                                      <div className="text-2xl font-black text-red-600 dark:text-red-400 mt-1">
-                                        {criPlan.dolomite} <span className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>g / yr</span>
-                                      </div>
-                                      <div className="w-full h-1.5 rounded-full bg-red-500/20 overflow-hidden mt-3">
-                                        <div className="h-full bg-red-500 rounded-full" style={{ width: `${Math.min(100, (criPlan.dolomite / 1200) * 100)}%` }} />
-                                      </div>
-                                      <p className="text-[11px] mt-2 font-medium" style={{ color: "var(--text-secondary)" }}>
-                                        {language === "si" ? "වාර්ෂිකව වරක් වෘත්තාකාර කානුවට" : "Single annual broadcast"}
-                                      </p>
-                                    </div>
-                                  </div>
-
-                                  {/* Total Dosage Banner */}
-                                  <div className="p-4 rounded-2xl border flex items-center justify-between" style={{ background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)", borderColor: "var(--card-border)" }}>
-                                    <div className="flex items-center gap-2">
-                                      <Scale className="w-4 h-4 text-emerald-500" />
-                                      <span className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>
-                                        {language === "si" ? "සමස්ත වාර්ෂික පොහොර මිශ්‍රණය (Total Annual Mixture):" : "Total Annual Recommended Dosage:"}
-                                      </span>
-                                    </div>
-                                    <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
-                                      {criPlan.total_kg} kg / palm / year
-                                    </span>
-                                  </div>
-
-                                  {/* APPLICATION GUIDELINES (Matching Mobile App) */}
-                                  <div className="space-y-3 pt-2">
-                                    <span className="text-xs font-bold uppercase tracking-wider block" style={{ color: "var(--text-muted)" }}>
-                                      {language === "si" ? "පොහොර යෙදීමේ නිල මාර්ගෝපදේශ (APPLICATION GUIDELINES)" : language === "ta" ? "உர பயன்பாட்டு வழிகாட்டுதல்கள் (APPLICATION GUIDELINES)" : "APPLICATION GUIDELINES"}
-                                    </span>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                      {/* Guideline 1: Circular Trenching */}
-                                      <div className="p-4 rounded-2xl border space-y-1.5" style={{ background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", borderColor: "var(--card-border)" }}>
-                                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
-                                          <Compass className="w-4 h-4" />
-                                          <span>{language === "si" ? "වෘත්තාකාර කාණු ක්‍රමය" : "Circular Trenching"}</span>
-                                        </div>
-                                        <p className="text-[11px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                                          {language === "si"
-                                            ? "පොල් ගසේ පාමුල සිට මීටර් 1.8 (අඩි 6) ක දුරින් වෘත්තාකාර කානුවක් කපා පොහොර මිශ්‍රණය යොදා පස් වලින් වසන්න."
-                                            : "Apply the fertilizer mixture in a circular trench dug 1.8 meters (6 feet) away from the base of the palm."}
-                                        </p>
-                                      </div>
-
-                                      {/* Guideline 2: Split Application */}
-                                      <div className="p-4 rounded-2xl border space-y-1.5" style={{ background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", borderColor: "var(--card-border)" }}>
-                                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
-                                          <Calendar className="w-4 h-4" />
-                                          <span>{language === "si" ? "දෙකන්නයට බෙදා යෙදීම" : "Split Application"}</span>
-                                        </div>
-                                        <p className="text-[11px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                                          {language === "si"
-                                            ? "වාර්ෂික මාත්‍රාව සමාන කොටස් දෙකකට බෙදා යල කන්නයේ 50% ක් සහ මහ කන්නයේ 50% ක් ලෙස වර්ෂාව ඇති කාලවලදී යොදන්න."
-                                            : "Divide the annual dosage into two equal applications: 50% during the Yala season and 50% during the Maha season."}
-                                        </p>
-                                      </div>
-
-                                      {/* Guideline 3: Soil Moisture */}
-                                      <div className="p-4 rounded-2xl border space-y-1.5" style={{ background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", borderColor: "var(--card-border)" }}>
-                                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
-                                          <Droplets className="w-4 h-4" />
-                                          <span>{language === "si" ? "පාංශු තෙතමනය" : "Soil Moisture"}</span>
-                                        </div>
-                                        <p className="text-[11px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                                          {language === "si"
-                                            ? "මුල් මඟින් පොහොර කාර්යක්ෂමව උරාගැනීම සඳහා පොහොර යොදන අවස්ථාවේ පසේ ප්‍රමාණවත් තෙතමනයක් තිබිය යුතුය. දැඩි නියඟයේදී නොයොදන්න."
-                                            : "Ensure there is adequate moisture in the soil during application to facilitate optimal absorption by the roots."}
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </motion.div>
-                              )}
-                            </div>
+                            {/* Standard CRI Yearly Fertilizer Schedule */}
+                            {renderStandardCriPlan(criPlan)}
 
                             {/* Action Row: Save Record & Notice */}
                             <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3 pt-2">
@@ -1850,7 +1793,7 @@ export default function SoilPage() {
                                   }}
                                 >
                                   <Printer className="w-3.5 h-3.5" />
-                                  <span>{language === "si" ? "මුද්‍රණය කරන්න" : "Print Plan"}</span>
+                                  <span>{t.soil.printPlan}</span>
                                 </button>
 
                                 <button
@@ -1888,7 +1831,7 @@ export default function SoilPage() {
                     <div className="max-w-md mx-auto space-y-2">
                       <h3 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{t.soil.visual.criGuidelinesTitle}</h3>
                       <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                        {language === "si" ? "නිරවද්‍ය AI පත්‍ර පරීක්ෂාවක් සඳහා පහත උපදෙස් පිළිපදින්න:" : language === "ta" ? "துல்லியமான AI இலை பகுப்பாய்விற்கு பின்வரும் வழிகாட்டுதல்களைப் பின்பற்றவும்:" : "To achieve optimal diagnostic accuracy with the vision AI model:"}
+                        {t.soil.guidelinesHeader}
                       </p>
                     </div>
 
@@ -1898,7 +1841,7 @@ export default function SoilPage() {
                         style={{ background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", borderColor: "var(--card-border)" }}
                       >
                         <span className="w-6 h-6 rounded-full bg-[#00FF9D]/10 text-[#00FF9D] text-xs font-bold flex items-center justify-center mb-2">1</span>
-                        <h5 className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>{language === "si" ? "පොල් පත්‍ර පමණි" : language === "ta" ? "தென்னை இலை மட்டுமே" : "Coconut Foliage Only"}</h5>
+                        <h5 className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>{t.soil.guidelineCoconutOnlyTitle}</h5>
                         <p className="text-[11px] mt-1" style={{ color: "var(--text-muted)" }}>{t.soil.visual.guidelineCoconutOnly}</p>
                       </div>
 
@@ -1907,7 +1850,7 @@ export default function SoilPage() {
                         style={{ background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", borderColor: "var(--card-border)" }}
                       >
                         <span className="w-6 h-6 rounded-full bg-[#00FF9D]/10 text-[#00FF9D] text-xs font-bold flex items-center justify-center mb-2">2</span>
-                        <h5 className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>{language === "si" ? "14 වන පිත්ත" : language === "ta" ? "14வது ஓலை" : "14th Frond Foliage"}</h5>
+                        <h5 className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>{t.soil.guideline14thFrondTitle}</h5>
                         <p className="text-[11px] mt-1" style={{ color: "var(--text-muted)" }}>{t.soil.visual.guideline14thFrond}</p>
                       </div>
 
@@ -1916,7 +1859,7 @@ export default function SoilPage() {
                         style={{ background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", borderColor: "var(--card-border)" }}
                       >
                         <span className="w-6 h-6 rounded-full bg-[#00FF9D]/10 text-[#00FF9D] text-xs font-bold flex items-center justify-center mb-2">3</span>
-                        <h5 className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>{language === "si" ? "පැහැදිලි ආලෝකය" : language === "ta" ? "தெளிவான வெளிச்சம்" : "Even Daylight"}</h5>
+                        <h5 className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>{t.soil.guidelineLightingTitle}</h5>
                         <p className="text-[11px] mt-1" style={{ color: "var(--text-muted)" }}>{t.soil.visual.guidelineLighting}</p>
                       </div>
                     </div>
@@ -2612,16 +2555,18 @@ export default function SoilPage() {
                   style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
                 >
                   <Activity className="w-10 h-10 text-gray-400 mx-auto" />
-                  <h4 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>No Diagnostic Records Yet</h4>
+                  <h4 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>{t.soil.history.noRecordsTitle}</h4>
                   <p className="text-xs max-w-sm mx-auto" style={{ color: "var(--text-secondary)" }}>
-                    Perform a Leaf Nutrient AI Scan or calculate a Laboratory DFR plan to save records to your history.
+                    {t.soil.history.noRecordsDesc}
                   </p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {/* Scans */}
                   {(historyFilter === "all" || historyFilter === "scans") &&
-                    savedScans.map((scan) => (
+                    savedScans.map((scan) => {
+                      const displayTitle = getNutrientDisplay(scan.class_name).title;
+                      return (
                       <div
                         key={scan.id}
                         className="p-5 rounded-2xl border hover:border-[#00FF9D]/40 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
@@ -2634,15 +2579,15 @@ export default function SoilPage() {
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#00FF9D]/10 text-[#00FF9D]">
-                                Leaf AI Scan
+                                {t.soil.history.leafScanBadge}
                               </span>
                               <span className="text-xs" style={{ color: "var(--text-muted)" }}>
                                 {new Date(scan.captured_at).toLocaleDateString()} {new Date(scan.captured_at).toLocaleTimeString()}
                               </span>
                             </div>
-                            <h5 className="text-base font-bold mt-1" style={{ color: "var(--text-primary)" }}>{scan.class_name}</h5>
+                            <h5 className="text-base font-bold mt-1" style={{ color: "var(--text-primary)" }}>{displayTitle}</h5>
                             <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                              Confidence: <strong style={{ color: "var(--text-primary)" }}>{(scan.confidence * 100).toFixed(1)}%</strong> · Palm Age: {scan.palm_age} yrs ({scan.zone} Zone)
+                              {t.soil.history.confidenceLabel}: <strong style={{ color: "var(--text-primary)" }}>{(scan.confidence * 100).toFixed(1)}%</strong> · {t.soil.history.palmAgeLabel}: {scan.palm_age} {t.soil.yearsUnit} ({getZoneLabel(scan.zone)})
                             </p>
                           </div>
                         </div>
@@ -2656,7 +2601,8 @@ export default function SoilPage() {
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-                    ))}
+                    );
+                  })}
 
                   {/* Lab Tests */}
                   {(historyFilter === "all" || historyFilter === "lab") &&
@@ -2673,7 +2619,7 @@ export default function SoilPage() {
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-400/10 text-cyan-400">
-                                Lab DFR Formulation
+                                {t.soil.history.labBadge}
                               </span>
                               <span className="text-xs" style={{ color: "var(--text-muted)" }}>
                                 {new Date(lab.captured_at).toLocaleDateString()} {new Date(lab.captured_at).toLocaleTimeString()}
@@ -2681,7 +2627,7 @@ export default function SoilPage() {
                             </div>
                             <h5 className="text-base font-bold mt-1" style={{ color: "var(--text-primary)" }}>{lab.health_status}</h5>
                             <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                              Palm: <strong style={{ color: "var(--text-primary)" }}>{lab.estate_name}</strong> · Urea: {lab.urea}g · {lab.phosphate_type}: {lab.erp_or_tsp}g · MOP: {lab.mop}g · Dolomite: {lab.dolomite}g
+                              {t.soil.history.palmLabel}: <strong style={{ color: "var(--text-primary)" }}>{lab.estate_name}</strong> · {t.soil.lab.urea}: {lab.urea}g · {lab.phosphate_type}: {lab.erp_or_tsp}g · {t.soil.lab.mop}: {lab.mop}g · {t.soil.lab.dolomite}: {lab.dolomite}g
                             </p>
                           </div>
                         </div>
