@@ -391,6 +391,8 @@ export interface TranslationSchema {
     criSource: string;
     standardMode: string;
     multiLlmMode: string;
+    forFarmers: string;
+    forExperts: string;
     standardDesc: string;
     multiDesc: string;
     zoneLabel: string;
