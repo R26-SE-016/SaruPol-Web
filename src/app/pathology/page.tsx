@@ -1384,7 +1384,7 @@ export default function PathologyPage() {
                           <span className="w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-bold"
                             style={{ background: "rgba(0, 229, 255, 0.15)", color: "#00E5FF" }}
                           >2</span>
-                          {uavResult ? `${uavResult.index_type} ${t.pathology.systemA.crownDetection}` : "Canopy Spectral Visualizer"}
+                          {uavResult ? `${uavResult.index_type} Canopy Spectral Zonal Map` : "Canopy Spectral Visualizer"}
                         </h2>
                         
                         {uavResult && (
@@ -1472,7 +1472,7 @@ export default function PathologyPage() {
                             <div className="flex justify-between text-[11px] font-mono mb-1.5" style={{ color: "var(--text-secondary)" }}>
                               <span style={{ color: "#FF4C4C", fontWeight: "600" }}>🔴 {t.pathology.systemA.criticalSeverity}</span>
                               <span style={{ color: "#E6AF2E", fontWeight: "600" }}>🟡 {t.pathology.systemA.highSeverity}</span>
-                              <span style={{ color: theme === "dark" ? "#00FF9D" : "#00875A", fontWeight: "600" }}>🟢 {t.pathology.systemA.crownDetection}</span>
+                              <span style={{ color: theme === "dark" ? "#00FF9D" : "#00875A", fontWeight: "600" }}>🟢 Healthy Canopy Vigor</span>
                             </div>
                             <div className="h-2 rounded-full bg-gradient-to-r from-red-600 via-amber-400 to-emerald-500" />
                           </div>
@@ -1515,33 +1515,35 @@ export default function PathologyPage() {
 
                       <div className="glass-card p-4 rounded-xl">
                         <div className="text-[10px] font-mono uppercase tracking-wider font-medium flex items-center justify-between" style={{ color: "var(--text-muted)" }}>
-                          <span>DETECTED PALMS</span>
-                          <HelpTooltip title="Discrete Palm Crowns" content="Total discrete coconut palm tree crowns identified via watershed local maxima peak segmentation." color="#00E5FF" />
+                          <span>STRESSED CANOPY BURDEN</span>
+                          <HelpTooltip title="Stressed Canopy Proportion" content="Proportion of active coconut canopy foliage exhibiting moderate chlorosis or acute necrosis." color="#FF4C4C" />
                         </div>
-                        <div className="text-2xl font-light mt-1 font-mono text-cyan-500">{uavResult.statistics.estimated_palms_count} Palms</div>
+                        <div className="text-2xl font-light mt-1 font-mono text-amber-500">
+                          {((uavResult.statistics.moderate_stress_pct || 0) + (uavResult.statistics.severe_stress_pct || 0)).toFixed(1)}%
+                        </div>
                         <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>
-                          {uavResult.statistics.healthy_palms_count || 224} Healthy / {uavResult.statistics.at_risk_palms_count || 12} At-Risk
+                          {(uavResult.statistics.severe_stress_pct || 0).toFixed(1)}% Acute / {(uavResult.statistics.moderate_stress_pct || 0).toFixed(1)}% Chlorotic
                         </div>
                       </div>
 
                       <div className="glass-card p-4 rounded-xl">
                         <div className="text-[10px] font-mono uppercase tracking-wider font-medium flex items-center justify-between" style={{ color: "var(--text-muted)" }}>
                           <span>{t.pathology.systemA.canopyVsGround}</span>
-                          <HelpTooltip title="Canopy vs Ground Exposure" content="Ratio of active canopy foliage coverage to bare inter-row soil exposure across the estate block." color="#E6AF2E" />
+                          <HelpTooltip title="Canopy vs Ground Exposure" content="Ratio of active vegetative crown foliage coverage to bare inter-row soil & shadow exposure across the surveyed block." color="#E6AF2E" />
                         </div>
-                        <div className="text-2xl font-light mt-1 font-mono text-amber-500">{uavResult.statistics.canopy_coverage_pct?.toFixed(1)}%</div>
+                        <div className="text-2xl font-light mt-1 font-mono text-cyan-500">{uavResult.statistics.canopy_coverage_pct?.toFixed(1)}%</div>
                         <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>
-                          {(uavResult.statistics.ground_exposure_pct || (100 - uavResult.statistics.canopy_coverage_pct)).toFixed(1)}% Inter-row Soil
+                          {(uavResult.statistics.ground_exposure_pct || (100 - uavResult.statistics.canopy_coverage_pct)).toFixed(1)}% Soil & Inter-row Space
                         </div>
                       </div>
 
                       <div className="glass-card p-4 rounded-xl">
                         <div className="text-[10px] font-mono uppercase tracking-wider font-medium flex items-center justify-between" style={{ color: "var(--text-muted)" }}>
                           <span>{t.pathology.systemA.flaggedAnomalies}</span>
-                          <HelpTooltip title="Flagged Stress Hotspots" content="Individual palms displaying acute spectral drop, severe chlorosis, or frond dieback that require ground-level inspection." color="#FF4C4C" />
+                          <HelpTooltip title="Flagged Stress Hotspots" content="Statistically significant contiguous canopy stress clusters requiring on-site ground scouting." color="#FF4C4C" />
                         </div>
-                        <div className="text-2xl font-light mt-1 font-mono text-red-500">{uavResult.hotspots?.length || 0} Trees</div>
-                        <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>{t.pathology.systemA.zScoreOutliers}</div>
+                        <div className="text-2xl font-light mt-1 font-mono text-red-500">{uavResult.hotspots?.length || 0} Zones</div>
+                        <div className="text-[10px] font-mono mt-1" style={{ color: "var(--text-secondary)" }}>Statistical Anomaly Clusters</div>
                       </div>
                     </motion.div>
                   )}
@@ -1555,7 +1557,7 @@ export default function PathologyPage() {
                             🎯 {t.pathology.systemA.hotspotsDetected}
                           </h3>
                           <p className="text-xs font-mono mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                            GPS coordinates of physiological anomalies extracted using <strong>ExG Canopy Segmentation</strong> & <strong>Local Z-Score Outlier Analysis</strong>.
+                            GPS coordinates of physiological stress zones extracted using <strong>ExG Canopy Segmentation</strong> & <strong>Area-Based Connected Component Analysis</strong>.
                           </p>
                         </div>
                       </div>
