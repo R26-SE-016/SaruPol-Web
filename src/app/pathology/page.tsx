@@ -338,33 +338,52 @@ export default function PathologyPage() {
     });
   };
 
-  // Handle Primary Drone Upload (.tiff, .tif, .jpg, .png, .webp)
+  // Handle Primary Drone Upload (.tiff, .tif, .jpg, .jpeg, .png)
   const handlePrimaryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setPrimaryFile(file);
-      setUavResult(null);
-      setUavError(null);
+    if (!file) return;
 
-      // UI Thumbnail preview (UTIF decoder for .tiff, object URL for jpg/png) + Fast Client-Side GPS extraction
-      try {
-        const processed = await processDroneImage(file);
-        setPrimaryPreview(processed.previewUrl);
-        setDetectedDroneGps(processed.detectedGps || null);
-      } catch (err: any) {
-        setPrimaryPreview(URL.createObjectURL(file));
+    // 1. Strict Drone Extension Validation
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    const validDroneExts = ['tif', 'tiff', 'jpg', 'jpeg', 'png'];
+    if (!ext || !validDroneExts.includes(ext)) {
+      setUavError(`Unsupported format (.${ext || 'unknown'}). Please upload a drone aerial survey image (.TIFF, .JPG, or .PNG).`);
+      return;
+    }
+
+    setPrimaryFile(file);
+    setUavResult(null);
+    setUavError(null);
+
+    // 2. Decode & Extract Drone Metadata
+    try {
+      const processed = await processDroneImage(file);
+
+      // 3. Drone Aerial Scale & Out-of-Domain Filter
+      // Commercial agricultural drone frames are wide-area surveys (minimum 640x480).
+      if (processed.originalWidth < 600 || processed.originalHeight < 400) {
+        setPrimaryFile(null);
+        setPrimaryPreview(null);
         setDetectedDroneGps(null);
+        setUavError("Non-Aerial Specimen: Image resolution is too low for macro-scale drone orthomosaic analysis (minimum 600×400px required).");
+        return;
       }
 
-      // Downscale for backend transmission (prevents Cloud Run payload limits)
-      try {
-        const downscaled = await downscaleForBackend(file);
-        setPrimaryBase64(downscaled);
-      } catch {
-        const reader = new FileReader();
-        reader.onloadend = () => setPrimaryBase64(reader.result as string);
-        reader.readAsDataURL(file);
-      }
+      setPrimaryPreview(processed.previewUrl);
+      setDetectedDroneGps(processed.detectedGps || null);
+    } catch (err: any) {
+      setPrimaryPreview(URL.createObjectURL(file));
+      setDetectedDroneGps(null);
+    }
+
+    // Downscale for backend transmission (prevents Cloud Run payload limits)
+    try {
+      const downscaled = await downscaleForBackend(file);
+      setPrimaryBase64(downscaled);
+    } catch {
+      const reader = new FileReader();
+      reader.onloadend = () => setPrimaryBase64(reader.result as string);
+      reader.readAsDataURL(file);
     }
   };
 
@@ -479,6 +498,12 @@ export default function PathologyPage() {
         nirPreview || nirBase64 || undefined,
         selectedCoords
       );
+
+      // Seamless Out-of-Domain Guard: Reject images that contain no botanical canopy or palm trees
+      if (clientSpectral.statistics.canopy_coverage_pct < 4.0 && !detectedDroneGps) {
+        setUavError("Non-Agricultural Specimen: No coconut palm canopy detected (canopy coverage < 4%). Please upload an aerial survey of a coconut plantation.");
+        return;
+      }
 
       const effectiveEstateName = detectedDroneGps
         ? (detectedDroneGps.source === 'geotiff' ? "Real GeoTIFF Survey Block" : "Real Aerial Drone Survey Block")
@@ -2525,7 +2550,9 @@ export default function PathologyPage() {
                       borderColor: "rgba(0, 255, 157, 0.3)",
                     }}
                   >
-                    {filteredHistory.length + hotspotsList.length} Total Telemetry Items
+                    {historyView === "map" 
+                      ? `${hotspotsList.length} Aerial UAV Hotspots` 
+                      : `${filteredHistory.length + hotspotsList.length} Total Telemetry Items`}
                   </span>
                 </div>
 
