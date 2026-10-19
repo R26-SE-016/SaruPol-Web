@@ -377,6 +377,41 @@ export function mergeCloudDiagnostics(
 }
 
 /**
+ * Retrieve records that have not yet been synced to the cloud.
+ */
+export function getUnsyncedDiagnostics(
+  userId?: string | number,
+  userEmail?: string
+): UserDiagnosticRecord[] {
+  const all = getUserDiagnostics(userId, userEmail);
+  return all.filter((r) => r.synced !== true);
+}
+
+/**
+ * Mark specified local diagnostic records as synced in localStorage.
+ */
+export function markUserDiagnosticsSynced(
+  userId: string | number | undefined,
+  syncedIds: string[],
+  userEmail?: string
+): UserDiagnosticRecord[] {
+  if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
+  const effectiveId = String(userId || "guest");
+  const storageKey = `sarupol_user_diagnostics_${effectiveId}`;
+
+  try {
+    const current = getUserDiagnostics(userId, userEmail);
+    const idSet = new Set(syncedIds);
+    const updated = current.map((r) => (idSet.has(r.id) ? { ...r, synced: true } : r));
+    localStorage.setItem(storageKey, JSON.stringify(updated));
+    return updated;
+  } catch (e) {
+    console.warn("Failed to mark diagnostics as synced:", e);
+    return [];
+  }
+}
+
+/**
  * Retrieve user-specific aerial UAV surveys.
  */
 export function getUserAerialSurveys(userId?: string | number, userEmail?: string): UserAerialSurveyRecord[] {
