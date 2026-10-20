@@ -27,7 +27,6 @@ export default function CommandPalette() {
     { id: "pathology", label: "Pathology Diagnostics", category: "Navigation", icon: <Microscope className="w-4 h-4" />, action: () => router.push("/pathology") },
     { id: "yield", label: "Yield Forecast", category: "Navigation", icon: <BarChart3 className="w-4 h-4" />, action: () => router.push("/yield") },
     { id: "advisory", label: "Advisory AI Chat", category: "Navigation", icon: <MessageCircle className="w-4 h-4" />, action: () => router.push("/advisory") },
-    { id: "operations", label: "Field Operations", category: "Navigation", icon: <Map className="w-4 h-4" />, action: () => router.push("/operations") },
   ];
 
   const filtered = commands.filter(

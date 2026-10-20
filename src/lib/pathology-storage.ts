@@ -277,22 +277,64 @@ const DEMO_SEEDED_AERIAL_SURVEYS: UserAerialSurveyRecord[] = [
 ];
 
 /**
+ * Resolve a consistent, collision-free storage identifier for the active user account.
+ * Prioritizes user_id, falling back to normalized email, then 'guest'.
+ * If the user's email matches a known demo account, checks both keys to maintain state.
+ */
+export function getStorageUserKey(userId?: string | number, userEmail?: string): string {
+  const cleanEmail = (userEmail || "").trim().toLowerCase();
+  const rawId = userId !== undefined && userId !== null ? String(userId).trim() : "";
+
+  if (rawId && rawId !== "guest" && rawId !== "undefined" && rawId !== "null") {
+    return rawId;
+  }
+  if (cleanEmail) {
+    if (cleanEmail === "agronomist@cri.lk") return "usr_cri_001";
+    if (cleanEmail === "planter@sarupol.lk") return "usr_plt_042";
+    return cleanEmail.replace(/[^a-zA-Z0-9_-]/g, "_");
+  }
+  return "guest";
+}
+
+/**
  * Retrieve user-specific leaf diagnostics from local storage.
  */
 export function getUserDiagnostics(userId?: string | number, userEmail?: string): UserDiagnosticRecord[] {
   if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
-  const effectiveId = String(userId || "guest");
+  const effectiveId = getStorageUserKey(userId, userEmail);
   const storageKey = `sarupol_user_diagnostics_${effectiveId}`;
 
   try {
     const raw = localStorage.getItem(storageKey);
     if (raw) {
-      return JSON.parse(raw);
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      } catch {}
+    }
+
+    // Check alias key if userId was a Firestore document ID / number
+    const cleanEmail = (userEmail || "").trim().toLowerCase();
+    if (cleanEmail) {
+      const emailKey = `sarupol_user_diagnostics_${cleanEmail.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+      if (emailKey !== storageKey) {
+        const emailRaw = localStorage.getItem(emailKey);
+        if (emailRaw) {
+          try {
+            const parsed = JSON.parse(emailRaw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              localStorage.setItem(storageKey, emailRaw);
+              return parsed;
+            }
+          } catch {}
+        }
+      }
     }
 
     // If Demo agronomist or planter account, seed with initial demo diagnostics
-    const cleanEmail = (userEmail || "").trim().toLowerCase();
     if (cleanEmail === "agronomist@cri.lk" || effectiveId === "usr_cri_001") {
       const seeded = DEMO_SEEDED_DIAGNOSTICS.filter((d) => d.user_email === "agronomist@cri.lk");
       localStorage.setItem(storageKey, JSON.stringify(seeded));
@@ -315,16 +357,47 @@ export function getUserDiagnostics(userId?: string | number, userEmail?: string)
 /**
  * Save a new diagnostic scan for the active user.
  */
-export function saveUserDiagnostic(record: UserDiagnosticRecord): UserDiagnosticRecord[] {
+export function saveUserDiagnostic(
+  record: UserDiagnosticRecord,
+  inMemoryCurrent?: UserDiagnosticRecord[]
+): UserDiagnosticRecord[] {
   if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
-  const effectiveId = String(record.user_id || "guest");
+  const effectiveId = getStorageUserKey(record.user_id, record.user_email);
   const storageKey = `sarupol_user_diagnostics_${effectiveId}`;
 
   try {
-    const current = getUserDiagnostics(record.user_id, record.user_email);
-    const updated = [record, ...current.filter((c) => c.id !== record.id)];
+    // Check in-memory list first if provided (preserves loaded cloud diagnostics)
+    let current = inMemoryCurrent && Array.isArray(inMemoryCurrent) && inMemoryCurrent.length > 0
+      ? inMemoryCurrent
+      : getUserDiagnostics(record.user_id, record.user_email);
+
+    // Merge: ensure all unique items from both current storage and in-memory are preserved
+    const local = getUserDiagnostics(record.user_id, record.user_email);
+    const map = new Map<string, UserDiagnosticRecord>();
+
+    // Put current and local into map
+    local.forEach((item) => { if (item && item.id) map.set(item.id, item); });
+    current.forEach((item) => { if (item && item.id) map.set(item.id, item); });
+
+    // Prepend new record
+    map.set(record.id, record);
+
+    const updated = Array.from(map.values()).sort(
+      (a, b) => new Date(b.captured_at).getTime() - new Date(a.captured_at).getTime()
+    );
+
     localStorage.setItem(storageKey, JSON.stringify(updated));
+
+    // Also mirror to email key if applicable to prevent desync
+    const cleanEmail = (record.user_email || "").trim().toLowerCase();
+    if (cleanEmail) {
+      const emailKey = `sarupol_user_diagnostics_${cleanEmail.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+      if (emailKey !== storageKey) {
+        localStorage.setItem(emailKey, JSON.stringify(updated));
+      }
+    }
+
     return updated;
   } catch (e) {
     console.warn("Failed to save user diagnostic:", e);
@@ -341,7 +414,7 @@ export function mergeCloudDiagnostics(
   userEmail?: string
 ): UserDiagnosticRecord[] {
   if (typeof window === "undefined" && typeof localStorage === "undefined") return cloudRecords;
-  const effectiveId = String(userId || "guest");
+  const effectiveId = getStorageUserKey(userId, userEmail);
   const storageKey = `sarupol_user_diagnostics_${effectiveId}`;
 
   try {
@@ -369,6 +442,16 @@ export function mergeCloudDiagnostics(
     );
 
     localStorage.setItem(storageKey, JSON.stringify(merged));
+
+    // Mirror to email alias key
+    const cleanEmail = (userEmail || "").trim().toLowerCase();
+    if (cleanEmail) {
+      const emailKey = `sarupol_user_diagnostics_${cleanEmail.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+      if (emailKey !== storageKey) {
+        localStorage.setItem(emailKey, JSON.stringify(merged));
+      }
+    }
+
     return merged;
   } catch (e) {
     console.warn("Failed to merge cloud diagnostics:", e);
@@ -396,7 +479,7 @@ export function markUserDiagnosticsSynced(
   userEmail?: string
 ): UserDiagnosticRecord[] {
   if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
-  const effectiveId = String(userId || "guest");
+  const effectiveId = getStorageUserKey(userId, userEmail);
   const storageKey = `sarupol_user_diagnostics_${effectiveId}`;
 
   try {
@@ -417,7 +500,7 @@ export function markUserDiagnosticsSynced(
 export function getUserAerialSurveys(userId?: string | number, userEmail?: string): UserAerialSurveyRecord[] {
   if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
-  const effectiveId = String(userId || "guest");
+  const effectiveId = getStorageUserKey(userId, userEmail);
   const storageKey = `sarupol_user_aerial_${effectiveId}`;
 
   try {
@@ -445,7 +528,7 @@ export function getUserAerialSurveys(userId?: string | number, userEmail?: strin
 export function saveUserAerialSurvey(record: UserAerialSurveyRecord): UserAerialSurveyRecord[] {
   if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
-  const effectiveId = String(record.user_id || "guest");
+  const effectiveId = getStorageUserKey(record.user_id, record.user_email);
   const storageKey = `sarupol_user_aerial_${effectiveId}`;
 
   try {
@@ -455,7 +538,7 @@ export function saveUserAerialSurvey(record: UserAerialSurveyRecord): UserAerial
 
     // Also persist any detected stressed tree hotspots
     if (record.hotspots && record.hotspots.length > 0) {
-      saveUserHotspots(record.hotspots, record.user_id);
+      saveUserHotspots(record.hotspots, record.user_id, record.user_email);
     }
 
     return updated;
@@ -471,7 +554,7 @@ export function saveUserAerialSurvey(record: UserAerialSurveyRecord): UserAerial
 export function getUserHotspots(userId?: string | number, userEmail?: string): CanopyHotspotRecord[] {
   if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
-  const effectiveId = String(userId || "guest");
+  const effectiveId = getStorageUserKey(userId, userEmail);
   const storageKey = `sarupol_user_hotspots_${effectiveId}`;
 
   try {
@@ -496,14 +579,14 @@ export function getUserHotspots(userId?: string | number, userEmail?: string): C
 /**
  * Save individual stressed tree hotspots into user telemetry storage.
  */
-export function saveUserHotspots(hotspots: CanopyHotspotRecord[], userId?: string | number): CanopyHotspotRecord[] {
+export function saveUserHotspots(hotspots: CanopyHotspotRecord[], userId?: string | number, userEmail?: string): CanopyHotspotRecord[] {
   if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
-  const effectiveId = String(userId || "guest");
+  const effectiveId = getStorageUserKey(userId, userEmail);
   const storageKey = `sarupol_user_hotspots_${effectiveId}`;
 
   try {
-    const current = getUserHotspots(userId);
+    const current = getUserHotspots(userId, userEmail);
     const updated = [...hotspots, ...current.filter((c) => !hotspots.some((h) => h.id === c.id))];
     localStorage.setItem(storageKey, JSON.stringify(updated));
     return updated;
@@ -516,14 +599,14 @@ export function saveUserHotspots(hotspots: CanopyHotspotRecord[], userId?: strin
 /**
  * Delete a single stressed tree hotspot.
  */
-export function deleteUserHotspot(id: string, userId?: string | number): CanopyHotspotRecord[] {
+export function deleteUserHotspot(id: string, userId?: string | number, userEmail?: string): CanopyHotspotRecord[] {
   if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
-  const effectiveId = String(userId || "guest");
+  const effectiveId = getStorageUserKey(userId, userEmail);
   const storageKey = `sarupol_user_hotspots_${effectiveId}`;
 
   try {
-    const current = getUserHotspots(userId);
+    const current = getUserHotspots(userId, userEmail);
     const updated = current.filter((item) => item.id !== id);
     localStorage.setItem(storageKey, JSON.stringify(updated));
     return updated;
@@ -539,7 +622,7 @@ export function deleteUserHotspot(id: string, userId?: string | number): CanopyH
 export function deleteUserDiagnostic(id: string, userId?: string | number, userEmail?: string): UserDiagnosticRecord[] {
   if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
-  const effectiveId = String(userId || "guest");
+  const effectiveId = getStorageUserKey(userId, userEmail);
   const storageKey = `sarupol_user_diagnostics_${effectiveId}`;
 
   try {
@@ -556,10 +639,10 @@ export function deleteUserDiagnostic(id: string, userId?: string | number, userE
 /**
  * Clear all diagnostic records for the user.
  */
-export function clearAllUserDiagnostics(userId?: string | number): UserDiagnosticRecord[] {
+export function clearAllUserDiagnostics(userId?: string | number, userEmail?: string): UserDiagnosticRecord[] {
   if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
-  const effectiveId = String(userId || "guest");
+  const effectiveId = getStorageUserKey(userId, userEmail);
   const storageKey = `sarupol_user_diagnostics_${effectiveId}`;
 
   try {
@@ -577,7 +660,7 @@ export function clearAllUserDiagnostics(userId?: string | number): UserDiagnosti
 export function deleteUserAerialSurvey(id: string, userId?: string | number, userEmail?: string): UserAerialSurveyRecord[] {
   if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
-  const effectiveId = String(userId || "guest");
+  const effectiveId = getStorageUserKey(userId, userEmail);
   const storageKey = `sarupol_user_aerial_${effectiveId}`;
 
   try {
@@ -594,10 +677,10 @@ export function deleteUserAerialSurvey(id: string, userId?: string | number, use
 /**
  * Clear all aerial UAV survey records for the user.
  */
-export function clearAllUserAerialSurveys(userId?: string | number): UserAerialSurveyRecord[] {
+export function clearAllUserAerialSurveys(userId?: string | number, userEmail?: string): UserAerialSurveyRecord[] {
   if (typeof window === "undefined" && typeof localStorage === "undefined") return [];
 
-  const effectiveId = String(userId || "guest");
+  const effectiveId = getStorageUserKey(userId, userEmail);
   const storageKey = `sarupol_user_aerial_${effectiveId}`;
 
   try {
