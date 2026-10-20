@@ -41,7 +41,6 @@ export default function Navbar() {
     { name: t.nav.pathology, path: "/pathology", icon: <Microscope className="w-4 h-4" /> },
     { name: t.nav.yield, path: "/yield", icon: <BarChart3 className="w-4 h-4" /> },
     { name: t.nav.advisory, path: "/advisory", icon: <MessageCircle className="w-4 h-4" /> },
-    { name: t.nav.operations, path: "/operations", icon: <Map className="w-4 h-4" /> },
   ];
 
   const isActive = (path: string) => {
