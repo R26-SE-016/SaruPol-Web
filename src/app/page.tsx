@@ -53,15 +53,6 @@ export default function DashboardPage() {
       tag: "S4",
       accent: "#E6AF2E",
     },
-    {
-      title: t.home.modules.operationsTitle,
-      subtitle: t.home.modules.operationsSub,
-      description: t.home.modules.operationsDesc,
-      href: "/operations",
-      icon: <Map className="w-6 h-6" />,
-      tag: "S5",
-      accent: "#A78BFA",
-    },
   ];
 
   const telemetryStats = [

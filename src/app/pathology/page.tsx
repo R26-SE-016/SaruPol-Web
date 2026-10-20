@@ -694,7 +694,7 @@ export default function PathologyPage() {
             synced: navigator.onLine ? true : false,
           };
 
-          const updatedDiags = saveUserDiagnostic(newDiagnosticRecord);
+          const updatedDiags = saveUserDiagnostic(newDiagnosticRecord, diagnosticsList);
           setDiagnosticsList(updatedDiags);
 
           saveDiagnosticLocally({
